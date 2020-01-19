@@ -1,0 +1,47 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    /*font-family:"fzht";*/
+}
+
+a {
+    color: #000;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    background-color: transparent;
+}
+
+body p {
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, ul, li {
+    margin: 0;
+    padding: 0;
+}
+
+ul, li {
+    list-style: none;
+}
+
+input {
+    outline: none;
+}
+
+body {
+    min-width: 1080px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+button {
+    border: none;
+}

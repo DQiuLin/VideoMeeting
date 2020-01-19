@@ -19,7 +19,7 @@ trait PageSwitcher{
 
 }
 
-object PageSwitcher extends PageSwitcher{
+object PageSwitcher extends PageSwitcher {
 
   private val currentPageHash: Var[List[String]] = Var(Nil)
 

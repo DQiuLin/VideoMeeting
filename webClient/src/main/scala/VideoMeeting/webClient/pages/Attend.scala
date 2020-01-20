@@ -14,14 +14,13 @@ object Attend {
 
   //先写在前端，之后加入协议-------
   case class AttendMeetingInfo(
-                                id: Long,
-                                picture: Option[String],
-                                video: Option[String],
-                                meetInfo: MeetInfo
-                              )
+                                  id: Long,
+                                  picture: Option[String],
+                                  video: Option[String],
+                                  meetInfo: MeetInfo
+                                )
 
   case class MeetInfo(
-                       id: Long,
                        name: String, //会议名称
                        time: Long, //会议时间
                        intro: String, //会议简介
@@ -38,7 +37,8 @@ object Attend {
   case class CommentInfo(
                           id: Long,
                           usrName: String,
-                          time: Long
+                          time: Long,
+                          content: String
                         )
 
   //-------

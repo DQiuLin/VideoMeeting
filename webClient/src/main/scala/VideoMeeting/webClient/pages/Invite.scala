@@ -21,7 +21,6 @@ object Invite {
                               )
 
   case class MeetInfo(
-                       id: Long,
                        name: String, //会议名称
                        time: Long, //会议时间
                        intro: String, //会议简介
@@ -38,7 +37,8 @@ object Invite {
   case class CommentInfo(
                           id: Long,
                           usrName: String,
-                          time: Long
+                          time: Long,
+                          content: String
                         )
 
   //-------

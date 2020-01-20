@@ -34,7 +34,7 @@ object PopWindow {
   }
 
   /** 这里使用了input标签和for属性来生成弹窗。相对于使用Var的方式（手机端生成弹窗的方式）生成的弹窗，它可以不使用Js而使用css样式伪类checked来制作页面动画。
-    * 但是其弹窗上的元素交互功能写起来会相对麻烦，所以对于静止的和有交互的弹窗不推荐使用（推荐手机端的方式生成弹窗）
+    * 但是其弹窗上的元素交互功能写起来会相对麻烦，所以对于静止的和有交互的弹窗不推荐使用（推荐手机端的方式生成弹窗）。
     */
   def commonPop(text: String): Unit = {
     showPop := {
@@ -86,7 +86,6 @@ object PopWindow {
           <div class="pop-header"></div>
           <div class="pop-title">用户注册</div>
           <div class="pop-content">
-            <input class="pop-input" id="register-email" placeholder="邮箱"></input>
             <input class="pop-input" id="register-account" placeholder="注册用户名"></input>
             <input class="pop-input" id="register-password" type="password" placeholder="注册密码"></input>
             <input class="pop-input" id="register-password2" type="password" placeholder="确认密码"></input>

@@ -1,6 +1,7 @@
 package VideoMeeting.webClient.pages
 
 
+import VideoMeeting.webClient.common.Components.{Modal, ModalLarge}
 import mhtml.Var
 import org.scalajs.dom
 import org.scalajs.dom.Event
@@ -22,7 +23,6 @@ object Initiate {
                                 )
 
   case class MeetInfo(
-                       id: Long,
                        name: String, //会议名称
                        time: Long, //会议时间
                        intro: String, //会议简介
@@ -39,7 +39,8 @@ object Initiate {
   case class CommentInfo(
                           id: Long,
                           usrName: String,
-                          time: Long
+                          time: Long,
+                          content: String
                         )
 
   //-------
@@ -56,12 +57,99 @@ object Initiate {
 
   }
 
-  def peopleManageModal(meetId: Long): Unit = {
-
+  def peopleManageModal(meetId: Long, list: List[PeopleInfo]): Unit = {
+    val title = "会议可见人员管理"
+    val pList: Var[List[PeopleInfo]] = Var(list)
+    val body =
+      <div class="modal-body">
+        <div class="modal-add">
+          <button onclick={() => ()}>+邀请</button>
+        </div>{pList.map { lst =>
+        if (lst.isEmpty)
+          <div class="modal-table">
+            <div class="list-th modal">
+              <div>用户名</div>
+              <div>类型</div>
+              <div>操作</div>
+            </div>
+          </div>
+        else
+          <div class="modal-table">
+            <div class="list-th modal">
+              <div>用户名</div>
+              <div>类型</div>
+              <div>操作</div>
+            </div>
+            <div style="width:100%;height:auto;">
+              {lst.zipWithIndex.map { l =>
+              val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
+              val item = l._1
+              <div class="list-tr modal" style={bgdColor}>
+                <div>
+                  {item.name}
+                </div>
+                <div>
+                  {item.pType}
+                </div>
+                <div>
+                  <button onclick={() => ()}>取消邀请</button>
+                </div>
+              </div>
+            }}
+            </div>
+          </div>
+      }}
+      </div>
+    ModalLarge(title, body, 400, 500, () => ())
   }
 
-  def commentManageModal(meetId: Long): Unit = {
-
+  def commentManageModal(meetId: Long, list: List[CommentInfo]): Unit = {
+    val title = "评论管理"
+    val cList: Var[List[CommentInfo]] = Var(list)
+    val body =
+      <div class="modal-body">
+        {cList.map { lst =>
+        if (lst.isEmpty)
+          <div class="modal-table">
+            <div class="list-th modal">
+              <div>用户名</div>
+              <div>评论</div>
+              <div>时间</div>
+              <div>操作</div>
+            </div>
+          </div>
+        else
+          <div class="modal-table">
+            <div class="list-th modal">
+              <div>用户名</div>
+              <div>时间</div>
+              <div>评论</div>
+              <div>操作</div>
+            </div>
+            <div style="width:100%;height:auto;">
+              {lst.zipWithIndex.map { l =>
+              val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
+              val item = l._1
+              <div class="list-tr modal" style={bgdColor}>
+                <div>
+                  {item.usrName}
+                </div>
+                <div>
+                  {item.time}
+                </div>
+                <div>
+                  {item.content}
+                </div>
+                <div>
+                  <button onclick={() => ()}>删除</button>
+                </div>
+              </div>
+            }}
+            </div>
+          </div>
+      }}
+      </div>
+    ModalLarge(title, body, 400, 500, () => ())
   }
 
   val meetTable = meetList.map { lst =>
@@ -135,10 +223,10 @@ object Initiate {
               {item.meetInfo.people}
             </div>
             <div>
-              <button onclick={() => ()}>用户管理</button>
+              <button onclick={() => peopleManageModal(item.id, item.meetInfo.people)}>用户管理</button>
             </div>
             <div>
-              <button onclick={() => ()}>评论管理</button>
+              <button onclick={() => commentManageModal(item.id, item.meetInfo.comment)}>评论管理</button>
             </div>
           </div>
         }}

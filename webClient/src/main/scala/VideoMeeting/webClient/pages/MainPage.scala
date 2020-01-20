@@ -1,7 +1,10 @@
 package VideoMeeting.webClient.pages
 
+import VideoMeeting.webClient.common.Components.PopWindow
 import mhtml.Var
+import org.scalajs.dom
 import org.scalajs.dom.Event
+import org.scalajs.dom.html.Input
 
 /**
   * created by dql on 2020/1/19
@@ -42,10 +45,25 @@ object MainPage {
 
   //function
   def register(e: Event, popId: String): Unit = {
+    val account = dom.document.getElementById("register-account").asInstanceOf[Input].value
+    val password = dom.document.getElementById("register-password").asInstanceOf[Input].value
+    val password2 = dom.document.getElementById("register-password2").asInstanceOf[Input].value
+    if (!account.trim.equals("") && !password.trim.equals("") && !password2.trim.equals("")) {
+      if (password.equals(password2)) {
 
+
+      }
+      else {
+        PopWindow.commonPop("输入相同的密码！")
+      }
+    } else {
+      PopWindow.commonPop("注册项均不能为空！")
+    }
   }
 
   def login(e: Event, popId: String): Unit = {
+    val account = dom.document.getElementById("login-account").asInstanceOf[Input].value
+    val password = dom.document.getElementById("login-password").asInstanceOf[Input].value
 
   }
 }

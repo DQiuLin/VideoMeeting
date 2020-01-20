@@ -40,7 +40,7 @@ object MainPage {
     </div>
   }
 
-  //  function
+  //function
   def register(e: Event, popId: String): Unit = {
 
   }

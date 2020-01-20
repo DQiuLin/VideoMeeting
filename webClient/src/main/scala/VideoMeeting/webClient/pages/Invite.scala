@@ -1,6 +1,6 @@
 package VideoMeeting.webClient.pages
 
-import mhtml.Var
+import mhtml.{Rx, Var}
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Video
@@ -44,7 +44,7 @@ object Invite {
   //-------
 
   val meetList: Var[List[InviteMeetingInfo]] = Var(Nil)
-  val totalCount = meetList.map(_.length)
+  val totalCount: Rx[Int] = meetList.map(_.length)
   val videoPlay: Var[Long] = Var(-1)
 
   def init() = {

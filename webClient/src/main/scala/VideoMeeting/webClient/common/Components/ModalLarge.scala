@@ -18,7 +18,8 @@ class ModalLarge(title:String, body:Elem, minHeight:Int, minWidth:Int, closeFunc
             {s"$title"}
           </span>
           <span style="color:#8E98B4;line-height:44px;float:right;margin-right:17px;font-size:17px;cursor:pointer;" onclick={() => {
-            closeFunc(); hide()
+            closeFunc();
+            hide()
           }}>
             X
           </span>

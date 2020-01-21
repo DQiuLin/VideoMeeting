@@ -14,24 +14,24 @@ object Attend {
 
   //先写在前端，之后加入协议-------
   case class AttendMeetingInfo(
-                                  id: Long,
-                                  picture: Option[String],
-                                  video: Option[String],
-                                  meetInfo: MeetInfo
-                                )
+                                id: Long,
+                                picture: Option[String], //会议视频封面
+                                video: Option[String], //会议视频url
+                                meetInfo: MeetInfo
+                              )
 
   case class MeetInfo(
                        name: String, //会议名称
                        time: Long, //会议时间
                        intro: String, //会议简介
-                       people: List[PeopleInfo], //参会人员
+                       people: List[PeopleInfo], //此会议相关用户
                        comment: List[CommentInfo] //评论
                      )
 
   case class PeopleInfo(
-                         id: Long,
-                         name: String,
-                         pType: Int
+                         id: Long, //若用户名是唯一索引，id可省
+                         name: String, //用户名
+                         pType: Int //类型：参会/邀请 即：参会人员还是之后被邀请查看会议视频的人员
                        )
 
   case class CommentInfo(

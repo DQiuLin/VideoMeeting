@@ -12,6 +12,11 @@ import org.scalajs.dom.html.Input
   */
 object MainPage {
 
+  //用户信息协议，暂时写在前端-----
+  case class User(id: Long, name: String, password: String, avatar: String)
+
+  //-----
+
   val isLogin = Var(0)
 
   private val headerBox = isLogin.map {

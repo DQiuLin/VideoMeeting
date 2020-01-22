@@ -38,7 +38,7 @@ lazy val rtpClient = (project in file("rtpClient"))
     libraryDependencies ++= Dependencies.backendDependencies)
   .dependsOn(shared)
 
-val playerMain = "org.seekloud.theia.player.Boot"
+val playerMain = "videomeeting.player.Boot"
 lazy val player = (project in file("player")).enablePlugins(PackPlugin)
   .settings(commonSettings: _*)
   .settings(
@@ -91,22 +91,22 @@ lazy val webClient = (project in file("webClient"))
   )
   .dependsOn(protocolJs)
 
-val roomManagerMain = "org.seekloud.theia.roomManager.Boot"
-lazy val roomManager = (project in file("roomManager")).enablePlugins(PackPlugin)
+val meetingManagerMain = "videomeeting.meetingManager.Boot"
+lazy val meetingManager = (project in file("meetingManager")).enablePlugins(PackPlugin)
   .settings(commonSettings: _*)
   .settings(
-    mainClass in reStart := Some(roomManagerMain),
+    mainClass in reStart := Some(meetingManagerMain),
     javaOptions in reStart += "-Xmx2g"
   )
-  .settings(name := "roomManager")
+  .settings(name := "meetingManager")
   .settings(
     //pack
     // If you need to specify main classes manually, use packSettings and packMain
     //packSettings,
     // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
-    packMain := Map("roomManager" -> roomManagerMain),
-    packJvmOpts := Map("roomManager" -> Seq("-Xmx64m", "-Xms32m")),
-    packExtraClasspath := Map("roomManager" -> Seq("."))
+    packMain := Map("meetingManager" -> meetingManagerMain),
+    packJvmOpts := Map("meetingManager" -> Seq("-Xmx64m", "-Xms32m")),
+    packExtraClasspath := Map("meetingManager" -> Seq("."))
   )
   .settings(
     libraryDependencies ++= Dependencies.backendDependencies
@@ -134,7 +134,50 @@ lazy val roomManager = (project in file("roomManager")).enablePlugins(PackPlugin
   .settings(scalaJSUseMainModuleInitializer := false)
   .dependsOn(protocolJvm)
 
-val rtpServerMain = "org.seekloud.theia.rtpServer.Boot"
+val tmpMain = "videomeeting.tmp.Boot"
+lazy val tmp = (project in file("tmp")).enablePlugins(PackPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    mainClass in reStart := Some(meetingManagerMain),
+    javaOptions in reStart += "-Xmx2g"
+  )
+  .settings(name := "tmp")
+  .settings(
+    //pack
+    // If you need to specify main classes manually, use packSettings and packMain
+    //packSettings,
+    // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
+    packMain := Map("tmp" -> meetingManagerMain),
+    packJvmOpts := Map("tmp" -> Seq("-Xmx64m", "-Xms32m")),
+    packExtraClasspath := Map("tmp" -> Seq("."))
+  )
+  .settings(
+    libraryDependencies ++= Dependencies.backendDependencies
+  )
+  .settings {
+    (resourceGenerators in Compile) += Def.task {
+      val fastJsOut = (fastOptJS in Compile in webClient).value.data
+      val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
+      Seq(
+        fastJsOut,
+        fastJsSourceMap
+      )
+    }.taskValue
+  }
+  .settings((resourceGenerators in Compile) += Def.task {
+    Seq(
+      (packageJSDependencies in Compile in webClient).value
+      //(packageMinifiedJSDependencies in Compile in frontend).value
+    )
+  }.taskValue)
+  .settings(
+    (resourceDirectories in Compile) += (crossTarget in webClient).value,
+    watchSources ++= (watchSources in webClient).value
+  )
+  .settings(scalaJSUseMainModuleInitializer := false)
+  .dependsOn(protocolJvm)
+
+val rtpServerMain = "videomeeting.rtpServer.Boot"
 
 lazy val rtpServer = (project in file("rtpServer")).enablePlugins(PackPlugin)
   .settings(commonSettings: _*)

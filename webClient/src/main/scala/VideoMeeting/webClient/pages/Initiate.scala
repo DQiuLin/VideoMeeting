@@ -1,49 +1,19 @@
-package VideoMeeting.webClient.pages
+package videomeeting.webClient.pages
 
 
-import VideoMeeting.webClient.common.Components.{Modal, ModalLarge}
 import mhtml.{Rx, Var}
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Video
 import org.scalajs.dom.raw.HTMLElement
+import videomeeting.protocol.ptcl.CommonInfo.{CommentInfo, InitiateMeetingInfo, PeopleInfo}
+import videomeeting.webClient.common.Components.ModalLarge
 
 /**
   * created by dql on 2020/1/19
   * web我发起的会议列表页面
   */
 object Initiate {
-
-  //先写在前端，之后加入协议-------
-  case class InitiateMeetingInfo(
-                                  id: Long,
-                                  picture: Option[String], //会议视频封面
-                                  video: Option[String], //会议视频url
-                                  meetInfo: MeetInfo
-                                )
-
-  case class MeetInfo(
-                       name: String, //会议名称
-                       time: Long, //会议时间
-                       intro: String, //会议简介
-                       people: List[PeopleInfo], //此会议相关用户
-                       comment: List[CommentInfo] //评论
-                     )
-
-  case class PeopleInfo(
-                         id: Long, //若用户名是唯一索引，id可省
-                         name: String, //用户名
-                         pType: Int //类型：参会/邀请 即：参会人员还是之后被邀请查看会议视频的人员
-                       )
-
-  case class CommentInfo(
-                          id: Long,
-                          usrName: String,
-                          time: Long,
-                          content: String
-                        )
-
-  //-------
 
   val meetList: Var[List[InitiateMeetingInfo]] = Var(Nil)
   val totalCount: Rx[Int] = meetList.map(_.length)

@@ -16,7 +16,6 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 trait HttpService extends ServiceUtils
   with UserService
   with MeetingService
-  with RecordService
   with RtpService
   with TestService
   with FileService

@@ -23,18 +23,26 @@ object MeetingDao {
     db.run(tMeetingInfo += rMeetingInfo(1, name, time, info, creator))
   }
 
+  def searchById(id: Int) = {
+    db.run(tMeetingInfo.filter(m => m.id === id).flatMap(m =>
+      tUserInfo.filter(u => u.id === m.creator).map(r => (m, r.username))).result.headOption)
+  }
+
   def searchByCreator(creator: Int) = {
-    db.run(tMeetingInfo.filter(m => m.creator === creator).result)
+    db.run(tMeetingInfo.filter(m => m.creator === creator).flatMap(m =>
+      tUserInfo.filter(u => u.id === m.creator).map(r => (m, r.username))).result)
   }
 
   def searchByAudience(userId: Int) = {
     db.run(tUserMeeting.filter(u => u.uid === userId && u.audience === 1).flatMap(m =>
-      tMeetingInfo.filter(mt => mt.id === m.mid)).result)
+      tMeetingInfo.filter(mt => mt.id === m.mid)).flatMap(mt =>
+        tUserInfo.filter(u => u.id === mt.creator).map(r => (mt, r.username))).result)
   }
 
   def searchByInvited(userId: Int) = {
     db.run(tUserMeeting.filter(u => u.uid === userId && u.audience === 0).flatMap(m =>
-      tMeetingInfo.filter(mt => mt.id === m.mid)).result)
+      tMeetingInfo.filter(mt => mt.id === m.mid)).flatMap(mt =>
+        tUserInfo.filter(u => u.id === mt.creator).map(r => (mt, r.username))).result)
   }
 
   def addUserMeeting(mid: Int, uid: Int, audience: Int) = {
@@ -51,12 +59,12 @@ object MeetingDao {
 
   def searchInvitedByMid(mid: Int) = {
     db.run(tUserMeeting.filter(m => m.mid === mid && m.audience === 0).flatMap(r =>
-      tUserInfo.filter(u => u.id === r.uid).map(rst => rst.username)).result)
+      tUserInfo.filter(u => u.id === r.uid).map(rst => (rst.id, rst.username))).result)
   }
 
   def searchAttendanceByMid(mid: Int) = {
     db.run(tUserMeeting.filter(m => m.mid === mid && m.audience === 1).flatMap(r =>
-      tUserInfo.filter(u => u.id === r.uid).map(rst => rst.username)).result)
+      tUserInfo.filter(u => u.id === r.uid).map(rst => (rst.id, rst.username))).result)
   }
 
   def searchCommentByMid(mid: Int) = {
@@ -65,6 +73,25 @@ object MeetingDao {
   }
 
   def searchRecordByMid(mid: Int) = {
-    db.run(tMeetingRecord.filter(r => r.mid === mid).result)
+    db.run(tMeetingRecord.filter(r => r.mid === mid).result.headOption)
+  }
+
+  def searchAllRelatedByMid(mid: Int) = {
+    db.run(tUserMeeting.filter(m => m.mid === mid).flatMap(r =>
+      tUserInfo.filter(u => u.id === r.uid).map(rst => (rst.id, rst.username, r.audience))).result)
+  }
+
+  def deleteUserMeeting(mid: Int, uid: Int) = {
+    db.run(tUserMeeting.filter(m => m.mid === mid && m.uid === uid).delete)
+  }
+
+  def deleteCommentById(id: Int) = {
+    db.run(tMeetingComment.filter(c => c.id === id).delete)
+  }
+
+  def searchByMidAndUid(mid: Int, uid: Int) = {
+    db.run(tUserMeeting.filter(m => m.mid === mid && m.uid === uid).flatMap(m =>
+      tMeetingInfo.filter(mt => mt.id === m.mid)).flatMap(mt =>
+        tUserInfo.filter(u => u.id === mt.creator).map(r => (mt, r.username))).result.headOption)
   }
 }

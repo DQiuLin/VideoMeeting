@@ -28,7 +28,7 @@ create table user_meeting
     mid int not null,
     uid int not null,
     audience int not null,  -- 是否是参会人，是（1），否（0）
-    constraint user_msg
+    constraint user_meeting
         primary key (id),
         foreign key (uid) references user_info(id) on update cascade on delete cascade,
         foreign key (mid) references meeting_info(id) on update cascade on delete cascade

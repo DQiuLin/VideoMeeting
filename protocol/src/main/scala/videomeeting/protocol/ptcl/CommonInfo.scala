@@ -82,6 +82,7 @@ object CommonInfo {
                        name: String, //会议名称
                        time: Long, //会议时间
                        intro: String, //会议简介
+                       creator: String,
                        people: List[PeopleInfo], //此会议相关用户
                        comment: List[CommentInfo] //评论
                      )

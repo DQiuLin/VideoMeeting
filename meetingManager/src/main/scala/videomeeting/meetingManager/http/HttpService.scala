@@ -59,9 +59,9 @@ trait HttpService extends ServiceUtils
 
   val Routes: Route =
     ignoreTrailingSlash {
-      pathPrefix("theia") {
+      pathPrefix("videomeeting") {
         home ~ statistics ~
-        pathPrefix("roomManager"){
+        pathPrefix("meetingManager"){
           resourceRoutes ~ userRoutes ~ meetingRoutes ~ recordRoutes ~ rtpRoutes ~ recordRoutes ~ test ~ file
         }
       }

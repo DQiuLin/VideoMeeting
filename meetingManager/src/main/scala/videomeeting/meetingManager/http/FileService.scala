@@ -51,7 +51,7 @@ trait FileService extends ServiceUtils{
 
   val uploadImg = (path("uploadFile") & post){
 //    authUser { _ =>
-      parameter('imgType.as[Int], 'userId.as[Long]) { (imgType, userId) =>
+      parameter('userId.as[Int]) { userId =>
         fileUpload("fileUpload") {
           case (fileInfo, file1) =>
             storeFile(file1) { f =>
@@ -65,7 +65,7 @@ trait FileService extends ServiceUtils{
                   case Right(url) =>
                     f.deleteOnExit()
                     dealFutureResult {
-                      UserInfoDao.modifyImg4User(userId, url, imgType).map { r =>
+                      UserInfoDao.modifyImg4User(userId, url).map { r =>
                         meetingManager ! UserInfoChange(userId, false)
                         complete(ImgChangeRsp(url))
                       }.recover {

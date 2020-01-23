@@ -15,9 +15,8 @@ import akka.stream.scaladsl.Flow
 import videomeeting.protocol.ptcl.{CommonRsp, Response}
 import videomeeting.meetingManager.core.RegisterActor.RegisterReq
 import videomeeting.meetingManager.core.MeetingManager
-import videomeeting.meetingManager.models.dao.UserInfoDao
-import akka.http.scaladsl.model.headers._
-import videomeeting.protocol.ptcl.CommonInfo.{MeetInfo, User}
+import videomeeting.meetingManager.models.dao.{MeetingDao, UserInfoDao}
+import videomeeting.protocol.ptcl.CommonInfo.{MeetInfo, PeopleInfo, User}
 import videomeeting.meetingManager.common.{AppSettings, Common}
 import videomeeting.meetingManager.core.MeetingManager.{GetMeetingList, UserInfoChange}
 import videomeeting.meetingManager.http.SessionBase.UserSession
@@ -180,6 +179,22 @@ trait UserService extends ServiceUtils {
       case Left(error) =>
         log.debug(s"获取房间信息失败，解码失败，error:$error")
         complete(CommonRsp(100045, s"decode error:$error"))
+    }
+  }
+
+  private val getInvited = (path("getInvited") & post) {
+    entity(as[Either[Error, GetInvited]]) {
+      case Right(req) =>
+        dealFutureResult {
+          MeetingDao.searchInvitedByMid(req.meetingId).map { seq =>
+            val ls = seq.map(l => PeopleInfo(l._1, l._2, 0)).toList
+            complete(GetInvitedRsp(Some(ls)))
+          }
+        }
+
+      case Left(error) =>
+        log.debug(s"获取被邀请者列表失败，解码失败，error:$error")
+        complete(GetInvitedRsp(None, 100045, s"decode error:$error"))
     }
   }
 

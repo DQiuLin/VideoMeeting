@@ -35,9 +35,15 @@ lazy val protocol = crossProject(JSPlatform, JVMPlatform)
 lazy val protocolJvm = protocol.jvm
 lazy val protocolJs = protocol.js
 
-lazy val shared = (project in file("shared"))
-  .settings(name := "shared")
-  .settings(commonSettings: _*)
+lazy val shared =
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .settings(name := "shared")
+    .settings(commonSettings: _*)
+    .settings(libraryDependencies ++= Dependencies.akkaSeq)
+
+lazy val sharedJvm = shared.jvm
+lazy val sharedJs = shared.js
 
 lazy val rtpClient = (project in file("rtpClient"))
   .settings(name := "rtpClient")
@@ -45,7 +51,6 @@ lazy val rtpClient = (project in file("rtpClient"))
   .settings(
     libraryDependencies ++= Dependencies.akkaSeq,
     libraryDependencies ++= Dependencies.backendDependencies)
-  .dependsOn(shared)
 
 
 
@@ -130,7 +135,7 @@ lazy val pcClient = (project in file("pcClient")).enablePlugins(PackPlugin)
     libraryDependencies ++= Dependencies.bytedecoLibs,
     libraryDependencies ++= Dependencies4PcClient.pcClientDependencies,
   )
-  .dependsOn(protocolJvm, rtpClient, capture, player)
+  .dependsOn(protocolJvm, sharedJvm, rtpClient, capture, player)
 
 val captureMain = "VideoMeeting.capture.Boot"
 lazy val capture = (project in file("capture")).enablePlugins(PackPlugin)
@@ -154,7 +159,7 @@ lazy val capture = (project in file("capture")).enablePlugins(PackPlugin)
     libraryDependencies ++= Dependencies.bytedecoLibs,
     libraryDependencies ++= Dependencies4Capture.captureDependencies,
   )
-  .dependsOn(protocolJvm)
+  .dependsOn(protocolJvm, sharedJvm)
 
 
 
@@ -180,37 +185,7 @@ lazy val player = (project in file("player")).enablePlugins(PackPlugin)
     libraryDependencies ++= Dependencies.bytedecoLibs,
     libraryDependencies ++= Dependencies4Player.playerDependencies,
   )
-  .dependsOn(protocolJvm, rtpClient)
-
-
-lazy val statistics = (project in file("statistics"))
-  .enablePlugins(ScalaJSPlugin)
-  .settings(name := "statistics")
-  .settings(commonSettings: _*)
-  .settings(
-    inConfig(Compile)(
-      Seq(
-        fullOptJS,
-        fastOptJS,
-        packageJSDependencies,
-        packageMinifiedJSDependencies
-      ).map(f => (crossTarget in f) ~= (_ / "sjsout"))
-    ))
-  .settings(skip in packageJSDependencies := false)
-  .settings(
-    scalaJSUseMainModuleInitializer := true,
-    //mainClass := Some("com.neo.sk.virgour.front.Main"),
-    libraryDependencies ++= Seq(
-      "io.circe" %%% "circe-core" % "0.8.0",
-      "io.circe" %%% "circe-generic" % "0.8.0",
-      "io.circe" %%% "circe-parser" % "0.8.0",
-      "org.scala-js" %%% "scalajs-dom" % "0.9.2",
-      "com.lihaoyi" %%% "scalatags" % "0.6.7" withSources(),
-      "org.seekloud" %%% "byteobject" % "0.1.1",
-      "in.nvilla" %%% "monadic-html" % "0.4.0-RC1" withSources()
-    )
-  )
-  .dependsOn(protocolJs)
+  .dependsOn(protocolJvm, sharedJvm, rtpClient)
 
 
 val roomManagerMain = "VideoMeeting.roomManager.Boot"
@@ -280,29 +255,6 @@ lazy val roomManager = (project in file("roomManager")).enablePlugins(PackPlugin
   .settings(scalaJSUseMainModuleInitializer := false)
   .dependsOn(protocolJvm)
 
-  .settings {
-    (resourceGenerators in Compile) += Def.task {
-      val fastJsOut = (fastOptJS in Compile in statistics).value.data
-      val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
-      Seq(
-        fastJsOut,
-        fastJsSourceMap
-      )
-    }.taskValue
-  }
-  .settings((resourceGenerators in Compile) += Def.task {
-    Seq(
-      (packageJSDependencies in Compile in statistics).value
-      //(packageMinifiedJSDependencies in Compile in frontend).value
-    )
-  }.taskValue)
-  .settings(
-    (resourceDirectories in Compile) += (crossTarget in statistics).value,
-    watchSources ++= (watchSources in statistics).value
-  )
-  .settings(scalaJSUseMainModuleInitializer := false)
-  .dependsOn(protocolJvm)
-
 
 
 
@@ -322,45 +274,16 @@ lazy val processor = (project in file("processor")).enablePlugins(PackPlugin)
     //packSettings,
     // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
     packMain := Map("processor" -> processorMain),
-    packJvmOpts := Map("processor" -> Seq("-Xmx6g", "-Xms3g")),
+    packJvmOpts := Map("processor" -> Seq("-Xmx5g", "-Xms1g")),
     packExtraClasspath := Map("processor" -> Seq("."))
   )
   .settings(
     libraryDependencies ++= Dependencies.backendDependencies,
     libraryDependencies ++= Dependencies.bytedecoLibs
-  ).dependsOn(protocolJvm, rtpClient)
+  ).dependsOn(protocolJvm, sharedJvm, rtpClient)
 
 
 val distributorMain = "VideoMeeting.distributor.Boot"
-
-lazy val distributorPage = (project in file("distributorPage"))
-  .enablePlugins(ScalaJSPlugin)
-  .settings(name := "distributorPage")
-  .settings(commonSettings: _*)
-  .settings(
-    inConfig(Compile)(
-      Seq(
-        fullOptJS,
-        fastOptJS,
-        packageJSDependencies,
-        packageMinifiedJSDependencies
-      ).map(f => (crossTarget in f) ~= (_ / "sjsout"))
-    ))
-  .settings(skip in packageJSDependencies := false)
-  .settings(
-    scalaJSUseMainModuleInitializer := true,
-    //mainClass := Some("com.neo.sk.virgour.front.Main"),
-    libraryDependencies ++= Seq(
-      "io.circe" %%% "circe-core" % "0.8.0",
-      "io.circe" %%% "circe-generic" % "0.8.0",
-      "io.circe" %%% "circe-parser" % "0.8.0",
-      "org.scala-js" %%% "scalajs-dom" % "0.9.2",
-      "com.lihaoyi" %%% "scalatags" % "0.6.7" withSources(),
-      "org.seekloud" %%% "byteobject" % "0.1.1",
-      "in.nvilla" %%% "monadic-html" % "0.4.0-RC1" withSources()
-    )
-  )
-  .dependsOn(protocolJs)
 
 lazy val distributor = (project in file("distributor")).enablePlugins(PackPlugin)
   .settings(commonSettings: _*)
@@ -377,29 +300,7 @@ lazy val distributor = (project in file("distributor")).enablePlugins(PackPlugin
   .settings(
     libraryDependencies ++= Dependencies.backendDependencies,
     libraryDependencies ++= Dependencies.bytedecoLibs
-  )
-  .settings {
-    (resourceGenerators in Compile) += Def.task {
-      val fastJsOut = (fastOptJS in Compile in distributorPage).value.data
-      val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
-      Seq(
-        fastJsOut,
-        fastJsSourceMap
-      )
-    }.taskValue
-  }
-  .settings((resourceGenerators in Compile) += Def.task {
-    Seq(
-      (packageJSDependencies in Compile in distributorPage).value
-      //(packageMinifiedJSDependencies in Compile in frontend).value
-    )
-  }.taskValue)
-  .settings(
-    (resourceDirectories in Compile) += (crossTarget in distributorPage).value,
-    watchSources ++= (watchSources in distributorPage).value
-  )
-  .settings(scalaJSUseMainModuleInitializer := false)
-  .dependsOn(protocolJvm, rtpClient)
+  ).dependsOn(protocolJvm, sharedJvm)
 
 
 val aiMain = "VideoMeeting.ai.Boot"
@@ -446,7 +347,7 @@ lazy val rtmpServer = (project in file("rtmpServer")).enablePlugins(PackPlugin)
   .settings(
     libraryDependencies ++= Dependencies.backendDependencies,
     libraryDependencies ++= Dependencies.bytedecoLibs
-  ).dependsOn(protocolJvm, rtpClient)
+  ).dependsOn(protocolJvm, sharedJvm, rtpClient)
 
 
 
@@ -470,7 +371,7 @@ lazy val rtpServer = (project in file("rtpServer")).enablePlugins(PackPlugin)
   )
   .settings(
     libraryDependencies ++= Dependencies.backendDependencies
-  ).dependsOn(protocolJvm, shared, rtpClient)
+  ).dependsOn(protocolJvm, sharedJvm, rtpClient)
 
 
 
@@ -496,7 +397,7 @@ lazy val webrtcServer = (project in file("webrtcServer")).enablePlugins(PackPlug
     libraryDependencies ++= Dependencies4WebRtc.backendDependencies,
     libraryDependencies ++= Dependencies.bytedecoLibs,
     libraryDependencies ++= Dependencies4WebRtc.dependencies4WebRtc
-  ).dependsOn(webrtcMessageJvm, protocolJvm, rtpClient)
+  ).dependsOn(webrtcMessageJvm, protocolJvm, sharedJvm, rtpClient)
 
 
 val faceAnalysisMain = "VideoMeeting.faceAnalysis.BootJFx"
@@ -507,9 +408,6 @@ lazy val faceAnalysis = (project in file("faceAnalysis")).enablePlugins(PackPlug
   .settings(commonSettings: _*)
   .settings(
     mainClass in reStart := Some(faceAnalysisMain),
-    PB.targets in Compile := Seq(
-      scalapb.gen() -> (sourceManaged in Compile).value
-    ),
     javaOptions in reStart += "-Xmx3g"
   )
   .settings(name := "faceAnalysis")
@@ -525,12 +423,7 @@ lazy val faceAnalysis = (project in file("faceAnalysis")).enablePlugins(PackPlug
   .settings(
     libraryDependencies ++= Dependencies.backendDependencies,
     libraryDependencies ++= Dependencies.bytedecoLibs,
-    libraryDependencies ++= Dependencies4Face.jme3Libs,
-    libraryDependencies += "org.tensorflow" % "tensorflow" % "1.15.0",
-    libraryDependencies += "org.nd4j" % "nd4j-native-platform" % "1.0.0-beta4",
-    libraryDependencies += "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
-    libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
-    libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
+    libraryDependencies ++= Dependencies4Face.jme3Libs
   )
-  .dependsOn(protocolJvm, rtpClient, player)
+  .dependsOn(protocolJvm, sharedJvm, rtpClient)
 

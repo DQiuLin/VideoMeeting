@@ -22,4 +22,3 @@ addSbtPlugin("io.spray" % "sbt-revolver" % sbtRevolverV)
 addSbtPlugin("org.xerial.sbt" % "sbt-pack" % sbtPackV)
 
 
-

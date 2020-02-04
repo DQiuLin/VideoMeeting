@@ -7,7 +7,6 @@ import sbt._
   */
 object Dependencies4Face {
   val jme3Version = "3.2.3-stable"
-  
   val jme3Libs = Seq(
     // https://mvnrepository.com/artifact/org.jmonkeyengine/jme3-core
     "org.jmonkeyengine" % "jme3-core" % jme3Version,
@@ -18,5 +17,4 @@ object Dependencies4Face {
     "org.jmonkeyengine" % "jme3-plugins" % jme3Version,
     "org.jmonkeyengine" % "jme3-blender" % "3.2.0-beta1"
   )
-
 }

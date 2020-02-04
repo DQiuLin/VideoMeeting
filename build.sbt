@@ -188,6 +188,36 @@ lazy val player = (project in file("player")).enablePlugins(PackPlugin)
   .dependsOn(protocolJvm, sharedJvm, rtpClient)
 
 
+lazy val statistics = (project in file("statistics"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(name := "statistics")
+  .settings(commonSettings: _*)
+  .settings(
+    inConfig(Compile)(
+      Seq(
+        fullOptJS,
+        fastOptJS,
+        packageJSDependencies,
+        packageMinifiedJSDependencies
+      ).map(f => (crossTarget in f) ~= (_ / "sjsout"))
+    ))
+  .settings(skip in packageJSDependencies := false)
+  .settings(
+    scalaJSUseMainModuleInitializer := true,
+    //mainClass := Some("com.neo.sk.virgour.front.Main"),
+    libraryDependencies ++= Seq(
+      "io.circe" %%% "circe-core" % "0.8.0",
+      "io.circe" %%% "circe-generic" % "0.8.0",
+      "io.circe" %%% "circe-parser" % "0.8.0",
+      "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+      "com.lihaoyi" %%% "scalatags" % "0.6.7" withSources(),
+      "org.seekloud" %%% "byteobject" % "0.1.1",
+      "in.nvilla" %%% "monadic-html" % "0.4.0-RC1" withSources()
+    )
+  )
+  .dependsOn(protocolJs)
+
+
 val roomManagerMain = "VideoMeeting.roomManager.Boot"
 
 lazy val roomManager = (project in file("roomManager")).enablePlugins(PackPlugin)
@@ -255,6 +285,29 @@ lazy val roomManager = (project in file("roomManager")).enablePlugins(PackPlugin
   .settings(scalaJSUseMainModuleInitializer := false)
   .dependsOn(protocolJvm)
 
+  .settings {
+    (resourceGenerators in Compile) += Def.task {
+      val fastJsOut = (fastOptJS in Compile in statistics).value.data
+      val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
+      Seq(
+        fastJsOut,
+        fastJsSourceMap
+      )
+    }.taskValue
+  }
+  .settings((resourceGenerators in Compile) += Def.task {
+    Seq(
+      (packageJSDependencies in Compile in statistics).value
+      //(packageMinifiedJSDependencies in Compile in frontend).value
+    )
+  }.taskValue)
+  .settings(
+    (resourceDirectories in Compile) += (crossTarget in statistics).value,
+    watchSources ++= (watchSources in statistics).value
+  )
+  .settings(scalaJSUseMainModuleInitializer := false)
+  .dependsOn(protocolJvm)
+
 
 
 
@@ -274,7 +327,7 @@ lazy val processor = (project in file("processor")).enablePlugins(PackPlugin)
     //packSettings,
     // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
     packMain := Map("processor" -> processorMain),
-    packJvmOpts := Map("processor" -> Seq("-Xmx5g", "-Xms1g")),
+    packJvmOpts := Map("processor" -> Seq("-Xmx6g", "-Xms3g")),
     packExtraClasspath := Map("processor" -> Seq("."))
   )
   .settings(
@@ -425,5 +478,6 @@ lazy val faceAnalysis = (project in file("faceAnalysis")).enablePlugins(PackPlug
     libraryDependencies ++= Dependencies.bytedecoLibs,
     libraryDependencies ++= Dependencies4Face.jme3Libs
   )
-  .dependsOn(protocolJvm, sharedJvm, rtpClient)
+  .dependsOn(protocolJvm, sharedJvm, rtpClient, player)
+
 

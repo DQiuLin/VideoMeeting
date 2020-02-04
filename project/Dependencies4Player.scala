@@ -20,8 +20,8 @@ object Dependencies4Player {
   )
 
   val akkaHttpSeq = Seq(
-    "com.typesafe.akka" %% "akka-http" % akkaHttpV,
-    //    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV
+    "com.typesafe.akka" %% "akka-http" % akkaHttpV
+    //    ,"com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV
   )
 
   val circeSeq = Seq(

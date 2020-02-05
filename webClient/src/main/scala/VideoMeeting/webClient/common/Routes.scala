@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.common
+package videomeeting.webClient.common
 
 /**
   * created by dql on 2020/1/20

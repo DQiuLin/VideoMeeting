@@ -1,7 +1,8 @@
 package VideoMeeting.webClient
 
+import videomeeting.webClient.pages.MainPage
+
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import VideoMeeting.webClient.pages.MainPage
 
 /**
   * create by zhaoyin

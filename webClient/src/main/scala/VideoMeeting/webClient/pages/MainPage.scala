@@ -1,21 +1,16 @@
-package VideoMeeting.webClient.pages
+package videomeeting.webClient.pages
 
-import VideoMeeting.webClient.common.Components.PopWindow
 import mhtml.Var
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
+import videomeeting.webClient.common.Components.PopWindow
 
 /**
   * created by dql on 2020/1/19
   * web界面首页
   */
 object MainPage {
-
-  //用户信息协议，暂时写在前端-----
-  case class User(id: Long, name: String, password: String, avatar: String)
-
-  //-----
 
   val isLogin = Var(0)
 

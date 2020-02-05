@@ -98,13 +98,13 @@ trait FileService extends ServiceUtils{
 //    }
   }
 
-  val listClientFileName = (path("listClientFileName") & get){
-    val files = new File(s"${AppSettings.clientPath}")
-    val macFilter = new MacFileFilter()
-    val a = files.listFiles(macFilter)
-    files.listFiles(new WinFileFilter())
-    complete(ListClientFiles(Some(ClientInfo(files.listFiles(new WinFileFilter()).toList.map(_.getName),files.listFiles(macFilter).toList.map(_.getName)))))
-  }
+//  val listClientFileName = (path("listClientFileName") & get){
+//    val files = new File(s"${AppSettings.clientPath}")
+//    val macFilter = new MacFileFilter()
+//    val a = files.listFiles(macFilter)
+//    files.listFiles(new WinFileFilter())
+//    complete(ListClientFiles(Some(ClientInfo(files.listFiles(new WinFileFilter()).toList.map(_.getName),files.listFiles(macFilter).toList.map(_.getName)))))
+//  }
 
   val downloadZip = (path("download" / Remaining)){(filename) =>
     val file = new File(s"${AppSettings.clientPath}"+filename)
@@ -122,7 +122,7 @@ trait FileService extends ServiceUtils{
   }
 
   val file = pathPrefix("file"){
-    uploadImg ~ downloadZip ~ listClientFileName
+    uploadImg ~ downloadZip //~ listClientFileName
   }
 
 }

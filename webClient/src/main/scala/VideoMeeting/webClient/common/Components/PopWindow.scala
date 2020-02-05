@@ -4,8 +4,8 @@ import mhtml.{Var, emptyHTML}
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
-
 import scala.xml.Elem
+import VideoMeeting.webClient.pages.MainPage
 
 object PopWindow {
 

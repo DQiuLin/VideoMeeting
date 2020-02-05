@@ -58,14 +58,14 @@ object MainPage {
     val password2 = dom.document.getElementById("register-password2").asInstanceOf[Input].value
     if (!account.trim.equals("") && !password.trim.equals("") && !password2.trim.equals("")) {
       if (password.equals(password2)) {
-        PopWindow.registerButton := <img src=""></img>
+        PopWindow.registerButton := <img src="/videomeeting/meetingManager/static/img/loading.gif"></img>
         val data = SignUp(account, password).asJson.noSpaces
-        Http.postFormAndParse[SignUpRsp](UserRoutes.userRegister, data).map {
+        Http.postJsonAndParse[SignUpRsp](UserRoutes.userRegister, data).map {
           case Right(rsp) =>
             if (rsp.errCode == 0) {
-
+              PopWindow.commonPop(s"${rsp.msg}")
             } else {
-
+              PopWindow.commonPop(s"error happened:${rsp.msg}")
             }
           case Left(error) =>
             PopWindow.commonPop(s"error:$error")
@@ -84,16 +84,28 @@ object MainPage {
     val account = dom.document.getElementById("login-account").asInstanceOf[Input].value
     val password = dom.document.getElementById("login-password").asInstanceOf[Input].value
     val data = SignIn(account, password).asJson.noSpaces
-    Http.postFormAndParse[SignInRsp](Routes.UserRoutes.userLogin, data).map {
+    Http.postJsonAndParse[SignInRsp](Routes.UserRoutes.userLogin, data).map {
       case Right(rsp) =>
         if (rsp.errCode == 0) {
+          //登陆之后获取到用户信息
           if (rsp.userInfo.isDefined) {
 
           } else {
             println("don't get userInfo")
             PopWindow.commonPop(s"don't get userInfo")
           }
+          PopWindow.loginButton := <div class="pop-button" onclick={(e: Event) => MainPage.login(e, "pop-login")}>GO</div>
+          //refresh()
+          PopWindow.closePop(e, popId)
+        } else {
+          PopWindow.commonPop(s"error happened: ${rsp.msg}")
         }
-    }
+      case Left(error) =>
+        PopWindow.commonPop(s"error: $error")
+    }.foreach(_ => PopWindow.loginButton := <div class="pop-button" onclick={(e: Event) => MainPage.login(e, "pop-login")}>GO</div>)
+  }
+
+  def loginOut(): Unit = {
+
   }
 }

@@ -5,11 +5,12 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.scalajs.dom.html.Video
+import org.scalajs.dom.html.{Input, Video}
 import org.scalajs.dom.raw.HTMLElement
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
 import VideoMeeting.webClient.common.Components.ModalLarge
+import VideoMeeting.webClient.common.Routes
 import VideoMeeting.webClient.common.Routes.MeetingRoutes
 import VideoMeeting.webClient.util.{Http, JsFunc}
 
@@ -44,13 +45,48 @@ object Initiate {
     }
   }
 
-  def peopleManageModal(meetId: Long, list: List[PeopleInfo]): Unit = {
+  def invite(meetId: Int): Unit = {
+    val inviteId: Int = 0
+    val invitedId = dom.document.getElementById("invitedId").asInstanceOf[Input].value.trim.toInt
+    val url = Routes.MeetingRoutes.invite
+    val data = AddInvite(inviteId, meetId, invitedId).asJson.noSpaces
+    Http.postJsonAndParse[AddInviteRsp](url, data).map {
+      case Right(rsp) =>
+        if (rsp.errCode == 0) {
+          getList()
+        } else {
+          JsFunc.alert("邀请失败！")
+          println(rsp.msg)
+        }
+      case Left(error) =>
+        println(s"parse error,$error")
+    }
+  }
+
+  def removeInvite(meetId: Int, userId: Int): Unit = {
+    val url = Routes.MeetingRoutes.deleteInvite
+    val data = Remove(meetId, userId).asJson.noSpaces
+    Http.postJsonAndParse[RemoveRsp](url, data).map {
+      case Right(rsp) =>
+        if (rsp.errCode == 0) {
+          getList()
+        } else {
+          JsFunc.alert("移除失败！")
+          println(rsp.msg)
+        }
+      case Left(error) =>
+        println(s"parse error,$error")
+    }
+  }
+
+  def peopleManageModal(meetId: Int, list: List[PeopleInfo]): Unit = {
     val title = "会议可见人员管理"
     val pList: Var[List[PeopleInfo]] = Var(list)
     val body =
       <div class="modal-body">
         <div class="modal-add">
-          <button onclick={() => ()}>+邀请</button>
+          <input placeHolder="请输入邀请者id" class="" id="invitedId"></input>
+          <button onclick={() => invite(meetId)}>+邀请</button>
         </div>{pList.map { lst =>
         if (lst.isEmpty)
           <div class="modal-table">
@@ -79,7 +115,7 @@ object Initiate {
                   {item.pType}
                 </div>
                 <div>
-                  <button onclick={() => ()}>取消邀请</button>
+                  <button onclick={() => removeInvite(meetId, item.id)}>取消邀请</button>
                 </div>
               </div>
             }}
@@ -88,6 +124,22 @@ object Initiate {
       }}
       </div>
     ModalLarge(title, body, 400, 500, () => ())
+  }
+
+  def deleteComment(commentId: Int): Unit = {
+    val url = Routes.MeetingRoutes.deleteComment
+    val data = Delete(commentId).asJson.noSpaces
+    Http.postJsonAndParse[DeleteRsp](url, data).map {
+      case Right(rsp) =>
+        if (rsp.errCode == 0) {
+          getList()
+        } else {
+          JsFunc.alert("删除失败！")
+          println(rsp.msg)
+        }
+      case Left(error) =>
+        println(s"parse error,$error")
+    }
   }
 
   def commentManageModal(meetId: Long, list: List[CommentInfo]): Unit = {
@@ -128,7 +180,7 @@ object Initiate {
                   {item.content}
                 </div>
                 <div>
-                  <button onclick={() => ()}>删除</button>
+                  <button onclick={() => deleteComment(item.id)}>删除</button>
                 </div>
               </div>
             }}

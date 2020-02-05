@@ -13,8 +13,6 @@ import videomeeting.protocol.ptcl.CommonInfo.InviteMeetingInfo
   */
 object Invite {
 
-  //-------
-
   val meetList: Var[List[InviteMeetingInfo]] = Var(Nil)
   val totalCount: Rx[Int] = meetList.map(_.length)
   val videoPlay: Var[Long] = Var(-1)
@@ -89,7 +87,7 @@ object Invite {
               {item.meetInfo.intro}
             </div>
             <div>
-              {item.meetInfo.people}
+              {item.meetInfo.people.toString()}
             </div>
           </div>
         }}

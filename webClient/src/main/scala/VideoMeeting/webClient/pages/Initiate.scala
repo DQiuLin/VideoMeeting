@@ -190,7 +190,7 @@ object Initiate {
               {item.meetInfo.intro}
             </div>
             <div>
-              {item.meetInfo.people}
+              {item.meetInfo.people.toString}
             </div>
             <div>
               <button onclick={() => peopleManageModal(item.id, item.meetInfo.people)}>用户管理</button>

@@ -89,7 +89,7 @@ object Invite {
               {item.meetInfo.intro}
             </div>
             <div>
-              {item.meetInfo.people}
+              {item.meetInfo.people.head.id}
             </div>
           </div>
         }}

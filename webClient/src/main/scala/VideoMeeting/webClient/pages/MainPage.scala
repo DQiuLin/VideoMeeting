@@ -22,7 +22,7 @@ object MainPage {
       </div>
     case 1 =>
       <div class="first-header">
-        <img src=""></img>
+        <img src="a.jpg"></img>
         <div class="first-header-name">huahua</div>
         <button>登出</button>
       </div>

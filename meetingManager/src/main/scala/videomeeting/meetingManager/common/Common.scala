@@ -6,7 +6,7 @@ import AppSettings._
 object Common {
   object Role{
     val host = 0
-    val audience = 1
+    val attendance = 1
   }
 
   object Source{
@@ -21,9 +21,9 @@ object Common {
   }
 
   object Subscriber{
-    val join = 1
-    val left = 0
-    val change = 2
+    val host = 0
+    val attendance = 1
+    val left = 2
   }
 
   object Like{
@@ -33,14 +33,14 @@ object Common {
 
   def getMpdPath(roomId:Long) = {
       s"/theia/distributor/getFile/${
-        if(roomId == TestConfig.TEST_ROOM_ID)"test" else roomId
+        if(roomId == TestConfig.TEST_MEET_ID)"test" else roomId
       }/index.mpd"
   }
 
 
   object TestConfig{
-    val TEST_USER_ID = 100029L
-    val TEST_ROOM_ID = 1000029L
+    val TEST_USER_ID = 123
+    val TEST_MEET_ID = 123
   }
 
 //  val testUser = UserInfo

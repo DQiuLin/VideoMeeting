@@ -1,6 +1,5 @@
 package videomeeting.meetingManager.models.dao
 
-import videomeeting.protocol.ptcl.CommonInfo.{RoomInfo, UserDes}
 import videomeeting.meetingManager.common.{AppSettings, Common}
 import videomeeting.meetingManager.models.SlickTables._
 import videomeeting.meetingManager.utils.DBUtil.db
@@ -10,6 +9,7 @@ import videomeeting.meetingManager.utils.SecureUtil
 import videomeeting.meetingManager.common.Common
 import videomeeting.meetingManager.common.Common.DefaultImg
 import videomeeting.protocol.ptcl.CommonInfo
+import videomeeting.protocol.ptcl.CommonInfo.UserInfo
 
 import scala.concurrent.Future
 
@@ -37,10 +37,10 @@ object UserInfoDao {
     db.run(tUserInfo.filter(i => i.id === uid).result.headOption)
   }
 
-  def getUserDes(users: List[Int]) = {
+  def getUserInfo(users: List[Int]) = {
     Future.sequence(users.map{uid =>
       db.run(tUserInfo.filter(t => t.id === uid).result)}).map(_.flatten).map{user =>
-        user.map(r => UserDes(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg)).toList
+        user.map(r => UserInfo(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg)).toList
     }
   }
 

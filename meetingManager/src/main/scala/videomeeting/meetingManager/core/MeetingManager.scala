@@ -3,23 +3,19 @@ package videomeeting.meetingManager.core
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
-import videomeeting.protocol.ptcl.CommonInfo.MeetInfo
+import videomeeting.protocol.ptcl.CommonInfo.{MeetInfo, MeetingInfo}
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
 import videomeeting.meetingManager.Boot.{executor, scheduler, timeout}
 import videomeeting.meetingManager.common.AppSettings._
 import videomeeting.meetingManager.common.Common
-import videomeeting.meetingManager.models.dao.UserInfoDao
-import videomeeting.meetingManager.core.MeetingActor._
-import videomeeting.meetingManager.protocol.ActorProtocol
-import videomeeting.meetingManager.protocol.CommonInfoProtocol.WholeRoomInfo
-import videomeeting.meetingManager.utils.{DistributorClient, ProcessorClient}
+import videomeeting.meetingManager.core.MeetingActor.ChildDead
+import videomeeting.meetingManager.models.dao.{MeetingDao, UserInfoDao}
 import org.slf4j.LoggerFactory
 import videomeeting.meetingManager.common.Common
 import videomeeting.meetingManager.common.Common.TestConfig
+import videomeeting.meetingManager.core.MeetingActor.GetMeetingInfo
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
-import videomeeting.meetingManager.protocol.CommonInfoProtocol.WholeRoomInfo
-import videomeeting.meetingManager.utils.DistributorClient
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol
 
 import scala.collection.mutable
@@ -44,10 +40,13 @@ object MeetingManager {
 
   case class ExistMeeting(roomId:Int, replyTo:ActorRef[Boolean]) extends Command
 
-  case class DelaySeekRecord(wholeRoomInfo:WholeRoomInfo, totalView:Int, roomId:Int, startTime:Long, liveId: String) extends Command
-  case class OnSeekRecord(wholeRoomInfo:WholeRoomInfo, totalView:Int, roomId:Int, startTime:Long, liveId: String) extends Command
+  case class DelaySeekRecord(meetingInfo: MeetingInfo, totalView:Int, roomId:Int, startTime:Long, liveId: String) extends Command
+  case class OnSeekRecord(meetingId:Int, path: String) extends Command
 
   //case class FinishPull(roomId: Int, startTime: Long, liveId: String) extends Command
+
+  case class GetRtmpLiveInfo(meetingId:Int, replyTo:ActorRef[GetMeetInfoRsp4RM]) extends Command with MeetingActor.Command
+
   private final case object DelaySeekRecordKey
 
   private final case object FinishPullKey
@@ -70,11 +69,11 @@ object MeetingManager {
     Behaviors.receive[Command]{(ctx,msg) =>
       msg match {
         case GetMeetingList(replyTo) =>
-          val roomInfoListFuture = ctx.children.map(_.unsafeUpcast[MeetingActor.Command]).map{ r =>
-            val roomInfoFuture:Future[MeetInfo] = r ? (GetMeetingInfo(_))
-            roomInfoFuture
+          val meetingInfoListFuture = ctx.children.map(_.unsafeUpcast[MeetingActor.Command]).map{ r =>
+            val meetingInfoFuture:Future[MeetingInfo] = r ? (GetMeetingInfo(_))
+            meetingInfoFuture
           }.toList
-          Future.sequence(roomInfoListFuture).map{seq =>
+          Future.sequence(meetingInfoListFuture).map{seq =>
             replyTo ! MeetingListRsp(Some(seq))
           }
           Behaviors.same
@@ -116,17 +115,16 @@ object MeetingManager {
           }
           Behaviors.same
 
-        case r@ActorProtocol.StartRoom4Anchor(userId,roomId,actor) =>
+        case r@ActorProtocol.StartMeeting4Host(userId,roomId,actor) =>
           getMeetingActor(roomId,ctx) ! r
           Behaviors.same
-
 
         case r@GetRtmpLiveInfo(roomId, replyTo)=>
           getMeetingActorOpt(roomId,ctx) match{
             case Some(actor) =>actor ! r
             case None =>
               log.debug(s"${ctx.self.path}房间未建立")
-              replyTo ! GetLiveInfoRsp4RM(None,100041,s"获取live info 请求失败:房间不存在")
+              replyTo ! GetMeetInfoRsp4RM(None,100041,s"获取live info 请求失败:房间不存在")
           }
           Behaviors.same
 
@@ -139,12 +137,12 @@ object MeetingManager {
           Behaviors.same
 
         case SearchMeeting(userId, roomId, replyTo) =>
-          if(roomId == Common.TestConfig.TEST_ROOM_ID){
+          if(roomId == Common.TestConfig.TEST_MEET_ID){
             log.debug(s"${ctx.self.path} get test room mpd,roomId=${roomId}")
             getMeetingActorOpt(roomId,ctx) match{
               case Some(actor) =>
-                val roomInfoFuture:Future[RoomInfo] = actor ? (GetRoomInfo(_))
-                roomInfoFuture.map{r =>replyTo ! SearchRoomRsp(Some(r))}
+                val roomInfoFuture:Future[MeetingInfo] = actor ? (GetMeetingInfo(_))
+                roomInfoFuture.map{r =>replyTo ! SearchMeetingRsp(Some(r))}
               case None =>
                 log.debug(s"${ctx.self.path} test room dead")
                 replyTo ! SearchRoomError4RoomId
@@ -152,36 +150,15 @@ object MeetingManager {
           } else{
             getMeetingActorOpt(roomId,ctx) match{
               case Some(actor) =>
-                val roomInfoFuture:Future[RoomInfo] = actor ? (GetRoomInfo(_))
+                val roomInfoFuture:Future[MeetingInfo] = actor ? (GetMeetingInfo(_))
                 roomInfoFuture.map{r =>
                   r.rtmp match {
                     case Some(v) =>
                       log.debug(s"${ctx.self.path} search room,roomId=${roomId},rtmp=${r.rtmp}")
-                      replyTo ! SearchRoomRsp(Some(r))//正常返回
+                      replyTo ! SearchMeetingRsp(Some(r))//正常返回
                     case None =>
                       log.debug(s"${ctx.self.path} search room failed,roomId=${roomId},rtmp=None")
                       replyTo ! SearchRoomError(msg = s"${ctx.self.path} room rtmp is None")
-                      /*ProcessorClient.getmpd(roomId).map{
-                        case Right(rsp)=>
-                          if(rsp.errCode == 0){
-                            actor ! UpdateRTMP(rsp.rtmp)
-                            val roomInfoFuture:Future[RoomInfo] = actor ? (GetRoomInfo(_))
-                            roomInfoFuture.map{w =>
-                              log.debug(s"${ctx.self.path} research room,roomId=${roomId},rtmp=${r.rtmp}")
-                              replyTo ! SearchRoomRsp(Some(w))}//正常返回
-                          }else if(rsp.errCode == 100024){
-                            //replyTo ! SearchRoomRsp(Some(r))
-                            replyTo ! SearchRoomRsp(Some(r), 100009, "stop push stream")//主播停播，房间还在
-                          }
-                          else{
-                          log.info(s"getmpd code:${rsp.errCode}, msg${rsp.msg}")
-                            replyTo ! SearchRoomError(errCode = rsp.errCode, msg = rsp.msg)//
-                          }
-
-                        case Left(error)=>
-                          replyTo ! SearchRoomError4ProcessorDead//请求processor失败
-                      }*/
-
                   }
                 }
               case None =>
@@ -200,48 +177,10 @@ object MeetingManager {
           }
           Behaviors.same
 
-        case UserInfoChange(userId,temporary) =>
-          UserInfoDao.searchById(userId).map{
-              case Some(v) =>
-                getMeetingActorOpt(v.roomid,ctx)match{
-                  case Some(meetingActor) =>
-                    meetingActor ! ActorProtocol.UpdateSubscriber(Common.Subscriber.change,v.roomid,userId,temporary,None)
-                  case None =>
-                    log.debug(s"${ctx.self.path}更新房间 ${v.roomid}的用户信息userId:$userId")
-                }
-              case None =>
-                log.debug(s"${ctx.self.path}更新用户信息失败，用户信息不存在，userId:$userId")
-          }
-          Behaviors.same
-
-        //延时请求获取录像（计时器）
-        case DelaySeekRecord(wholeRoomInfo, totalView, roomId, startTime, liveId) =>
-          log.info("---- wait seconds to seek record ----")
-          timer.startSingleTimer(DelaySeekRecordKey + roomId.toString + startTime, OnSeekRecord(wholeRoomInfo, totalView, roomId, startTime, liveId), 5.seconds)
-          Behaviors.same
-
         //延时请求获取录像
-        case OnSeekRecord(wholeRoomInfo, totalView, roomId, startTime, liveId) =>
-          timer.cancel(DelaySeekRecordKey + roomId.toString + startTime)
-          DistributorClient.seekRecord(roomId,startTime).onComplete{
-            case Success(v) =>
-              v match{
-                case Right(rsp) =>
-                  log.debug(s"${ctx.self.path}获取录像id${roomId}时长为duration=${rsp.duration}")
-                  RecordDao.addRecord(wholeRoomInfo.roomInfo.roomId,
-                    wholeRoomInfo.roomInfo.roomName,wholeRoomInfo.roomInfo.roomDes,startTime,
-                    UserInfoDao.getVideoImg(wholeRoomInfo.roomInfo.coverImgUrl),0,wholeRoomInfo.roomInfo.like,rsp.duration)
-                  //timer.startSingleTimer(FinishPullKey + roomId.toString + startTime, FinishPull(roomId, startTime, liveId), 5.seconds)
-                case Left(err) =>
-                  log.debug(s"${ctx.self.path} 查询录像文件信息失败,error:$err")
-              }
-
-            case Failure(error) =>
-              log.debug(s"${ctx.self.path} 查询录像文件失败,error:$error")
-          }
+        case OnSeekRecord(meetingId, path) =>
+          MeetingDao.addRecord(meetingId, path, None)
           Behaviors.same
-
-
 
         case ChildDead(name,childRef) =>
           log.debug(s"${ctx.self.path} the child = ${ctx.children}")
@@ -259,7 +198,7 @@ object MeetingManager {
     val childrenName = s"roomActor-${meetingId}"
     ctx.child(childrenName).getOrElse {
       val actor = ctx.spawn(MeetingActor.create(meetingId), childrenName)
-      ctx.watchWith(actor,ChildDead(childrenName,actor))
+      ctx.watchWith(actor, ChildDead(childrenName,actor))
       actor
     }.unsafeUpcast[MeetingActor.Command]
   }

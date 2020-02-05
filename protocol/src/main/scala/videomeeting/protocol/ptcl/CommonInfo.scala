@@ -35,26 +35,20 @@ object CommonInfo {
                    avatar: String
                  )
 
-  case class UserDes(
-    userId: Long,
-    userName: String,
-    headImgUrl:String
-  )
+  case class UserInfo(
+                       userId: Long,
+                       userName: String,
+                       headImgUrl:String,
+                     )
 
-  case class RoomInfo(
-    roomId: Long,
-    roomName: String,
-    roomDes: String,
-    userId: Long,  //房主id
-    userName:String,
-    headImgUrl:String,
-    coverImgUrl:String,
-    var observerNum:Int,
-    var like:Int,
-    var mpd: Option[String] = None,
-    var rtmp: Option[String] = None
-    //var liveAdd: Option[String] = None
-  )
+  case class MeetingInfo(
+                        meetingId: Int,
+                        meetingName: String,
+                        userId: Int,
+                        username: String,
+                        var attendanceNum: Int = 0,
+                        var rtmp: Option[String] = None
+                        )
 
   case class RecordInfo(
                          recordId:Long,//数据库中的录像id，用于删除录像
@@ -113,4 +107,16 @@ object CommonInfo {
                                 video: Option[String], //会议视频url
                                 meetInfo: MeetInfo
                               )
+
+  case class LiveInfo(
+                       liveId: String,
+                       liveCode: String
+                     )
+
+  /*参会者信息*/
+  case class AttendenceInfo(
+                           userId: Int,
+                           userName: String,
+                           liveId: String
+                         )
 }

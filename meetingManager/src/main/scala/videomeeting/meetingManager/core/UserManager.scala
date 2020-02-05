@@ -1,11 +1,11 @@
 package videomeeting.meetingManager.core
 
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.{ActorContext, StashBuffer, TimerScheduler}
 import akka.stream.scaladsl.Flow
-import videomeeting.protocol.ptcl.CommonInfo.{RoomInfo, User}
+import videomeeting.protocol.ptcl.CommonInfo.{User, UserInfo}
 import videomeeting.protocol.ptcl.CommonRsp
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
@@ -46,20 +46,15 @@ object UserManager {
 
   case class TimeOut(msg:String) extends Command
 
-  final case class WebSocketFlowSetup(userId:Long,roomId:Long,temporary:Boolean,replyTo:ActorRef[Option[Flow[Message,Message,Any]]]) extends Command
+  final case class WebSocketFlowSetup(userId:Int,meetingId:Int,temporary:Boolean,replyTo:ActorRef[Option[Flow[Message,Message,Any]]]) extends Command
 
   final case class Register(code:String, email:String, userName:String, password:String, replyTo:ActorRef[SignUpRsp]) extends Command
 
-  final case class SetupWs(uidOpt:Long, tokenOpt:String ,roomId:Long,replyTo: ActorRef[Option[Flow[Message, Message, Any]]]) extends Command
+  final case class SetupWs(uidOpt:Int,meetingId:Int,replyTo: ActorRef[Option[Flow[Message, Message, Any]]]) extends Command
 
   final case class TemporaryUser(replyTo:ActorRef[GetTemporaryUserRsp]) extends Command
 
-  case class DeleteTemporaryUser(userId:Long) extends Command
-
-  case class SealUserInfo(userId:Long,sealUtilTime:Long,replyTo:ActorRef[CommonRsp]) extends Command//封号
-
-  case class CancelSealUserInfo4Timer(userId:Long) extends Command
-  case class CancelSealUserInfo(userId:Long,replyTo:ActorRef[CommonRsp]) extends Command
+  case class DeleteTemporaryUser(userId:Int) extends Command
 
 
   private val tokenExistTime = AppSettings.tokenExistTime * 1000L // seconds
@@ -78,15 +73,15 @@ object UserManager {
 
 
   def create():Behavior[Command] = {
-    log.debug(s"RoomManager start...")
+    log.debug(s"UserManager start...")
     Behaviors.setup[Command]{
       ctx =>
         implicit val stashBuffer = StashBuffer[Command](Int.MaxValue)
         Behaviors.withTimers[Command]{
           implicit timer =>
-            val userIdGenerator = new AtomicLong(1L)
-            val temporaryUserMap = mutable.HashMap[Long, (Long,UserInfo)]()
-            meetingManager ! ActorProtocol.AddUserActor4Test(TestConfig.TEST_USER_ID,Common.TestConfig.TEST_ROOM_ID,getUserActor(Common.TestConfig.TEST_USER_ID,false,ctx))
+            val userIdGenerator = new AtomicInteger(1)
+            val temporaryUserMap = mutable.HashMap[Long, (Long, UserInfo)]()
+            meetingManager ! ActorProtocol.AddUserActor4Test(TestConfig.TEST_USER_ID,Common.TestConfig.TEST_MEET_ID,getUserActor(Common.TestConfig.TEST_USER_ID,false,ctx))
             idle(userIdGenerator,temporaryUserMap)
         }
     }
@@ -94,8 +89,8 @@ object UserManager {
 
   //todo 临时用户token过期处理
   private def idle(
-                    userIdGenerator:AtomicLong,
-                    temporaryUserMap:mutable.HashMap[Long,(Long,UserInfo)],//临时用户,userId,createTime,userInfo
+                    userIdGenerator:AtomicInteger,
+                    temporaryUserMap:mutable.HashMap[Long,(Long, UserInfo)],//临时用户,userId,createTime,userInfo
                   )
       (implicit stashBuffer: StashBuffer[Command],timer:TimerScheduler[Command]):Behavior[Command] =
     Behaviors.receive[Command] { (ctx, msg) =>
@@ -103,7 +98,7 @@ object UserManager {
 
         case TemporaryUser(replyTo) =>
           val userId = userIdGenerator.getAndIncrement()
-          val userInfo = UserInfo(userId, s"Guest$userId", Common.DefaultImg.headImg,nonceStr(40),AppSettings.guestTokenExistTime)
+          val userInfo = UserInfo(userId, s"Guest$userId", Common.DefaultImg.headImg)
           replyTo ! GetTemporaryUserRsp(Some(userInfo))
           temporaryUserMap.put(userId,(System.currentTimeMillis(),userInfo))
           timer.startSingleTimer(s"DeleteTemporaryUser_$userId",DeleteTemporaryUser(userId),deleteTemporaryDelay)
@@ -113,68 +108,15 @@ object UserManager {
           temporaryUserMap.remove(userId)
           Behaviors.same
 
-        case SealUserInfo(userId,sealUtilTime,replyTo) =>
-          AdminDAO.sealUserInfo(userId,sealUtilTime).map{r =>
-            log.debug(s"${ctx.self.path} 封号成功，userId=$userId")
-//            timer.startSingleTimer(s"取消封号_$userId",CancelSealUserInfo4Timer(userId),(sealUtilTime - System.currentTimeMillis()).millis)
-            replyTo ! CommonRsp()
-          }.recover{
-            case e:Exception =>
-              replyTo ! CommonRsp(1000345,s"封号失败，数据库错误，error:$e")
-          }
+        case SetupWs(uid, meetingId,replyTo) =>
+          log.debug(s"${ctx.self.path} ws start")
+          val flowFuture: Future[Option[Flow[Message, Message, Any]]] = ctx.self ? (WebSocketFlowSetup(uid,meetingId,false, _))
+          flowFuture.map(replyTo ! _)
           Behaviors.same
 
-        case CancelSealUserInfo4Timer(userId) =>
-          AdminDAO.cancelSealUserInfo(userId).map{r =>
-            log.debug(s"${ctx.self.path} 取消封号成功，userId=$userId")
-          }.recover{
-            case e:Exception =>
-              log.debug(s"${ctx.self.path} 取消封号失败，userId=$userId ，error=$e")
-          }
-          Behaviors.same
-
-        case CancelSealUserInfo(userId,replyTo) =>
-          AdminDAO.cancelSealUserInfo(userId).map{r =>
-            replyTo ! CommonRsp()
-          }.recover{
-            case e:Exception =>
-              replyTo ! CommonRsp(100045,s"取消封号失败 ，error=$e")
-          }
-          Behaviors.same
-
-        case SetupWs(uid, token, roomId,replyTo) =>
-          UserInfoDao.verifyUserWithToken(uid, token).onComplete {
-            case Success(f) =>
-              if (f) {
-                log.debug(s"${ctx.self.path} ws start")
-                val flowFuture: Future[Option[Flow[Message, Message, Any]]] = ctx.self ? (WebSocketFlowSetup(uid,roomId,false, _))
-                flowFuture.map(replyTo ! _)
-              } else {
-                temporaryUserMap.get(uid) match {
-                  case Some((createTime,userInfo)) =>
-                    if(token == userInfo.token && (System.currentTimeMillis() / 1000 - createTime / 1000 < AppSettings.guestTokenExistTime)){
-                      log.debug(s"${ctx.self.path} the user is temporary")
-                      val flowFuture: Future[Option[Flow[Message, Message, Any]]] = ctx.self ? (WebSocketFlowSetup(uid,roomId,true, _))
-                      flowFuture.map(replyTo ! _)
-                    }else{
-                      log.debug(s"${ctx.self.path}setup websocket error: the user doesn't exist or the token is wrong")
-                      replyTo ! None
-                    }
-                  case None =>
-                    log.debug(s"${ctx.self.path} setup websocket error:the websocket req is illegal")
-                    replyTo ! None
-                }
-
-              }
-            case Failure(e) =>
-              log.error(s"getBindWx future error: $e")
-              replyTo ! None
-          }
-          Behaviors.same
-
-        case WebSocketFlowSetup(userId,roomId,temporary,replyTo) =>
+        case WebSocketFlowSetup(userId,meetingId,temporary,replyTo) =>
           if(temporary){
-            val existRoom:Future[Boolean] = meetingManager ? (MeetingManager.ExistRoom(roomId,_))
+            val existRoom:Future[Boolean] = meetingManager ? (MeetingManager.ExistMeeting(meetingId,_))
             existRoom.map{exist =>
               if(exist){
                 log.info(s"${ctx.self.path} websocket will setup for user:$userId")
@@ -187,7 +129,7 @@ object UserManager {
                     replyTo ! None
                   case None =>
                     val userActor = getUserActor(userId, temporary,ctx)
-                    userActor ! UserActor.UserLogin(roomId,userId)
+                    userActor ! UserActor.UserLogin(meetingId,userId)
                     replyTo ! Some(setupWebSocketFlow(userActor))
                 }
 
@@ -208,7 +150,7 @@ object UserManager {
                 replyTo ! None
               case None =>
                 val userActor = getUserActor(userId, temporary,ctx)
-                userActor ! UserActor.UserLogin(roomId,userId)
+                userActor ! UserActor.UserLogin(meetingId,userId)
                 replyTo ! Some(setupWebSocketFlow(userActor))
             }
           }
@@ -228,7 +170,7 @@ object UserManager {
       }
     }
 
-  private def getUserActor(userId:Long,temporary:Boolean,ctx: ActorContext[Command]) = {
+  private def getUserActor(userId:Int,temporary:Boolean,ctx: ActorContext[Command]) = {
     val childrenName = s"userActor-$userId-temp-$temporary"
     ctx.child(childrenName).getOrElse {
       val actor = ctx.spawn(UserActor.create(userId,temporary), childrenName)
@@ -237,7 +179,7 @@ object UserManager {
     }.unsafeUpcast[UserActor.Command]
   }
 
-  private def getUserActorOpt(userId:Long,temporary:Boolean,ctx:ActorContext[Command]) = {
+  private def getUserActorOpt(userId:Int,temporary:Boolean,ctx:ActorContext[Command]) = {
     val childrenName = s"userActor-$userId-temp-$temporary"
     ctx.child(childrenName).map(_.unsafeUpcast[UserActor.Command])
   }

@@ -58,9 +58,9 @@ object AuthProtocol {
   case object NoAuthor extends WsMsgRm
 
   //fixme url
-  case class UpdateAudienceInfo(AudienceList: List[UserDes]) extends WsMsgRm   //当前房间内所有观众的id和昵称,新加入--join--true
+  case class UpdateAudienceInfo(AudienceList: List[UserInfo]) extends WsMsgRm   //当前房间内所有观众的id和昵称,新加入--join--true
 
-  case class ReFleshRoomInfo(roomInfo: RoomInfo) extends WsMsgRm
+//  case class ReFleshRoomInfo(roomInfo: RoomInfo) extends WsMsgRm
   /*申请直播*/
   case class StartLiveReq(
     userId: Long,
@@ -69,7 +69,7 @@ object AuthProtocol {
   ) extends WsMsgHost
 
   case class StartLiveRsp(
-    liveInfo: Option[Int] = None,
+    liveInfo: Option[LiveInfo] = None,
     errCode: Int = 0,
     msg: String = "ok"
   ) extends WsMsgRm2Host

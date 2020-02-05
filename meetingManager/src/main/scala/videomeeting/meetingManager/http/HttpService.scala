@@ -17,7 +17,6 @@ trait HttpService extends ServiceUtils
   with UserService
   with MeetingService
   with RtpService
-  with TestService
   with FileService
   with ResourceService{
 
@@ -35,24 +34,18 @@ trait HttpService extends ServiceUtils
   private val home:Route = pathPrefix("webClient"){
     pathEndOrSingleSlash{
       getFromResource("html/webClient.html")
-    } ~ mobile ~ statistics
+    } ~ pc ~ statistics
   }
 
-//  private val pc =(pathPrefix("pc") & get){
-//    pathEndOrSingleSlash{
-//      getFromResource("html/webClient.html")
-//    }
-//  }
+  private val pc =(pathPrefix("pc") & get){
+    pathEndOrSingleSlash{
+      getFromResource("html/webClient.html")
+    }
+  }
 
   private val statistics =(pathPrefix("statistics") & get){
     pathEndOrSingleSlash{
       getFromResource("html/statistics.html")
-    }
-  }
-
-  private val mobile =(pathPrefix("mobile") & get){
-    pathEndOrSingleSlash{
-      getFromResource("html/phoneClient.html")
     }
   }
 
@@ -61,7 +54,7 @@ trait HttpService extends ServiceUtils
       pathPrefix("videomeeting") {
         home ~ statistics ~
         pathPrefix("meetingManager"){
-          resourceRoutes ~ userRoutes ~ meetingRoutes ~ recordRoutes ~ rtpRoutes ~ recordRoutes ~ test ~ file
+          resourceRoutes ~ userRoutes ~ meetingRoutes  ~ rtpRoutes ~ file
         }
       }
     }

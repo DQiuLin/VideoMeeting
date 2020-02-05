@@ -14,9 +14,9 @@ object ActorProtocol {
 
   case class WebSocketMsgWithActor(userId: Int,roomId: Int,msg:WsMsgClient) extends RoomCommand
 
-  case class UpdateSubscriber(join:Int,roomId: Int,userId: Int,temporary:Boolean,userActorOpt:Option[ActorRef[UserActor.Command]]) extends RoomCommand
+  case class UpdateSubscriber(join:Int,meetingId: Int,userId: Int,temporary:Boolean,userActorOpt:Option[ActorRef[UserActor.Command]]) extends RoomCommand
 
-  case class StartRoom4Anchor(userId: Int,roomId: Int,actor:ActorRef[UserActor.Command]) extends RoomCommand
+  case class StartMeeting4Host(userId: Int, roomId: Int, actor:ActorRef[UserActor.Command]) extends RoomCommand
 
   case class UserLeftRoom(userId: Int,temporary:Boolean,roomId: Int) extends RoomCommand
 

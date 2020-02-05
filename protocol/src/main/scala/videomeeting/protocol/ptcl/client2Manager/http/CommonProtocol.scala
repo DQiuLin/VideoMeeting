@@ -61,7 +61,7 @@ object CommonProtocol {
                              ) extends Request
 
   case class SearchMeetingRsp(
-                               roomInfo: Option[RoomInfo],
+                               meetingInfo: Option[MeetingInfo],
                                errCode: Int = 0,
                                msg: String = "ok"
                              ) extends Response
@@ -117,6 +117,12 @@ object CommonProtocol {
 
   val SetupWsError = SetupWsRsp(100007, msg = "error: setupWs error")
 
+  case class GetMeetInfoRsp4RM(
+                                liveInfo: Option[LiveInfo],
+                                errCode: Int = 0,
+                                msg: String = "ok"
+                              ) extends Response
+
   /**
    *
    * 获取房间列表
@@ -125,7 +131,7 @@ object CommonProtocol {
    *
    **/
   case class MeetingListRsp(
-                             meetingList: Option[List[MeetInfo]] = None,
+                             meetingList: Option[List[MeetingInfo]] = None,
                              errCode: Int = 0,
                              msg: String = "ok"
                            ) extends Response //fixme 添加userName,url,观众数量
@@ -134,7 +140,7 @@ object CommonProtocol {
 
   /** 临时用户申请userId和token接口 */
   final case class GetTemporaryUserRsp(
-                                        userInfoOpt: Option[User],
+                                        userInfoOpt: Option[UserInfo],
                                         errCode: Int = 0,
                                         msg: String = "ok"
                                       ) extends Response
@@ -148,10 +154,19 @@ object CommonProtocol {
                                     )
 
   final case class MeetingInfoRsp(
-                                   roomInfoOpt: Option[RoomInfo],
+                                   meetingInfoOpt: Option[MeetingInfo],
                                    errCode: Int = 0,
                                    msg: String = "ok"
                                  )
+
+  /**
+   * 获取LiveInfo
+   */
+  case class GetLiveInfoRsp(
+                             liveInfo: LiveInfo,
+                             errCode: Int = 0,
+                             msg: String = "ok"
+                           ) extends Response
 
   /**
    * WebClient

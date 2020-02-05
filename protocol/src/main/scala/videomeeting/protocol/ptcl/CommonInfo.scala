@@ -18,9 +18,10 @@ object CommonInfo {
   object ClientType {
     val PC = 0
     val WEB = 1
+
   }
 
-  object CameraPosition {
+  object CameraPosition{
     val left_top = 0
     val right_top = 1
     val right_bottom = 2
@@ -34,40 +35,34 @@ object CommonInfo {
                    avatar: String
                  )
 
-  case class UserDes(
-                      userId: Long,
-                      userName: String,
-                      headImgUrl: String
-                    )
-
-  case class RoomInfo(
-                       roomId: Long,
-                       roomName: String,
-                       roomDes: String,
-                       userId: Long, //房主id
+  case class UserInfo(
+                       userId: Long,
                        userName: String,
-                       headImgUrl: String,
-                       coverImgUrl: String,
-                       var observerNum: Int,
-                       var like: Int,
-                       var mpd: Option[String] = None,
-                       var rtmp: Option[String] = None
-                       //var liveAdd: Option[String] = None
+                       headImgUrl:String,
                      )
 
+  case class MeetingInfo(
+                        meetingId: Int,
+                        meetingName: String,
+                        userId: Int,
+                        username: String,
+                        var attendanceNum: Int = 0,
+                        var rtmp: Option[String] = None
+                        )
+
   case class RecordInfo(
-                         recordId: Long, //数据库中的录像id，用于删除录像
-                         roomId: Long,
-                         recordName: String,
-                         recordDes: String,
-                         userId: Long,
-                         userName: String,
-                         startTime: Long,
-                         headImg: String,
-                         coverImg: String,
-                         observeNum: Int, //浏览量
-                         likeNum: Int,
-                         duration: String = ""
+                         recordId:Long,//数据库中的录像id，用于删除录像
+                         roomId:Long,
+                         recordName:String,
+                         recordDes:String,
+                         userId:Long,
+                         userName:String,
+                         startTime:Long,
+                         headImg:String,
+                         coverImg:String,
+                         observeNum:Int, //浏览量
+                         likeNum:Int,
+                         duration:String = ""
                        )
 
   case class InviteMeetingInfo(
@@ -113,4 +108,15 @@ object CommonInfo {
                                 meetInfo: MeetInfo
                               )
 
+  case class LiveInfo(
+                       liveId: String,
+                       liveCode: String
+                     )
+
+  /*参会者信息*/
+  case class AttendenceInfo(
+                           userId: Int,
+                           userName: String,
+                           liveId: String
+                         )
 }

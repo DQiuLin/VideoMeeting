@@ -90,16 +90,15 @@ trait UserService extends ServiceUtils {
 
   private val setupWebSocket = (path("setupWebSocket") & get) {
     parameter(
-      'userId.as[Long],
-      'token.as[String],
-      'roomId.as[Long]
-    ) { (uid, token, roomId) =>
-      val setWsFutureRsp: Future[Option[Flow[Message, Message, Any]]] = userManager ? (SetupWs(uid, token, roomId, _))
+      'userId.as[Int],
+      'meetingId.as[Int]
+    ) { (uid, meetingId) =>
+      val setWsFutureRsp: Future[Option[Flow[Message, Message, Any]]] = userManager ? (SetupWs(uid, meetingId, _))
       dealFutureResult(
         setWsFutureRsp.map {
           case Some(rsp) => handleWebSocketMessages(rsp)
           case None =>
-            log.debug(s"建立websocket失败，userId=$uid,roomId=$roomId,token=$token")
+            log.debug(s"建立websocket失败，userId=$uid,meetingId=$meetingId")
             complete("setup error")
         }
       )
@@ -200,6 +199,6 @@ trait UserService extends ServiceUtils {
 
   val userRoutes: Route = pathPrefix("user") {
     signUp ~ signIn ~
-      nickNameChange ~ getMeetingList ~ searchMeeting ~ setupWebSocket ~ temporaryUser ~ getMeetingInfo
+      nickNameChange ~ getMeetingList ~ searchMeeting ~ setupWebSocket ~ temporaryUser ~ getMeetingInfo ~ getInvited
   }
 }

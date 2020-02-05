@@ -9,6 +9,7 @@ import org.scalajs.dom.html.Input
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.{SignIn, SignInRsp, SignUp, SignUpRsp}
 import VideoMeeting.webClient.common.Components.PopWindow
 import VideoMeeting.webClient.common.Routes
+import VideoMeeting.webClient.common.Routes.UserRoutes
 import VideoMeeting.webClient.util.Http
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -59,7 +60,7 @@ object MainPage {
       if (password.equals(password2)) {
         PopWindow.registerButton := <img src=""></img>
         val data = SignUp(account, password).asJson.noSpaces
-        Http.postFormAndParse[SignUpRsp](Routes.UserRoutes.userRegister, data).map {
+        Http.postFormAndParse[SignUpRsp](UserRoutes.userRegister, data).map {
           case Right(rsp) =>
             if (rsp.errCode == 0) {
 

@@ -1,16 +1,16 @@
 package VideoMeeting.webClient.pages
 
-import VideoMeeting.webClient.common.Routes
-import VideoMeeting.webClient.util.{Http, JsFunc}
 import mhtml.{Rx, Var}
+import io.circe.generic.auto._
+import io.circe.syntax._
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Video
 import org.scalajs.dom.raw.HTMLElement
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
-import io.circe.generic.auto._
-import io.circe.syntax._
+import VideoMeeting.webClient.common.Routes.MeetingRoutes
+import VideoMeeting.webClient.util.{Http, JsFunc}
 
 import concurrent.ExecutionContext.Implicits.global
 
@@ -30,7 +30,7 @@ object Invite {
 
   def getList(): Unit = {
     val uid: Int = 0
-    val url = Routes.MeetingRoutes.getInviteList(uid)
+    val url = MeetingRoutes.getInviteList(uid)
     Http.getAndParse[InviteRsp](url).map {
       case Right(r) =>
         if (r.errCode != 0) {

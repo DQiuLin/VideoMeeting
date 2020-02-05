@@ -8,52 +8,69 @@ import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.{SignIn, SignInRsp, SignUp, SignUpRsp}
 import VideoMeeting.webClient.common.Components.PopWindow
+import VideoMeeting.webClient.common.PageSwitcher._
 import VideoMeeting.webClient.common.Routes
 import VideoMeeting.webClient.common.Routes.UserRoutes
 import VideoMeeting.webClient.util.Http
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.xml.Elem
 
 /**
   * created by dql on 2020/1/19
   * web界面首页
   */
 object MainPage {
-
-  var userShowName = if (dom.window.localStorage.getItem("userName") == null | dom.window.localStorage.getItem("isTemUser") != null) Var("") else Var(dom.window.localStorage.getItem("userName"))
-  var userShowImg = if (dom.window.localStorage.getItem("userHeaderImgUrl") == null | dom.window.localStorage.getItem("isTemUser") != null) Var("") else Var(dom.window.localStorage.getItem("userHeaderImgUrl"))
-
+  //其他页面共用的数据都在localStorage里面
+  var userShowName = if (dom.window.localStorage.getItem("userName") == null) Var("") else Var(dom.window.localStorage.getItem("userName"))
+  var userShowImg = if (dom.window.localStorage.getItem("userHeaderImgUrl") == null) Var("") else Var(dom.window.localStorage.getItem("userHeaderImgUrl"))
   var showPersonCenter = Var(emptyHTML)
 
-  val isLogin = Var(0)
+  private val exitButton: Elem =
+    <div class="header-exit" onclick={() => dom.window.location.hash = "#/Home"}>
+      <img src="/videomeeting/meetingManager/static/img/logo.png" title="主页"></img>
+      <div>主页</div>
+    </div>
 
-  private val headerBox = isLogin.map {
-    case 0 =>
-      <div class="first-header">
-        <button>登录</button>
-        <button>注册</button>
+  private val noUserShow: Elem =
+    <div class="header-content-nologin">
+      <label class="header-login" id="login" for="pop-login">登录</label>{PopWindow.loginPop}<label class="header-register" id="register" for="pop-register">注册</label>{PopWindow.registerPop}
+    </div>
+
+  private val userShow: Elem =
+    <div class="header-content">
+      <div style="display:flex">
+        <div class="header-defaultimg">
+          <img src={userShowImg} onclick={() =>
+            showPersonCenter := PopWindow.personalCenter(dom.window.localStorage.getItem("userId").toLong,
+              dom.window.localStorage.getItem("userName"))} id="userHeadImg"></img>
+          <div class="header-user">
+            {userShowName}
+          </div>
+        </div>{showPersonCenter}<div class="header-button" onclick={() => loginOut()}>登出</div>
       </div>
-    case 1 =>
-      <div class="first-header">
-        <button>此处是img</button>
-        <div class="first-header-name">huahua</div>
-        <button>登出</button>
-      </div>
-    case _ =>
-      <div class="first-header">
-        <button>登录</button>
-        <button>注册</button>
-      </div>
+    </div>
+
+  private val menuShow = if (dom.window.localStorage.getItem("userName") != null
+    && dom.window.localStorage.getItem("isTemUser") == null) {
+    Var(userShow)
+  } else Var(noUserShow)
+
+  private val exitShow = Var(emptyHTML)
+
+  private val currentPage = {
+    //todo 页面切换
   }
 
-  def show(): Unit = {
-    <div class="first-bg">
-      {headerBox}<div calss="first-content">
-      <div>我发起的</div>
-      <div>我参会的</div>
-      <div>邀请我的</div>
-    </div>
-    </div>
+  def show(): Cancelable = {
+    switchPageByHash()
+    val page =
+      <div>
+        {PopWindow.showPop}<div class="header">
+        {exitShow}{menuShow}
+      </div>{currentPage}
+      </div>
+    mount(dom.document.body, page)
   }
 
   //function
@@ -94,7 +111,18 @@ object MainPage {
         if (rsp.errCode == 0) {
           //登陆之后获取到用户信息
           if (rsp.userInfo.isDefined) {
-
+            dom.window.localStorage.setItem("userName", account)
+            dom.window.localStorage.setItem("userHeaderImgUrl", rsp.userInfo.get.avatar)
+            dom.window.localStorage.setItem("userId", rsp.userInfo.get.id.toString)
+            val coverImgUrl = dom.window.sessionStorage.getItem("coverImgUrl")
+            if (coverImgUrl != null) {
+              dom.window.localStorage.setItem("coverImgUrl", coverImgUrl)
+            }
+            userShowName := dom.window.localStorage.getItem("userName")
+            userShowImg := dom.window.localStorage.getItem("userHeaderImgUrl")
+            //userInfo = rsp.userInfo.get
+            dom.window.localStorage.removeItem("isTemUser")
+            menuShow := userShow
           } else {
             println("don't get userInfo")
             PopWindow.commonPop(s"don't get userInfo")
@@ -111,6 +139,24 @@ object MainPage {
   }
 
   def loginOut(): Unit = {
+    menuShow := noUserShow
+
+    dom.window.localStorage.removeItem("userName")
+    dom.window.localStorage.removeItem("userHeaderImgUrl")
+    dom.window.localStorage.removeItem("userId")
+
+    val coverImgUrl = dom.window.localStorage.getItem("coverImgUrl")
+    if (coverImgUrl != null) {
+      dom.window.sessionStorage.setItem("coverImgUrl", coverImgUrl)
+    }
+
+    if (dom.window.localStorage.getItem("myRoomId") != null) {
+      dom.window.localStorage.removeItem("myRoomId")
+    }
+    //refresh()
+  }
+
+  def refresh() = {
 
   }
 }

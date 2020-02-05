@@ -1,4 +1,4 @@
-package videomeeting.webClient.common
+package VideoMeeting.webClient.common
 
 import mhtml.{Rx, Var}
 import org.scalajs.dom

@@ -1,10 +1,9 @@
-package videomeeting.webClient.common.Components
+package VideoMeeting.webClient.common.Components
 
 import mhtml.{Var, emptyHTML}
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
-import videomeeting.webClient.pages.MainPage
 
 import scala.xml.Elem
 

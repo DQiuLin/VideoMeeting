@@ -1,14 +1,19 @@
-package videomeeting.webClient.pages
+package VideoMeeting.webClient.pages
 
-
+import VideoMeeting.webClient.common.Components.ModalLarge
+import VideoMeeting.webClient.common.Routes
+import VideoMeeting.webClient.util.{Http, JsFunc}
 import mhtml.{Rx, Var}
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Video
 import org.scalajs.dom.raw.HTMLElement
-import videomeeting.protocol.ptcl.CommonInfo.{CommentInfo, InitiateMeetingInfo, PeopleInfo}
-import videomeeting.webClient.common.Components.ModalLarge
+import videomeeting.protocol.ptcl.CommonInfo._
+import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
+import io.circe.generic.auto._
+import io.circe.syntax._
 
+import concurrent.ExecutionContext.Implicits.global
 /**
   * created by dql on 2020/1/19
   * web我发起的会议列表页面
@@ -24,7 +29,18 @@ object Initiate {
   }
 
   def getList(): Unit = {
-
+    val uid: Int = 0
+    val url = Routes.MeetingRoutes.getInitiateList(uid)
+    Http.getAndParse[InitiateRsp](url).map {
+      case Right(r) =>
+        if (r.errCode != 0) {
+          JsFunc.alert(s"${r.msg}")
+        } else {
+          meetList := r.meetingList.getOrElse(Nil)
+        }
+      case Left(e) =>
+        println(s"$e")
+    }
   }
 
   def peopleManageModal(meetId: Long, list: List[PeopleInfo]): Unit = {

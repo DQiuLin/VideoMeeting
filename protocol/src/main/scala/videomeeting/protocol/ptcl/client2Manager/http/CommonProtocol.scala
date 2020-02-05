@@ -22,7 +22,7 @@ object CommonProtocol {
    **/
   case class SignUp(
                      userName: String,
-                     password: String,
+                     password: String
                    ) extends Request
 
   case class SignIn(

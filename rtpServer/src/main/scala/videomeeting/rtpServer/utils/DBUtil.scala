@@ -16,7 +16,7 @@ object DBUtil {
 
   private def createDataSource() = {
 
-    val dataSource = new org.postgresql.ds.PGSimpleDataSource()
+    val dataSource = new org.h2.jdbcx.JdbcDataSource()
 
     //val dataSource = new MysqlDataSource()
 

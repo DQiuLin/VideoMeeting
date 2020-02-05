@@ -1,11 +1,21 @@
 package VideoMeeting.webClient.common.Components
 
-import mhtml.{Var, emptyHTML}
+import mhtml._
+import io.circe.syntax._
+import io.circe.generic.auto._
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.scalajs.dom.html.Input
+import org.scalajs.dom.html.{Image, Input}
+import org.scalajs.dom.raw.{FileList, FileReader, FormData}
 import scala.xml.Elem
+import VideoMeeting.webClient.common.Routes
 import VideoMeeting.webClient.pages.MainPage
+import VideoMeeting.webClient.util.RtmpStreamerJs.ChangeImg2File
+import VideoMeeting.webClient.util.{Http, JsFunc}
+import videomeeting.protocol.ptcl.CommonRsp
+import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.ImgChangeRsp
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object PopWindow {
 
@@ -94,5 +104,85 @@ object PopWindow {
           </div>
         </div>
       </label>
+    </div>
+
+  var currImgNum = Math.floor(Math.random() * 8) + 1
+  var initHeadImg = "/theia/roomManager/static/img/headPortrait/" + currImgNum + ".jpg"
+
+  def changeHeadImg() = {
+    //    dom.document.getElementById("imgBubble").setAttribute("style","display:none")
+    var headNum = Math.floor(Math.random() * 9)
+    while (currImgNum == headNum) {
+      headNum = Math.floor(Math.random() * 9)
+    }
+    currImgNum = headNum
+    dom.document.getElementById("random-head").setAttribute("src", "/theia/roomManager/static/img/headPortrait/" + headNum.toInt + ".jpg")
+  }
+
+  def changeUserInfo(userId: Long): Unit = {
+    val name = dom.document.getElementById("change-username").asInstanceOf[Input].value
+    val src = dom.document.getElementById("random-head").asInstanceOf[Image].src
+    if (name == "") {
+      JsFunc.alert("昵称不能为空！")
+    } else {
+      Http.getAndParse[CommonRsp](Routes.UserRoutes.nickNameChange(userId, name)).map {
+        case Right(nameRsp) =>
+          MainPage.userShowName := name
+        case Left(value) =>
+      }
+      val img2file = new ChangeImg2File(src)
+      val imgFile = img2file.changeImg2File(img2file)
+      var form = new FormData()
+      form.append("fileUpload", imgFile)
+      Http.postFormAndParse[ImgChangeRsp](Routes.UserRoutes.uploadImg(0, userId.toString), form).map {
+        case Right(imgRsp) =>
+          JsFunc.alert("更改个人信息成功！")
+          MainPage.showPersonCenter := emptyHTML
+          dom.document.getElementById("userHeadImg").asInstanceOf[Image].src = imgRsp.url
+        case Left(value) =>
+          JsFunc.alert("更改个人信息失败")
+          MainPage.showPersonCenter := emptyHTML
+      }
+    }
+  }
+
+  //上传图片例子，目前没有交互
+  def changeImgByFile(userId: Long, fileUrl: String, files: FileList): Unit = {
+    println(fileUrl)
+    println(files(0).name)
+    val reader = new FileReader()
+    reader.readAsDataURL(files(0))
+    reader.onload = { e: Event =>
+      //      println(e.target.asInstanceOf[FileReader].result.toString)
+      val name = e.target.asInstanceOf[FileReader].result.toString
+      dom.document.getElementById("random-head").asInstanceOf[Image].setAttribute("src", name)
+    }
+
+    val form = new FormData()
+    form.append("fileUpload", files(0))
+    Http.postFormAndParse[ImgChangeRsp](Routes.UserRoutes.uploadImg(0, userId.toString), form).map {
+      case Right(imgRsp) =>
+        JsFunc.alert("更改个人信息成功！")
+        MainPage.showPersonCenter := emptyHTML
+      case Left(value) =>
+        JsFunc.alert("更改个人信息失败")
+        MainPage.showPersonCenter := emptyHTML
+    }
+  }
+
+  def personalCenter(userId: Long, userName: String): Elem =
+    <div class="pop-background" style="display:flex" onclick={(e: Event) => MainPage.showPersonCenter := emptyHTML}>
+      <div class="pop-main" onclick={(e: Event) => e.stopPropagation()} style="padding-top:50px">
+        <div class="imgBubble" id="imgBubble">
+          <span>你动我一下试试！</span>
+        </div>
+        <div class="change-userImg">
+          <input style="display: none" type="file" id="userImg-file" onchange={(e: Event) => changeImgByFile(userId, e.target.asInstanceOf[Input].value, e.target.asInstanceOf[Input].files)}>okokok</input>
+          <img src={initHeadImg} onclick={() => changeHeadImg()} id="random-head"></img>
+          <!--<div class="change-userImg-file" onclick={()=>dom.document.getElementById("userImg-file").asInstanceOf[HTMLElement].click()}>选择文件</div>-->
+        </div>
+        <input class="pop-input" id="change-username" placeholder="修改昵称" value={userName}></input>
+        <div class="pop-button" onclick={() => changeUserInfo(userId)}>确认修改</div>
+      </div>
     </div>
 }

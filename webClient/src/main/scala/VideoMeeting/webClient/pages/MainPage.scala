@@ -20,6 +20,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 object MainPage {
 
+  var userShowName = if (dom.window.localStorage.getItem("userName") == null | dom.window.localStorage.getItem("isTemUser") != null) Var("") else Var(dom.window.localStorage.getItem("userName"))
+  var userShowImg = if (dom.window.localStorage.getItem("userHeaderImgUrl") == null | dom.window.localStorage.getItem("isTemUser") != null) Var("") else Var(dom.window.localStorage.getItem("userHeaderImgUrl"))
+
+  var showPersonCenter = Var(emptyHTML)
+
   val isLogin = Var(0)
 
   private val headerBox = isLogin.map {

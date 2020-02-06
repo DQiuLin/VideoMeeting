@@ -12,7 +12,8 @@ import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
 import VideoMeeting.webClient.common.Components.ModalLarge
 import VideoMeeting.webClient.common.{Page, Routes}
 import VideoMeeting.webClient.common.Routes.MeetingRoutes
-import VideoMeeting.webClient.util.{Http, JsFunc}
+import VideoMeeting.webClient.util.{Http, JsFunc, TimeTool}
+import videomeeting.protocol.ptcl.CommonInfo
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.xml.Elem
@@ -44,6 +45,17 @@ class InitiatePage extends Page {
       case Left(e) =>
         println(s"$e")
     }
+  }
+
+  def peopleListToString(lst: List[CommonInfo.PeopleInfo]): String = {
+    var pList: String = ""
+    if (lst.nonEmpty) {
+      lst.map { l =>
+        pList += l.name
+        l.name
+      }
+    }
+    pList
   }
 
   def invite(meetId: Int): Unit = {
@@ -91,7 +103,7 @@ class InitiatePage extends Page {
         </div>{pList.map { lst =>
         if (lst.isEmpty)
           <div class="modal-table">
-            <div class="list-th modal">
+            <div class="madal-table-th modal">
               <div>用户名</div>
               <div>类型</div>
               <div>操作</div>
@@ -99,7 +111,7 @@ class InitiatePage extends Page {
           </div>
         else
           <div class="modal-table">
-            <div class="list-th modal">
+            <div class="madal-table-th modal">
               <div>用户名</div>
               <div>类型</div>
               <div>操作</div>
@@ -108,12 +120,13 @@ class InitiatePage extends Page {
               {lst.zipWithIndex.map { l =>
               val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
               val item = l._1
-              <div class="list-tr modal" style={bgdColor}>
+              <div class="modal-table-tr modal" style={bgdColor}>
                 <div>
                   {item.name}
                 </div>
                 <div>
-                  {item.pType}
+                  {if (item.pType == 0) "被邀请人员"
+                else "参会人员"}
                 </div>
                 <div>
                   <button onclick={() => removeInvite(meetId, item.id)}>取消邀请</button>
@@ -151,7 +164,7 @@ class InitiatePage extends Page {
         {cList.map { lst =>
         if (lst.isEmpty)
           <div class="modal-table">
-            <div class="list-th modal">
+            <div class="madal-table-th modal">
               <div>用户名</div>
               <div>评论</div>
               <div>时间</div>
@@ -160,7 +173,7 @@ class InitiatePage extends Page {
           </div>
         else
           <div class="modal-table">
-            <div class="list-th modal">
+            <div class="madal-table-th modal">
               <div>用户名</div>
               <div>时间</div>
               <div>评论</div>
@@ -170,12 +183,12 @@ class InitiatePage extends Page {
               {lst.zipWithIndex.map { l =>
               val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
               val item = l._1
-              <div class="list-tr modal" style={bgdColor}>
+              <div class="madal-table-tr modal" style={bgdColor}>
                 <div>
                   {item.usrName}
                 </div>
                 <div>
-                  {item.time}
+                  {TimeTool.dateFormatDefault(item.time)}
                 </div>
                 <div>
                   {item.content}
@@ -254,13 +267,13 @@ class InitiatePage extends Page {
             {item.meetInfo.name}
           </div>
             <div>
-              {item.meetInfo.time}
+              {TimeTool.dateFormatDefault(item.meetInfo.time)}
             </div>
             <div>
               {item.meetInfo.intro}
             </div>
             <div>
-              {item.meetInfo.people.toString}
+              {peopleListToString(item.meetInfo.people)}
             </div>
             <div>
               <button onclick={() => peopleManageModal(item.id, item.meetInfo.people)}>用户管理</button>

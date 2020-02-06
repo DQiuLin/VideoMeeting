@@ -11,7 +11,8 @@ import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
 import VideoMeeting.webClient.common.Page
 import VideoMeeting.webClient.common.Routes.MeetingRoutes
-import VideoMeeting.webClient.util.{Http, JsFunc}
+import VideoMeeting.webClient.util.{Http, JsFunc, TimeTool}
+import videomeeting.protocol.ptcl.CommonInfo
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.xml.Elem
@@ -43,6 +44,17 @@ class InvitePage extends Page {
       case Left(e) =>
         println(s"$e")
     }
+  }
+
+  def peopleListToString(lst: List[CommonInfo.PeopleInfo]): String = {
+    var pList: String = ""
+    if (lst.nonEmpty) {
+      lst.map { l =>
+        pList += l.name
+        l.name
+      }
+    }
+    pList
   }
 
   val meetTable = meetList.map { lst =>
@@ -101,13 +113,13 @@ class InvitePage extends Page {
             {item.meetInfo.name}
           </div>
             <div>
-              {item.meetInfo.time}
+              {TimeTool.dateFormatDefault(item.meetInfo.time)}
             </div>
             <div>
               {item.meetInfo.intro}
             </div>
             <div>
-              {item.meetInfo.people.toString()}
+              {peopleListToString(item.meetInfo.people)}
             </div>
           </div>
         }}

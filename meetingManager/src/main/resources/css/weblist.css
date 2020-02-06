@@ -236,3 +236,22 @@
     font-size: 18px;
     margin-bottom: 18px;
 }
+
+.modal-table {
+
+}
+
+/*----------homePage----------*/
+.web-first {
+
+}
+
+.web-first-item {
+
+}
+
+.web-first-item button {
+    border: transparent;
+    background: transparent;
+    cursor: pointer;
+}

@@ -79,7 +79,6 @@ object PopWindow {
             <input class="pop-input" id="login-account" placeholder="用户名"></input>
             <input class="pop-input" type="password" id="login-password" placeholder="密码"></input>
           </div>
-          <label class="pop-tip" for="pop-emailLogin" onclick={(e: Event) => closePop(e, "pop-login")}>试试邮箱登录？</label>
           <div class="pop-confirm">
             {loginButton}
           </div>

@@ -51,7 +51,7 @@ class InitiatePage extends Page {
     var pList: String = ""
     if (lst.nonEmpty) {
       lst.map { l =>
-        pList += l.name
+        pList += l.name + " "
         l.name
       }
     }
@@ -247,7 +247,7 @@ class InitiatePage extends Page {
                 val posterUrl = item.picture.getOrElse("")
                 <div style="position:relative">
                   <img src={posterUrl}></img>
-                  <img src="/VideoMeetiong/webClient/static/img/play@2x.png"
+                  <img src="/videomeetiong/meetManager/static/img/play@2x.png"
                        style="position:absolute;top:0.64rem;left:1.28rem;width:0.4rem;height:0.4rem;"
                        onclick={(e: Event) =>
                          videoHeight = e.target.asInstanceOf[HTMLElement].parentElement.clientHeight
@@ -288,6 +288,9 @@ class InitiatePage extends Page {
   }
 
   override def render: Elem = {
+    if (dom.window.localStorage.getItem("userId") == null) {
+      MainPage.goHome()
+    }
     init()
     getList()
     <div>

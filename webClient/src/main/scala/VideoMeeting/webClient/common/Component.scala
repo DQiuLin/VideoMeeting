@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.common
+package videomeeting.webClient.common
 
 import scala.xml.Elem
 

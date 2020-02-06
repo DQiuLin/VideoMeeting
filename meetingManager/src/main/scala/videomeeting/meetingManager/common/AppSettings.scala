@@ -77,10 +77,10 @@ object AppSettings {
 
 
   val dependenceConfig = config.getConfig("dependence")
-  val rmConfig = dependenceConfig.getConfig("roomManager.config")
-  val authCheck = rmConfig.getBoolean("authCheck")
-  val tokenExistTime = rmConfig.getInt("tokenExistTime")
-  val guestTokenExistTime = rmConfig.getInt("guestTokenExistTime")
+  val mtConfig = dependenceConfig.getConfig("meetingManager.config")
+  val authCheck = mtConfig.getBoolean("authCheck")
+  val tokenExistTime = mtConfig.getInt("tokenExistTime")
+  val guestTokenExistTime = mtConfig.getInt("guestTokenExistTime")
 
   val emailConfig = dependenceConfig.getConfig("email.config")
   val emailHost = emailConfig.getString("host")

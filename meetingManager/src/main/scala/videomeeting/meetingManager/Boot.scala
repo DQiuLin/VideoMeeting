@@ -29,7 +29,7 @@ object Boot extends HttpService {
 
   import concurrent.duration._
 
-  override implicit val system: ActorSystem = ActorSystem("theia", AppSettings.config)
+  override implicit val system: ActorSystem = ActorSystem("meetingManager", AppSettings.config)
 
   override implicit val materializer: Materializer = ActorMaterializer()
 
@@ -41,34 +41,13 @@ object Boot extends HttpService {
 
   override implicit val executor: MessageDispatcher = system.dispatchers.lookup("akka.actor.my-blocking-dispatcher")
 
-//  val userManager = system.spawn(UserManager.create(), "userManager")
   val userManager = system.spawn(UserManager.create(), "userManager")
 
-//  val roomManager = system.spawn(RoomManager.create(), "roomManager")
   val meetingManager = system.spawn(MeetingManager.create(), "meetingManager")
 
-//  val registerManager = system.spawn(RegisterManager.create(), "registerManager")
   val registerActor = system.spawn(RegisterActor.create(), "registerActor")
 
   def main(args: Array[String]): Unit = {
-    //    log.info("Starting.")
-
-    //    val password: Array[Char] = "1qaz@WSX".toCharArray // do not store passwords in code, read them from somewhere safe!
-    //
-    //    val ks: KeyStore = KeyStore.getInstance("PKCS12")
-    //    val keystore = new FileInputStream("./src/main/resources/tomatocc.p12")
-    //    require(keystore != null, "Keystore required!")
-    //    ks.load(keystore, password)
-    //    val keyManagerFactory: KeyManagerFactory = KeyManagerFactory.getInstance("SunX509")
-    //    keyManagerFactory.init(ks, password)
-    //
-    //    val tmf: TrustManagerFactory = TrustManagerFactory.getInstance("SunX509")
-    //    tmf.init(ks)
-    //    val sslContext: SSLContext = SSLContext.getInstance("TLS")
-    //    sslContext.init(keyManagerFactory.getKeyManagers, tmf.getTrustManagers, new SecureRandom())
-    //    val https: HttpsConnectionContext = ConnectionContext.https(sslContext)
-
-    //    val httpsBinding = Http().bindAndHandle(Routes, AppSettings.httpInterface, AppSettings.httpPort, connectionContext = https)
     val httpsBinding = Http().bindAndHandle(Routes, AppSettings.httpInterface, AppSettings.httpPort)
 
     httpsBinding.onComplete {

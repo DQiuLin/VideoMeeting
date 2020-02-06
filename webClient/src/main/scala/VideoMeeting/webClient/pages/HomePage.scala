@@ -1,7 +1,7 @@
-package VideoMeeting.webClient.pages
+package videomeeting.webClient.pages
 
-import VideoMeeting.webClient.common.Page
-import VideoMeeting.webClient.util.JsFunc
+import videomeeting.webClient.common.Page
+import videomeeting.webClient.util.JsFunc
 import org.scalajs.dom
 
 import scala.xml.Elem

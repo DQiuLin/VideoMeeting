@@ -77,6 +77,9 @@ lazy val webClient = (project in file("webClient"))
     ))
   .settings(skip in packageJSDependencies := false)
   .settings(
+    packJvmOpts := Map("webClient" -> Seq("-Xmx64m", "-Xms32m")),
+  )
+  .settings(
     scalaJSUseMainModuleInitializer := true,
     //mainClass := Some("com.neo.sk.virgour.front.Main"),
     libraryDependencies ++= Seq(

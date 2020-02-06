@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.pages
+package videomeeting.webClient.pages
 
 import mhtml.{Rx, Var}
 import io.circe.generic.auto._
@@ -9,9 +9,9 @@ import org.scalajs.dom.html.Video
 import org.scalajs.dom.raw.HTMLElement
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
-import VideoMeeting.webClient.common.Page
-import VideoMeeting.webClient.common.Routes.MeetingRoutes
-import VideoMeeting.webClient.util.{Http, JsFunc, TimeTool}
+import videomeeting.webClient.common.Page
+import videomeeting.webClient.common.Routes.MeetingRoutes
+import videomeeting.webClient.util.{Http, JsFunc, TimeTool}
 import videomeeting.protocol.ptcl.CommonInfo
 
 import concurrent.ExecutionContext.Implicits.global

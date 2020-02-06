@@ -21,7 +21,8 @@ object UserInfoDao {
   }
 
   def addUser(name:String, pw:String, timeStamp:Long) = {
-    db.run(tUserInfo += rUserInfo(1, name, pw, timeStamp, Common.DefaultImg.headImg))
+    val password = SecureUtil.getSecurePassword(pw, timeStamp)
+    db.run(tUserInfo += rUserInfo(1, name, password, timeStamp, Common.DefaultImg.headImg))
   }
 
   def modifyImg4User(userId: Int, fileName: String) = {

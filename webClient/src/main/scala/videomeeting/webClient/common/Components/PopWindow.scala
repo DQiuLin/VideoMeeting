@@ -7,6 +7,7 @@ import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.{Image, Input}
 import org.scalajs.dom.raw.{FileList, FileReader, FormData}
+
 import scala.xml.Elem
 import videomeeting.webClient.common.Routes
 import videomeeting.webClient.pages.MainPage

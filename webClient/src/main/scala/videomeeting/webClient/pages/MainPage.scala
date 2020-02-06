@@ -33,8 +33,7 @@ object MainPage extends PageSwitcher {
 
   private val noUserShow: Elem =
     <div class="header-content-nologin">
-      <label class="header-login" id="login" for="pop-login">登录</label>{PopWindow.loginPop}
-      <label class="header-register" id="register" for="pop-register">注册</label>{PopWindow.registerPop}
+      <label class="header-login" id="login" for="pop-login">登录</label>{PopWindow.loginPop}<label class="header-register" id="register" for="pop-register">注册</label>{PopWindow.registerPop}
     </div>
 
   private val userShow: Elem =
@@ -145,7 +144,7 @@ object MainPage extends PageSwitcher {
             PopWindow.commonPop(s"don't get userInfo")
           }
           PopWindow.loginButton := <div class="pop-button" onclick={(e: Event) => MainPage.login(e, "pop-login")}>GO</div>
-          refresh()
+          goHome()
           PopWindow.closePop(e, popId)
         } else {
           PopWindow.commonPop(s"error happened: ${rsp.msg}")
@@ -167,16 +166,7 @@ object MainPage extends PageSwitcher {
       dom.window.sessionStorage.setItem("coverImgUrl", coverImgUrl)
     }
 
-    refresh()
-  }
-
-  def refresh(): Unit = {
-    //登录登出时重置页面
-    //需要通过hash判断本页面是哪个页面
-    //在home界面不需要任何操作
-    if (dom.window.location.hash.contains("Home")) {
-      goHome()
-    }
+    goHome()
   }
 
   def goHome(): Unit = {

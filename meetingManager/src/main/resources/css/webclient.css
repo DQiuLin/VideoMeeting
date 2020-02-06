@@ -85,6 +85,8 @@ body{
 }
 .header-content{
     display:flex;
+    position: absolute;
+    right: 100px;
     align-items: center;
     justify-content: space-between;
     flex-grow: 2;

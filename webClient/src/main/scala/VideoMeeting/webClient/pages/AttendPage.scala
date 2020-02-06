@@ -9,18 +9,20 @@ import org.scalajs.dom.html.Video
 import org.scalajs.dom.raw.HTMLElement
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
+import VideoMeeting.webClient.common.Page
 import VideoMeeting.webClient.common.Routes.MeetingRoutes
 import VideoMeeting.webClient.util.{Http, JsFunc}
 
 import concurrent.ExecutionContext.Implicits.global
+import scala.xml.Elem
 
 /**
   * created by dql on 2020/1/19
-  * web我邀请的参会人员页面
+  * web我参与的会议列表页面
   */
-object Invite {
+class AttendPage extends Page {
 
-  val meetList: Var[List[InviteMeetingInfo]] = Var(Nil)
+  val meetList: Var[List[AttendMeetingInfo]] = Var(Nil)
   val totalCount: Rx[Int] = meetList.map(_.length)
   val videoPlay: Var[Long] = Var(-1)
 
@@ -30,8 +32,8 @@ object Invite {
 
   def getList(): Unit = {
     val uid: Int = 0
-    val url = MeetingRoutes.getInviteList(uid)
-    Http.getAndParse[InviteRsp](url).map {
+    val url = MeetingRoutes.getAttendList(uid)
+    Http.getAndParse[AttendRsp](url).map {
       case Right(r) =>
         if (r.errCode != 0) {
           JsFunc.alert(s"${r.msg}")
@@ -46,26 +48,28 @@ object Invite {
   val meetTable = meetList.map { lst =>
     if (lst.isEmpty)
       <div class="list-table">
-        <div class="list-th invite">
+        <div class="list-th attend">
           <div>会议视频</div>
           <div>会议名称</div>
           <div>会议时间</div>
           <div>会议简介</div>
+          <div>参会人员</div>
         </div>
       </div>
     else
       <div class="list-table">
-        <div class="list-th invite">
+        <div class="list-th attend">
           <div>会议视频</div>
           <div>会议名称</div>
           <div>会议时间</div>
           <div>会议简介</div>
+          <div>参会人员</div>
         </div>
         <div style="width:100%;height:auto;">
           {lst.zipWithIndex.map { l =>
           val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
           val item = l._1
-          <div class="list-tr invite" style={bgdColor}>
+          <div class="list-tr attend" style={bgdColor}>
             {if (item.video.isDefined) {
             <div>
               {var videoHeight = 0
@@ -105,7 +109,7 @@ object Invite {
               {item.meetInfo.intro}
             </div>
             <div>
-              {item.meetInfo.people.toString()}
+              {item.meetInfo.people.toString}
             </div>
           </div>
         }}
@@ -113,7 +117,7 @@ object Invite {
       </div>
   }
 
-  def app: xml.Node = {
+  override def render: Elem = {
     init()
     getList()
     <div>
@@ -126,3 +130,4 @@ object Invite {
     </div>
   }
 }
+

@@ -10,17 +10,18 @@ import org.scalajs.dom.raw.HTMLElement
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
 import VideoMeeting.webClient.common.Components.ModalLarge
-import VideoMeeting.webClient.common.Routes
+import VideoMeeting.webClient.common.{Page, Routes}
 import VideoMeeting.webClient.common.Routes.MeetingRoutes
 import VideoMeeting.webClient.util.{Http, JsFunc}
 
 import concurrent.ExecutionContext.Implicits.global
+import scala.xml.Elem
 
 /**
   * created by dql on 2020/1/19
   * web我发起的会议列表页面
   */
-object Initiate {
+class InitiatePage extends Page {
 
   val meetList: Var[List[InitiateMeetingInfo]] = Var(Nil)
   val totalCount: Rx[Int] = meetList.map(_.length)
@@ -273,7 +274,7 @@ object Initiate {
       </div>
   }
 
-  def app: xml.Node = {
+  override def render: Elem = {
     init()
     getList()
     <div>

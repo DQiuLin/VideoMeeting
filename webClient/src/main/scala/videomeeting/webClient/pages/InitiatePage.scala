@@ -103,7 +103,7 @@ class InitiatePage extends Page {
         </div>{pList.map { lst =>
         if (lst.isEmpty)
           <div class="modal-table">
-            <div class="madal-table-th modal">
+            <div class="modal-table-th people">
               <div>用户名</div>
               <div>类型</div>
               <div>操作</div>
@@ -111,7 +111,7 @@ class InitiatePage extends Page {
           </div>
         else
           <div class="modal-table">
-            <div class="madal-table-th modal">
+            <div class="modal-table-th people">
               <div>用户名</div>
               <div>类型</div>
               <div>操作</div>
@@ -120,7 +120,7 @@ class InitiatePage extends Page {
               {lst.zipWithIndex.map { l =>
               val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
               val item = l._1
-              <div class="modal-table-tr modal" style={bgdColor}>
+              <div class="modal-table-tr people" style={bgdColor}>
                 <div>
                   {item.name}
                 </div>
@@ -164,7 +164,7 @@ class InitiatePage extends Page {
         {cList.map { lst =>
         if (lst.isEmpty)
           <div class="modal-table">
-            <div class="madal-table-th modal">
+            <div class="modal-table-th comment">
               <div>用户名</div>
               <div>评论</div>
               <div>时间</div>
@@ -173,7 +173,7 @@ class InitiatePage extends Page {
           </div>
         else
           <div class="modal-table">
-            <div class="madal-table-th modal">
+            <div class="modal-table-th comment">
               <div>用户名</div>
               <div>时间</div>
               <div>评论</div>
@@ -183,7 +183,7 @@ class InitiatePage extends Page {
               {lst.zipWithIndex.map { l =>
               val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
               val item = l._1
-              <div class="madal-table-tr modal" style={bgdColor}>
+              <div class="modal-table-tr comment" style={bgdColor}>
                 <div>
                   {item.usrName}
                 </div>

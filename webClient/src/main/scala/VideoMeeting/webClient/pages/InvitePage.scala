@@ -31,7 +31,7 @@ class InvitePage extends Page {
   }
 
   def getList(): Unit = {
-    val uid: Int = 0
+    val uid: Int = dom.window.localStorage.getItem("userId").toInt
     val url = MeetingRoutes.getInviteList(uid)
     Http.getAndParse[InviteRsp](url).map {
       case Right(r) =>

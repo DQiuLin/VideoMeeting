@@ -32,7 +32,7 @@ class InitiatePage extends Page {
   }
 
   def getList(): Unit = {
-    val uid: Int = 0
+    val uid: Int = dom.window.localStorage.getItem("userId").toInt
     val url = MeetingRoutes.getInitiateList(uid)
     Http.getAndParse[InitiateRsp](url).map {
       case Right(r) =>
@@ -47,7 +47,7 @@ class InitiatePage extends Page {
   }
 
   def invite(meetId: Int): Unit = {
-    val inviteId: Int = 0
+    val inviteId: Int = dom.window.localStorage.getItem("userId").toInt
     val invitedId = dom.document.getElementById("invitedId").asInstanceOf[Input].value.trim.toInt
     val url = Routes.MeetingRoutes.invite
     val data = AddInvite(inviteId, meetId, invitedId).asJson.noSpaces
@@ -86,7 +86,7 @@ class InitiatePage extends Page {
     val body =
       <div class="modal-body">
         <div class="modal-add">
-          <input placeHolder="请输入邀请者id" class="" id="invitedId"></input>
+          <input placeHolder="请输入邀请者id" class="modal-add" id="invitedId"></input>
           <button onclick={() => invite(meetId)}>+邀请</button>
         </div>{pList.map { lst =>
         if (lst.isEmpty)

@@ -107,7 +107,7 @@ object PopWindow {
     </div>
 
   var currImgNum = Math.floor(Math.random() * 8) + 1
-  var initHeadImg = "/theia/roomManager/static/img/headPortrait/" + currImgNum + ".jpg"
+  var initHeadImg = "/videomeeting/meetingManager/static/img/headPortrait/" + currImgNum + ".jpg"
 
   def changeHeadImg() = {
     //    dom.document.getElementById("imgBubble").setAttribute("style","display:none")
@@ -116,7 +116,7 @@ object PopWindow {
       headNum = Math.floor(Math.random() * 9)
     }
     currImgNum = headNum
-    dom.document.getElementById("random-head").setAttribute("src", "/theia/roomManager/static/img/headPortrait/" + headNum.toInt + ".jpg")
+    dom.document.getElementById("random-head").setAttribute("src", "/videomeeting/meetingManager/static/img/headPortrait/" + headNum.toInt + ".jpg")
   }
 
   def changeUserInfo(userId: Long): Unit = {

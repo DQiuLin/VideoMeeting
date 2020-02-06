@@ -31,7 +31,7 @@ class AttendPage extends Page {
   }
 
   def getList(): Unit = {
-    val uid: Int = 0
+    val uid: Int = dom.window.localStorage.getItem("userId").toInt
     val url = MeetingRoutes.getAttendList(uid)
     Http.getAndParse[AttendRsp](url).map {
       case Right(r) =>

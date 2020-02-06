@@ -1,6 +1,8 @@
 package VideoMeeting.webClient.pages
 
 import VideoMeeting.webClient.common.Page
+import VideoMeeting.webClient.util.JsFunc
+import org.scalajs.dom
 
 import scala.xml.Elem
 
@@ -13,8 +15,14 @@ class HomePage extends Page {
 
   override def render: Elem =
     <div>
-      <div>我发起的</div>
-      <div>我参与的</div>
-      <div>邀请我的</div>
+      <div>
+        <button onclick={() => if (dom.window.localStorage.getItem("userId") != null) MainPage.goInitiate() else JsFunc.alert("请先登录！")}>我发起的</button>
+      </div>
+      <div>
+        <button onclick={() => if (dom.window.localStorage.getItem("userId") != null) MainPage.goAttend() else JsFunc.alert("请先登录！")}>我参与的</button>
+      </div>
+      <div>
+        <button onclck={() => if (dom.window.localStorage.getItem("userId") != null) MainPage.goInvite() else JsFunc.alert("请先登录！")}>邀请我的</button>
+      </div>
     </div>
 }

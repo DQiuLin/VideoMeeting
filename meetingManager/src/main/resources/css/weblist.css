@@ -40,12 +40,13 @@
 }
 
 .list-tr button {
-    width: 120px;
+    width: 70px;
     height: 30px;
     border: transparent;
     background: transparent;
     color: rgba(78, 125, 252, 1);
     cursor: pointer;
+    text-align: start;
 }
 
 .initiate {
@@ -57,7 +58,7 @@
 }
 
 .invite {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
 
 .total-count {

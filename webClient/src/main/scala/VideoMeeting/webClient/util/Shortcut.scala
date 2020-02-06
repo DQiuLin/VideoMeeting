@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.util
+package videomeeting.webClient.util
 
 import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLAudioElement

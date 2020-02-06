@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.pages
+package videomeeting.webClient.pages
 
 import mhtml.{Rx, Var}
 import io.circe.generic.auto._
@@ -9,10 +9,10 @@ import org.scalajs.dom.html.{Input, Video}
 import org.scalajs.dom.raw.HTMLElement
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol._
-import VideoMeeting.webClient.common.Components.ModalLarge
-import VideoMeeting.webClient.common.{Page, Routes}
-import VideoMeeting.webClient.common.Routes.MeetingRoutes
-import VideoMeeting.webClient.util.{Http, JsFunc}
+import videomeeting.webClient.common.Components.ModalLarge
+import videomeeting.webClient.common.{Page, Routes}
+import videomeeting.webClient.common.Routes.MeetingRoutes
+import videomeeting.webClient.util.{Http, JsFunc}
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.xml.Elem

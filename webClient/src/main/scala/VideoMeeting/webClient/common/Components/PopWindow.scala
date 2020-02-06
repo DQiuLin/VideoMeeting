@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.common.Components
+package videomeeting.webClient.common.Components
 
 import mhtml._
 import io.circe.syntax._
@@ -8,10 +8,10 @@ import org.scalajs.dom.Event
 import org.scalajs.dom.html.{Image, Input}
 import org.scalajs.dom.raw.{FileList, FileReader, FormData}
 import scala.xml.Elem
-import VideoMeeting.webClient.common.Routes
-import VideoMeeting.webClient.pages.MainPage
-import VideoMeeting.webClient.util.RtmpStreamerJs.ChangeImg2File
-import VideoMeeting.webClient.util.{Http, JsFunc}
+import videomeeting.webClient.common.Routes
+import videomeeting.webClient.pages.MainPage
+import videomeeting.webClient.util.RtmpStreamerJs.ChangeImg2File
+import videomeeting.webClient.util.{Http, JsFunc}
 import videomeeting.protocol.ptcl.CommonRsp
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.ImgChangeRsp
 

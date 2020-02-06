@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.common.Components
+package videomeeting.webClient.common.Components
 
 import mhtml.mount
 import org.scalajs.dom

@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.util
+package videomeeting.webClient.util
 
 import io.circe.{Decoder, Error}
 import org.scalajs.dom

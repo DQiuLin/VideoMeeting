@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.pages
+package videomeeting.webClient.pages
 
 import mhtml._
 import io.circe.syntax._
@@ -7,10 +7,10 @@ import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.{SignIn, SignInRsp, SignUp, SignUpRsp}
-import VideoMeeting.webClient.common.Components.PopWindow
-import VideoMeeting.webClient.common.{PageSwitcher, Routes}
-import VideoMeeting.webClient.common.Routes.UserRoutes
-import VideoMeeting.webClient.util.Http
+import videomeeting.webClient.common.Components.PopWindow
+import videomeeting.webClient.common.{PageSwitcher, Routes}
+import videomeeting.webClient.common.Routes.UserRoutes
+import videomeeting.webClient.util.Http
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.xml.Elem

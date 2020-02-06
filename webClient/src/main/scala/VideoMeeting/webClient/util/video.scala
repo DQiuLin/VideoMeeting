@@ -1,4 +1,4 @@
-package VideoMeeting.webClient.util
+package videomeeting.webClient.util
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal

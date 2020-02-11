@@ -28,6 +28,9 @@ class InitiatePage extends Page {
   val totalCount: Rx[Int] = meetList.map(_.length)
   val videoPlay: Var[Long] = Var(-1)
 
+  val peopleList: Var[List[PeopleInfo]] = Var(Nil)
+  val commentList: Var[List[CommentInfo]] = Var(Nil)
+
   def init() = {
     videoPlay := -1
   }
@@ -92,15 +95,14 @@ class InitiatePage extends Page {
     }
   }
 
-  def peopleManageModal(meetId: Int, list: List[PeopleInfo]): Unit = {
+  def peopleManageModal(meetId: Int): Unit = {
     val title = "会议可见人员管理"
-    val pList: Var[List[PeopleInfo]] = Var(list)
     val body =
       <div class="modal-body">
         <div class="modal-add">
           <input placeHolder="请输入邀请者id" class="modal-add" id="invitedId"></input>
           <button onclick={() => invite(meetId)}>+邀请</button>
-        </div>{pList.map { lst =>
+        </div>{peopleList.map { lst =>
         if (lst.isEmpty)
           <div class="modal-table">
             <div class="modal-table-th people">
@@ -129,7 +131,9 @@ class InitiatePage extends Page {
                 else "参会人员"}
                 </div>
                 <div>
+                  {if (item.pType == 0)
                   <button onclick={() => removeInvite(meetId, item.id)}>取消邀请</button>
+                else <div></div>}
                 </div>
               </div>
             }}
@@ -156,12 +160,11 @@ class InitiatePage extends Page {
     }
   }
 
-  def commentManageModal(meetId: Long, list: List[CommentInfo]): Unit = {
+  def commentManageModal(meetId: Long): Unit = {
     val title = "评论管理"
-    val cList: Var[List[CommentInfo]] = Var(list)
     val body =
       <div class="modal-body">
-        {cList.map { lst =>
+        {commentList.map { lst =>
         if (lst.isEmpty)
           <div class="modal-table">
             <div class="modal-table-th comment">
@@ -276,10 +279,10 @@ class InitiatePage extends Page {
               {peopleListToString(item.meetInfo.people)}
             </div>
             <div>
-              <button onclick={() => peopleManageModal(item.id, item.meetInfo.people)}>用户管理</button>
+              <button onclick={() => peopleList := item.meetInfo.people; peopleManageModal(item.id)}>用户管理</button>
             </div>
             <div>
-              <button onclick={() => commentManageModal(item.id, item.meetInfo.comment)}>评论管理</button>
+              <button onclick={() => commentList := item.meetInfo.comment; commentManageModal(item.id)}>评论管理</button>
             </div>
           </div>
         }}

@@ -203,7 +203,8 @@ object CommonProtocol {
   final case class Comment(
                             meetingId: Int,
                             userId: Int,
-                            comment: String
+                            comment: String,
+                            time: Long
                           ) extends Request
 
   final case class CommentRsp(
@@ -212,8 +213,8 @@ object CommonProtocol {
                              ) extends Response
 
   final case class Remove(
-                         meetingId: Int,
-                         userId: Int
+                           meetingId: Int,
+                           userId: Int
                          ) extends Request
 
   final case class RemoveRsp(
@@ -222,7 +223,7 @@ object CommonProtocol {
                             ) extends Response
 
   final case class Delete(
-                         id: Int
+                           id: Int
                          ) extends Request
 
   final case class DeleteRsp(
@@ -231,13 +232,19 @@ object CommonProtocol {
                             ) extends Response
 
   final case class GetInvited(
-                             meetingId: Int
+                               meetingId: Int
                              ) extends Request
 
   final case class GetInvitedRsp(
-                                invited: Option[List[PeopleInfo]] = None,
-                                errCode: Int = 0,
-                                msg: String = "ok"
+                                  invited: Option[List[PeopleInfo]] = None,
+                                  errCode: Int = 0,
+                                  msg: String = "ok"
+                                ) extends Response
+
+  final case class GetCommentRsp(
+                                  commentList: Option[List[CommentInfo]] = None,
+                                  errCode: Int = 0,
+                                  msg: String = "ok"
                                 ) extends Response
 
 }

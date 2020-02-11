@@ -75,3 +75,9 @@ meetingManager接口：/videomeeting/meetingManager
 - 返回：DeleteRsp
 - 参数说明：
     - id：评论id
+
+获取评论列表：
+- 协议：Http get
+- url：meeting/getComment
+- 参数：mid：会议id
+- 返回：GetCommentRsp(Option[List[CommentInfo]])

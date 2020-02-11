@@ -90,6 +90,7 @@ object CommonInfo {
   case class CommentInfo(
                           id: Int,
                           usrName: String,
+                          headImg: String,
                           time: Long,
                           content: String
                         )

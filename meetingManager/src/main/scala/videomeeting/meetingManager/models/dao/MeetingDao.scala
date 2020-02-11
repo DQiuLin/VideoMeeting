@@ -69,7 +69,7 @@ object MeetingDao {
 
   def searchCommentByMid(mid: Int) = {
     db.run(tMeetingComment.filter(c => c.mid === mid).flatMap(r =>
-      tUserInfo.filter(u => u.id === r.author).map(rst => (r, rst.username))).result)
+      tUserInfo.filter(u => u.id === r.author).map(rst => (r, rst.username, rst.headImg))).result)
   }
 
   def searchRecordByMid(mid: Int) = {

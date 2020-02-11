@@ -64,7 +64,7 @@ trait MeetingService extends ServiceUtils {
               r <- record
             } yield {
               val peopleList = p.map(r => PeopleInfo(r._1, r._2, r._3)).toList
-              val commentList = c.map(r => CommentInfo(r._1.id, r._2, r._1.commentTime, r._1.comment)).toList
+              val commentList = c.map(r => CommentInfo(r._1.id, r._2, r._3, r._1.commentTime, r._1.comment)).toList
               val videoPath = r.map(r => r.vPath)
               (peopleList, commentList, videoPath)
             }
@@ -105,7 +105,7 @@ trait MeetingService extends ServiceUtils {
               r <- record
             } yield {
               val peopleList = p.map(r => PeopleInfo(r._1, r._2, r._3)).toList
-              val commentList = c.map(r => CommentInfo(r._1.id, r._2, r._1.commentTime, r._1.comment)).toList
+              val commentList = c.map(r => CommentInfo(r._1.id, r._2, r._3, r._1.commentTime, r._1.comment)).toList
               val videoPath = r.map(r => r.vPath)
               (peopleList, commentList, videoPath)
             }
@@ -146,7 +146,7 @@ trait MeetingService extends ServiceUtils {
               r <- record
             } yield {
               val peopleList = p.map(r => PeopleInfo(r._1, r._2, r._3)).toList
-              val commentList = c.map(r => CommentInfo(r._1.id, r._2, r._1.commentTime, r._1.comment)).toList
+              val commentList = c.map(r => CommentInfo(r._1.id, r._2, r._3, r._1.commentTime, r._1.comment)).toList
               val videoPath = r.map(r => r.vPath)
               (peopleList, commentList, videoPath)
             }
@@ -162,6 +162,19 @@ trait MeetingService extends ServiceUtils {
           }
         }
         seqFuture.map(seq => complete(InviteRsp(Some(seq.toList))))
+      }
+    }
+  }
+
+  private val getCommentList = (path("getComment") & get) {
+    parameter(
+      'mid.as[Int]
+    ) { mid =>
+      dealFutureResult {
+        MeetingDao.searchCommentByMid(mid).map { r=>
+          val l = r.map(rst => CommentInfo(rst._1.id, rst._2, rst._3, rst._1.commentTime, rst._1.comment)).toList
+          complete(GetCommentRsp(Some(l)))
+        }
       }
     }
   }
@@ -203,7 +216,7 @@ trait MeetingService extends ServiceUtils {
     entity(as[Either[Error, Comment]]) {
       case Right(data) =>
         dealFutureResult {
-          MeetingDao.addComment(data.meetingId, data.userId, data.comment, System.currentTimeMillis()).map { r =>
+          MeetingDao.addComment(data.meetingId, data.userId, data.comment, data.time).map { r =>
             if (r > 0)
               complete(CommentRsp())
             else
@@ -234,7 +247,7 @@ trait MeetingService extends ServiceUtils {
   }
 
   val meetingRoutes: Route = pathPrefix("meeting") {
-    getInitiateList ~ getAttendList ~ getInviteList ~ invite ~ comment ~ deleteInvite ~ deleteComment
+    getInitiateList ~ getAttendList ~ getInviteList ~ invite ~ comment ~ deleteInvite ~ deleteComment ~ getCommentList
   }
 
 }

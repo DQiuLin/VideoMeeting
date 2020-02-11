@@ -129,7 +129,9 @@ class InitiatePage extends Page {
                 else "参会人员"}
                 </div>
                 <div>
+                  {if (item.pType == 0)
                   <button onclick={() => removeInvite(meetId, item.id)}>取消邀请</button>
+                else <div></div>}
                 </div>
               </div>
             }}

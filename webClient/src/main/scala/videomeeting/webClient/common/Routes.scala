@@ -41,6 +41,8 @@ object Routes {
 
     def getInviteList(uid: Int): String = baseUrl + s"/invited?uid=$uid"
 
+    def getCommentList(mid: Int): String = baseUrl + s"/getComment?mid=$mid"
+
   }
 
 }

@@ -82,38 +82,12 @@ class AttendPage extends Page {
           val bgdColor = if (l._2 % 2 == 1) "background-color:rgba(242,245,250,1)" else "background-color:rgba(255,255,255,1)"
           val item = l._1
           <div class="list-tr attend" style={bgdColor}>
-            {if (item.video.isDefined) {
             <div>
-              {var videoHeight = 0
-            videoPlay.map { id =>
-              if (id == item.id) {
-                <div>
-                  <video id={s"video-${item.id}"} src={item.video.get} width="100%" height={s"$videoHeight"} controls="controls"
-                         style="outline:none;" x5-playsinline="true" playsinline="true" webkit-playsinline="true"></video>
-                </div>
-              } else {
-                val posterUrl = item.picture.getOrElse("")
-                <div style="position:relative">
-                  <img src={posterUrl}></img>
-                  <img src="/videomeetiong/meetManager/static/img/play@2x.png"
-                       style="position:absolute;top:0.64rem;left:1.28rem;width:0.4rem;height:0.4rem;"
-                       onclick={(e: Event) =>
-                         videoHeight = e.target.asInstanceOf[HTMLElement].parentElement.clientHeight
-                         videoPlay := item.id
-                         dom.document.getElementById(s"video-${item.id}").asInstanceOf[Video].play()}></img>
-                </div>
-              }
-            }}
+              <button onclick={() => MainPage.goRecord(item.id.toString, item.video.getOrElse(""), item.meetInfo.name, item.meetInfo.time.toString)}>查看视频</button>
             </div>
-          } else if (item.picture.isDefined) {
-            <img src={item.picture.get}></img>
-          } else {
-            <p>
+            <div>
               {item.meetInfo.name}
-            </p>
-          }}<div>
-            {item.meetInfo.name}
-          </div>
+            </div>
             <div>
               {TimeTool.dateFormatDefault(item.meetInfo.time)}
             </div>

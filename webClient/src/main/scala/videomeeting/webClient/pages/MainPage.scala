@@ -73,6 +73,9 @@ object MainPage extends PageSwitcher {
         case "Invite" :: Nil =>
           exitShow := exitButton
           new InvitePage().render
+        case "Record" :: meetingId :: videoUrl :: videoName :: videoTime :: Nil =>
+          exitShow := exitButton
+          new RecordPage(meetingId, videoUrl, videoName, videoTime).render
         case x =>
           goHome()
           emptyHTML
@@ -183,6 +186,10 @@ object MainPage extends PageSwitcher {
 
   def goInvite(): Unit = {
     dom.window.location.hash = "#/Invite"
+  }
+
+  def goRecord(meetingId: String, videoUrl: String, videoName: String, videoTime: String): Unit = {
+    dom.window.location.hash = s"#/Record/$meetingId/$videoUrl/$videoName/$videoTime"
   }
 
 }

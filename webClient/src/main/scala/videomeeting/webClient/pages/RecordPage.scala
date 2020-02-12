@@ -1,7 +1,5 @@
 package videomeeting.webClient.pages
 
-import java.util.Date
-
 import mhtml._
 import io.circe.syntax._
 import io.circe.generic.auto._
@@ -11,45 +9,51 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalajs.dom
 import org.scalajs.dom.html._
 import videomeeting.protocol.ptcl.CommonInfo.CommentInfo
-import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.{Comment, CommentRsp}
+import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.{Comment, CommentRsp, GetCommentRsp}
 import videomeeting.webClient.common.Components.PopWindow
 import videomeeting.webClient.common.{Page, Routes}
-import videomeeting.webClient.util.{Http, TimeTool}
+import videomeeting.webClient.util.{Http, JsFunc, TimeTool}
 
 /**
   * created by dql on 2020/2/11
   * web查看会议视频和评论页面
   */
-class RecordPage(meetingId:Int) extends Page {
+class RecordPage(meetingId:String,videoUrl:String,videoName:String,videoTime:String) extends Page {
 
-  private val videoTime = Var(dom.window.sessionStorage.getItem("recordStartTime"))
-  private val videoName = Var(dom.window.sessionStorage.getItem("recordName"))
-  private val mp4Url = Var("")
-  val headImg = Var("/theia/roomManager/static/img/头像.png")
+  private val mp4Url = Var(videoUrl)
+  private val mp4Name = Var(videoName)
+  private val mp4Time = Var(videoTime)
+
+  private val userId = dom.window.localStorage.getItem("userId").toInt
+  private val userName = dom.window.localStorage.getItem("userName")
+  private val userHeaderImgUrl = dom.window.localStorage.getItem("userHeaderImgUrl")
+  val headImg = Var(userHeaderImgUrl)
   val commentInfo = Var(List.empty[CommentInfo])
 
-  def videoOnEnded() = {
-
+  def videoOnEnded(): Unit = {
+    val menu = dom.document.getElementById("playback-menu")
+    val video = dom.document.getElementById("recordVideo").asInstanceOf[Video]
+    menu.setAttribute("class", "playback-menu-close")
+    if (video != null) {
+      video.load()
+      video.play()
+    }
   }
 
-  def videoPlayback() = {
-
+  def videoPlayback(): Unit = {
+    val menu = dom.document.getElementById("playback-menu")
+    menu.setAttribute("class", "playback-menu-open")
   }
 
-  def sendComment() = {
+  def sendComment(): Unit = {
     val b_area = dom.document.getElementById("ipt-txt").asInstanceOf[TextArea]
     val currentTime = System.currentTimeMillis()
     if (b_area.value.length != 0) {
-      val userId = dom.window.localStorage.getItem("userId").toInt
-      val data = Comment(meetingId, userId, b_area.value).asJson.noSpaces
+      val data = Comment(meetingId.toInt, userId, b_area.value, currentTime).asJson.noSpaces
       Http.postJsonAndParse[CommentRsp](Routes.MeetingRoutes.comment, data).map {
         case Right(rsp) =>
           if (rsp.errCode == 0) {
-            val (userId, userName, userHeaderImgUrl) =
-              (dom.window.localStorage.getItem("userId").toLong,
-                dom.window.localStorage.getItem("userName"),
-                dom.window.localStorage.getItem("userHeaderImgUrl"))
-            commentInfo.update(c => c :+ CommentInfo(-1, userName, currentTime, b_area.value))
+            commentInfo.update(c => c :+ CommentInfo(-1, userName, userHeaderImgUrl, currentTime, b_area.value))
             b_area.value = ""
           } else {
             PopWindow.commonPop(rsp.msg)
@@ -61,14 +65,24 @@ class RecordPage(meetingId:Int) extends Page {
   }
 
   def getCommentInfo(): Unit = {
-
+    val url = Routes.MeetingRoutes.getCommentList(meetingId.toInt)
+    Http.getAndParse[GetCommentRsp](url).map {
+      case Right(r) =>
+        if (r.errCode != 0) {
+          JsFunc.alert(s"${r.msg}")
+        } else {
+          commentInfo := r.commentList.getOrElse(Nil)
+        }
+      case Left(e) =>
+        println(s"$e")
+    }
   }
 
   val comments: Rx[Node] = commentInfo.map { cf =>
-    def createCommentItem(item: CommentInfo) = {
+    def createCommentItem(item: CommentInfo): Elem = {
       <div class="rcl-item">
         <div class="user-face">
-          <img class="userface" src={}></img>
+          <img class="userface" src={item.headImg}></img>
         </div>
         <div class="rcl-con">
           <div class="rcl-con-name">
@@ -97,22 +111,22 @@ class RecordPage(meetingId:Int) extends Page {
           <div class="showInfo">
             <div style="margin-left:10px;color:#222">
               <div class="recordName">
-                {videoName}
+                {mp4Name}
               </div>
               <div class="recordTime" style="color: #808080;font-size: 12px;margin-top: 10px;">
-                {videoTime.map(i => TimeTool.dateFormatDefault(i.toLong))}
+                {mp4Time.map(i => TimeTool.dateFormatDefault(i.toLong))}
               </div>
             </div>
           </div>
         </div>
         <div style="padding-bottom:20px!important" class="dash-video-player anchor-all" id="dash-video-player">
           <div style="position: relative">
-            <video id="recordVideo" controls="controls" style="height:500px;width:100%;object-fit: contain;background-color: #000;" onended={() => videoOnEnded()}>
+            <video id="recordVideo" controls="controls" style="height:500px;width:100%;object-fit:contain;background-color:#000;" onended={() => videoOnEnded()}>
               <source src={mp4Url} type="video/mp4"></source>
             </video>
             <div id="playback-menu" class="playback-menu-close">
               <div class="playback-point">
-                <img class="playback-button" src="/theia/roomManager/static/img/homePage/replay.png" onclick={() => videoPlayback()}></img>
+                <img class="playback-button" src="/videomeeting/meetingManager/static/img/homePage/replay.png" onclick={() => videoPlayback()}></img>
                 <div class="playback-text">重新播放</div>
               </div>
             </div>

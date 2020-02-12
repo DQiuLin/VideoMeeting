@@ -135,10 +135,6 @@ object MainPage extends PageSwitcher {
             dom.window.localStorage.setItem("userName", account)
             dom.window.localStorage.setItem("userHeaderImgUrl", rsp.userInfo.get.avatar)
             dom.window.localStorage.setItem("userId", rsp.userInfo.get.id.toString)
-            val coverImgUrl = dom.window.sessionStorage.getItem("coverImgUrl")
-            if (coverImgUrl != null) {
-              dom.window.localStorage.setItem("coverImgUrl", coverImgUrl)
-            }
             userShowName := dom.window.localStorage.getItem("userName")
             userShowImg := dom.window.localStorage.getItem("userHeaderImgUrl")
             menuShow := userShow
@@ -163,11 +159,6 @@ object MainPage extends PageSwitcher {
     dom.window.localStorage.removeItem("userName")
     dom.window.localStorage.removeItem("userHeaderImgUrl")
     dom.window.localStorage.removeItem("userId")
-
-    val coverImgUrl = dom.window.localStorage.getItem("coverImgUrl")
-    if (coverImgUrl != null) {
-      dom.window.sessionStorage.setItem("coverImgUrl", coverImgUrl)
-    }
 
     goHome()
   }

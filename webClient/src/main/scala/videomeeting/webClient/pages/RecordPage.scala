@@ -21,7 +21,7 @@ import videomeeting.webClient.util.{Http, JsFunc, TimeTool}
 class RecordPage(meetingId:String,videoUrl:String,videoName:String,videoTime:String) extends Page {
 
   private val mp4Url = Var(videoUrl)
-  private val mp4Name = Var(videoName)
+  private val mp4Name = Var("会议视频")
   private val mp4Time = Var(videoTime)
 
   private val userId = dom.window.localStorage.getItem("userId").toInt

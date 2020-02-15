@@ -86,6 +86,7 @@ class InitiatePage extends Page {
       case Right(rsp) =>
         if (rsp.errCode == 0) {
           getList()
+          peopleList.update(l => l.filterNot(_.id == userId))
         } else {
           JsFunc.alert("移除失败！")
           println(rsp.msg)
@@ -151,6 +152,7 @@ class InitiatePage extends Page {
       case Right(rsp) =>
         if (rsp.errCode == 0) {
           getList()
+          commentList.update(l => l.filterNot(_.id == commentId))
         } else {
           JsFunc.alert("删除失败！")
           println(rsp.msg)

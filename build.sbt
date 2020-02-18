@@ -180,6 +180,32 @@ lazy val tmp = (project in file("tmp")).enablePlugins(PackPlugin)
   .settings(scalaJSUseMainModuleInitializer := false)
   .dependsOn(protocolJvm)
 
+val pcClientMain = "videomeeting.Boot"
+lazy val pcClient = (project in file("pcClient")).enablePlugins(PackPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    mainClass in reStart := Some(pcClientMain),
+    javaOptions in reStart ++= Seq(
+      "-Xmx3g"
+    )
+  )
+  .settings(name := "pcClient")
+  .settings(
+    //pack
+    // If you need to specify main classes manually, use packSettings and packMain
+    //packSettings,
+    // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
+    packMain := Map("pcClient" -> pcClientMain),
+    packJvmOpts := Map("pcClient" -> Seq("-Xmx4096m", "-Xms4096m")),
+    packExtraClasspath := Map("pcClient" -> Seq("."))
+  )
+  .settings(
+    //    libraryDependencies ++= Dependencies.backendDependencies,
+    libraryDependencies ++= Dependencies.bytedecoLibs,
+    libraryDependencies ++= Dependencies4PcClient.pcClientDependencies,
+  )
+  .dependsOn(protocolJvm, rtpClient, player)
+
 val rtpServerMain = "videomeeting.rtpServer.Boot"
 
 lazy val rtpServer = (project in file("rtpServer")).enablePlugins(PackPlugin)

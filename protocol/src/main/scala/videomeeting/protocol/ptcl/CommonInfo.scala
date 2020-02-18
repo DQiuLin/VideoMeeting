@@ -46,6 +46,7 @@ object CommonInfo {
                         meetingName: String,
                         userId: Int,
                         username: String,
+                        coverImgUrl:String,
                         var attendanceNum: Int = 0,
                         var rtmp: Option[String] = None
                         )
@@ -119,4 +120,25 @@ object CommonInfo {
                            userName: String,
                            liveId: String
                          )
+
+//  case class MeetingInfo(
+//    roomId: Long,
+//    roomName: String,
+//    roomDes: String,
+//    userId: Long,  //房主id
+//    userName:String,
+//    headImgUrl:String,
+//    coverImgUrl:String,
+//    var observerNum:Int,
+//    var like:Int,
+//    var mpd: Option[String] = None,
+//    var rtmp: Option[String] = None
+//    //var liveAdd: Option[String] = None
+//  )
+
+  case class UserDes(
+    userId: Long,
+    userName: String,
+    headImgUrl:String
+  )
 }

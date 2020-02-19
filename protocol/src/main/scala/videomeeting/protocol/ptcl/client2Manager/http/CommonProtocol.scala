@@ -130,6 +130,7 @@ object CommonProtocol {
    * GET
    *
    **/
+
   case class MeetingListRsp(
                              meetingList: Option[List[MeetingInfo]] = None,
                              errCode: Int = 0,

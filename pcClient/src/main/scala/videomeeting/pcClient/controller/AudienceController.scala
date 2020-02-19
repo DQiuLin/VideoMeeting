@@ -1,4 +1,4 @@
-package videomeeting.pcClient.controllor
+package videomeeting.pcClient.controller
 
 import java.io.File
 
@@ -17,7 +17,7 @@ import javafx.scene.control.Tooltip
 import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
 import videomeeting.pcClient.Boot
-import videomeeting.pcClient.controllor.AudienceController
+import videomeeting.pcClient.controller.AudienceController
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import videomeeting.pcClient.Boot.{executor, materializer, scheduler, system, timeout}
 import videomeeting.pcClient.common.Constants.{AudienceStatus, HostStatus}
@@ -26,12 +26,14 @@ import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.player.VideoPlayer
 import videomeeting.pcClient.core.stream.LiveManager.{JoinInfo, WatchInfo}
 import videomeeting.pcClient.core.stream.LiveManager
-import videomeeting.pcClient.scene.{AudienceScene, HomeScene,StartScene,FindScene}
+import videomeeting.pcClient.scene.{AudienceScene, FindScene, HomeScene, StartScene}
 import videomeeting.pcClient.utils.RMClient
 import videomeeting.protocol.ptcl.CommonInfo._
 import org.slf4j.LoggerFactory
 import videomeeting.player.sdk.MediaPlayer
 import videomeeting.pcClient.core.RmManager
+import videomeeting.pcClient.scene.AudienceScene.AudienceSceneListener
+
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import concurrent.duration._

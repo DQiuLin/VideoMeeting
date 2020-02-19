@@ -17,7 +17,7 @@ import javafx.scene.control.Tooltip
 import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
 import videomeeting.pcClient.Boot
-import videomeeting.pcClient.controllor.AudienceController
+import videomeeting.pcClient.controller.AudienceController
 import videomeeting.pcClient.controller.{HomeController, StartController, FindController,StartController}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import videomeeting.pcClient.Boot.{executor, materializer, scheduler, system, timeout}

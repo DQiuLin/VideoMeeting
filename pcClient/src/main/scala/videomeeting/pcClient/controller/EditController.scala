@@ -1,4 +1,4 @@
-package videomeeting.pcClient.controllor
+package videomeeting.pcClient.controller
 
 import java.io.{File, FileInputStream, FileOutputStream}
 

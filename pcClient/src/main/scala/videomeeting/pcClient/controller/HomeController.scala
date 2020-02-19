@@ -19,7 +19,7 @@ import videomeeting.pcClient.component.WarningDialog
 import videomeeting.protocol.ptcl.CommonInfo
 import videomeeting.protocol.ptcl.CommonInfo.{RoomInfo, UserInfo}
 import org.slf4j.LoggerFactory
-import videomeeting.pcClient.controllor.EditController
+import videomeeting.pcClient.controller.EditController
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}

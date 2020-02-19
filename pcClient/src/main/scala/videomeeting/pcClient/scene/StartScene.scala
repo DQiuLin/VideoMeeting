@@ -107,7 +107,6 @@ object StartScene {
 }
 
 class StartScene(stage: Stage) {
-  import HostScene._
 
   private[this] val log = LoggerFactory.getLogger(this.getClass)
 

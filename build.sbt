@@ -204,7 +204,31 @@ lazy val pcClient = (project in file("pcClient")).enablePlugins(PackPlugin)
     libraryDependencies ++= Dependencies.bytedecoLibs,
     libraryDependencies ++= Dependencies4PcClient.pcClientDependencies,
   )
-  .dependsOn(protocolJvm, rtpClient, player)
+  .dependsOn(protocolJvm, rtpClient, capture, player)
+
+val captureMain = "videomeeting.capture.Boot"
+lazy val capture = (project in file("capture")).enablePlugins(PackPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    mainClass in reStart := Some(captureMain),
+    javaOptions in reStart += "-Xmx2g"
+  )
+  .settings(name := "capture")
+  .settings(
+    //pack
+    // If you need to specify main classes manually, use packSettings and packMain
+    //packSettings,
+    // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
+    packMain := Map("capture" -> pcClientMain),
+    packJvmOpts := Map("capture" -> Seq("-Xmx256m", "-Xms64m")),
+    packExtraClasspath := Map("capture" -> Seq("."))
+  )
+  .settings(
+    //    libraryDependencies ++= Dependencies.backendDependencies,
+    libraryDependencies ++= Dependencies.bytedecoLibs,
+    libraryDependencies ++= Dependencies4Capture.captureDependencies,
+  )
+  .dependsOn(protocolJvm)
 
 val rtpServerMain = "videomeeting.rtpServer.Boot"
 

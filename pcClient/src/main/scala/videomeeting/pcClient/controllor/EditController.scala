@@ -13,7 +13,7 @@ import javafx.scene.image.{Image, ImageView}
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.{HBox, VBox}
 import javafx.scene.paint.Color
-import videomeeting.common.Constants
+import videomeeting.pcClient.common.Constants
 import videomeeting.pcClient.common.{ Pictures, StageContext}
 import videomeeting.pcClient.core.RmManager
 import org.slf4j.LoggerFactory

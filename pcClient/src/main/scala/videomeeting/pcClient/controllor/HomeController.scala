@@ -9,7 +9,7 @@ import javax.crypto.{Cipher, KeyGenerator}
 import javax.crypto.spec.SecretKeySpec
 import videomeeting.pcClient.Boot
 import videomeeting.pcClient.common.StageContext
-import videomeeting.common.Constants
+import videomeeting.pcClient.common.Constants
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.scene.HomeScene
 import videomeeting.pcClient.scene.HomeScene.HomeSceneListener

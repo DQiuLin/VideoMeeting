@@ -1,6 +1,6 @@
 package videomeeting.pcClient.common
 
-import videomeeting.common.Constants.AudienceStatus
+import videomeeting.pcClient.common.Constants.AudienceStatus
 import videomeeting.pcClient.core.stream.LiveManager.{JoinInfo, WatchInfo}
 import videomeeting.protocol.ptcl.CommonInfo.RecordInfo
 import org.slf4j.LoggerFactory

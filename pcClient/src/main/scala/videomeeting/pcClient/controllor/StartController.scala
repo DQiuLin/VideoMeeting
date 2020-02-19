@@ -7,8 +7,8 @@ import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.RmManager.HeartBeat
 import videomeeting.pcClient.scene.StartScene
-import videomeeting.pcClient.scene.StartScene.{StartSceneListener}
-import videomeeting.pcClient.scene.HostScene.{AudienceListInfo}
+import videomeeting.pcClient.scene.StartScene.StartSceneListener
+import videomeeting.pcClient.scene.HostScene.AudienceListInfo
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import org.slf4j.LoggerFactory
 import videomeeting.pcClient.utils.RMClient

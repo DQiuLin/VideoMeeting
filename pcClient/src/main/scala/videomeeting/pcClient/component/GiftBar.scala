@@ -11,7 +11,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.{HBox, VBox}
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
-import videomeeting.common.Constants
+import videomeeting.pcClient.common.Constants
 import org.slf4j.{Logger, LoggerFactory}
 
 

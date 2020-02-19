@@ -7,17 +7,17 @@ import java.nio.channels.{Channels, Pipe}
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
-import org.seekloud.theia.pcClient.Boot
-import org.seekloud.theia.pcClient.common.Constants.AudienceStatus
-import org.seekloud.theia.pcClient.common.Ids
-import org.seekloud.theia.pcClient.component.WarningDialog
-import org.seekloud.theia.pcClient.core.stream.LiveManager.{JoinInfo, WatchInfo}
-import org.seekloud.theia.player.sdk.MediaPlayer
-import org.seekloud.theia.rtpClient.Protocol._
-import org.seekloud.theia.rtpClient.{Protocol, PullStreamClient}
-import org.seekloud.theia.pcClient.core.player.VideoPlayer
-import org.seekloud.theia.pcClient.scene.{AudienceScene, HostScene}
-import org.seekloud.theia.pcClient.utils.NetUtil
+import videomeeting.pcClient.Boot
+import videomeeting.pcClient.common.Constants.AudienceStatus
+import videomeeting.pcClient.common.Ids
+import videomeeting.pcClient.component.WarningDialog
+import videomeeting.pcClient.core.stream.LiveManager.{JoinInfo, WatchInfo}
+import videomeeting.player.sdk.MediaPlayer
+import videomeeting.rtpClient.Protocol._
+import videomeeting.rtpClient.{Protocol, PullStreamClient}
+import videomeeting.pcClient.core.player.VideoPlayer
+import videomeeting.pcClient.scene.{AudienceScene, HostScene}
+import videomeeting.pcClient.utils.NetUtil
 import org.slf4j.LoggerFactory
 
 import concurrent.duration._

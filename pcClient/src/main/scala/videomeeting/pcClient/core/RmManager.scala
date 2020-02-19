@@ -21,7 +21,7 @@ import videomeeting.pcClient.controllor.AudienceController
 import videomeeting.pcClient.controller.{HomeController, StartController, FindController,StartController}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import videomeeting.pcClient.Boot.{executor, materializer, scheduler, system, timeout}
-import videomeeting.common.Constants.{AudienceStatus, HostStatus}
+import videomeeting.pcClient.common.Constants.{AudienceStatus, HostStatus}
 import videomeeting.pcClient.common._
 import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.player.VideoPlayer

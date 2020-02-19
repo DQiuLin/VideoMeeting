@@ -18,7 +18,7 @@ import javafx.scene.paint.Color
 import javafx.scene.text.{Font, Text}
 import javafx.util
 import javafx.util.Duration
-import videomeeting.common.Constants.AudienceStatus
+import videomeeting.pcClient.common.Constants.AudienceStatus
 import videomeeting.pcClient.component._
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.stream.StreamPuller.{BandWidthInfo, PackageLossInfo}

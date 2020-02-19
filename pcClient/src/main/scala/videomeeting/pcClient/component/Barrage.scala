@@ -6,10 +6,10 @@ import javafx.scene.image.Image
 import javafx.scene.media.MediaPlayer
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
-import videomeeting.common.Constants.barrageColors
+import videomeeting.pcClient.common.Constants.barrageColors
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol.RcvComment
 import org.slf4j.LoggerFactory
-import videomeeting.common.Constants.WindowStatus
+import videomeeting.pcClient.common.Constants.WindowStatus
 
 import scala.util.Random
 

@@ -13,8 +13,8 @@ import javafx.beans.value.ObservableValue
 import javafx.scene.media.MediaPlayer.Status
 import javafx.scene.media.{Media, MediaPlayer, MediaView}
 import javafx.util
-import videomeeting.common.Constants
-import videomeeting.common.Constants.WindowStatus
+import videomeeting.pcClient.common.Constants
+import videomeeting.pcClient.common.Constants.WindowStatus
 
 /**
   * User: Jason

@@ -7,13 +7,13 @@ import java.nio.channels.{Channels, Pipe}
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{Behaviors, StashBuffer, TimerScheduler}
-import org.seekloud.theia.capture.protocol.Messages.EncoderType
-import org.seekloud.theia.pcClient.common.Constants
-import org.seekloud.theia.pcClient.core.collector.CaptureActor
-import org.seekloud.theia.pcClient.core.rtp.TsPacket
-import org.seekloud.theia.pcClient.utils.TimeUtil
-import org.seekloud.theia.rtpClient.Protocol.{AuthRsp, CloseSuccess, PushStreamError}
-import org.seekloud.theia.rtpClient.{Protocol, PushStreamClient}
+import videomeeting.capture.protocol.Messages.EncoderType
+import videomeeting.pcClient.common.Constants
+import videomeeting.pcClient.core.collector.CaptureActor
+import videomeeting.pcClient.core.rtp.TsPacket
+import videomeeting.pcClient.utils.TimeUtil
+import videomeeting.rtpClient.Protocol.{AuthRsp, CloseSuccess, PushStreamError}
+import videomeeting.rtpClient.{Protocol, PushStreamClient}
 import org.slf4j.LoggerFactory
 
 import concurrent.duration._

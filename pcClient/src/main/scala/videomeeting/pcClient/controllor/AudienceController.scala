@@ -17,10 +17,10 @@ import javafx.scene.control.Tooltip
 import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
 import videomeeting.pcClient.Boot
-import videomeeting.pcClient.controller.{AudienceController, HomeController,StartController,FindController}
+import videomeeting.pcClient.controllor.AudienceController
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import videomeeting.pcClient.Boot.{executor, materializer, scheduler, system, timeout}
-import videomeeting.common.Constants.{AudienceStatus, HostStatus}
+import videomeeting.pcClient.common.Constants.{AudienceStatus, HostStatus}
 import videomeeting.pcClient.common._
 import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.player.VideoPlayer

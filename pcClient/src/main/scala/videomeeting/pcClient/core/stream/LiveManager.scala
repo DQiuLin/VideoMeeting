@@ -5,21 +5,21 @@ import akka.actor.typed.{ActorRef, Behavior, DispatcherSelector}
 import akka.actor.typed.scaladsl.AskPattern._
 import javafx.scene.canvas.GraphicsContext
 import org.bytedeco.ffmpeg.global.avcodec
-import org.seekloud.theia.capture.sdk.DeviceUtil.{getAllDevices, getDeviceOption}
-import org.seekloud.theia.capture.sdk.{DeviceUtil, MediaCapture}
-import org.seekloud.theia.pcClient.common.AppSettings
-import org.seekloud.theia.pcClient.core.collector.CaptureActor
-import org.seekloud.theia.pcClient.core.rtp._
-import org.seekloud.theia.pcClient.core.RmManager
-import org.seekloud.theia.pcClient.core.stream.StreamPuller.{PackageLossInfo, PullCommand}
-import org.seekloud.theia.pcClient.scene.{AudienceScene, HostScene}
-import org.seekloud.theia.pcClient.utils.{GetAllPixel, NetUtil, RtpUtil}
-import org.seekloud.theia.rtpClient.{PullStreamClient, PushStreamClient}
-import org.seekloud.theia.pcClient.utils.RtpUtil.{clientHost, clientHostQueue}
-import org.seekloud.theia.player.sdk.MediaPlayer
+import videomeeting.capture.sdk.DeviceUtil.{getAllDevices, getDeviceOption}
+import videomeeting.capture.sdk.{DeviceUtil, MediaCapture}
+import videomeeting.pcClient.common.AppSettings
+import videomeeting.pcClient.core.collector.CaptureActor
+import videomeeting.pcClient.core.rtp._
+import videomeeting.pcClient.core.RmManager
+import videomeeting.pcClient.core.stream.StreamPuller.{PackageLossInfo, PullCommand}
+import videomeeting.pcClient.scene.{AudienceScene, HostScene}
+import videomeeting.pcClient.utils.{GetAllPixel, NetUtil, RtpUtil}
+import videomeeting.rtpClient.{PullStreamClient, PushStreamClient}
+import videomeeting.pcClient.utils.RtpUtil.{clientHost, clientHostQueue}
+import videomeeting.player.sdk.MediaPlayer
 import org.slf4j.LoggerFactory
-import org.seekloud.theia.pcClient.Boot.{executor, scheduler, timeout}
-import org.seekloud.theia.pcClient.core.RmManager.log
+import videomeeting.pcClient.Boot.{executor, scheduler, timeout}
+import videomeeting.pcClient.core.RmManager.log
 
 import concurrent.duration._
 import language.postfixOps

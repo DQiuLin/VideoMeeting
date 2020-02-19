@@ -7,7 +7,7 @@ import javafx.scene.control.{Button, ToggleButton, Tooltip}
 import javafx.scene.image.ImageView
 import javafx.scene.layout.{HBox, Priority, VBox}
 import javafx.scene.text.{Font, Text}
-import videomeeting.common.Constants.WindowStatus
+import videomeeting.pcClient.common.Constants.WindowStatus
 
 /**
   * Author: zwq

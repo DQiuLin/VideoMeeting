@@ -47,7 +47,7 @@ object Dependencies {
   val codec = "commons-codec" % "commons-codec" % "1.10"
 //  val postgresql = "org.postgresql" % "postgresql" % "9.4.1208"
   val h2Database = "com.h2database" % "h2" % "1.4.196"
-  val asynchttpclient = "org.asynchttpclient" % "async-http-client" % "2.8.1"
+  val asynchttpclient = "org.asynchttpclient" % "async-http-client" % "2.0.32"
   val ehcache = "net.sf.ehcache" % "ehcache" % "2.10.6"
   val byteobject = "org.seekloud" %% "byteobject" % "0.1.1"
   val mail = "com.sun.mail" % "javax.mail" % "1.5.3"

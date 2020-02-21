@@ -1,6 +1,6 @@
 package videomeeting.processor.core_new
 
-import java.io.{InputStream, OutputStream}
+import java.io.InputStream
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{Behaviors, StashBuffer, TimerScheduler}
 import org.bytedeco.javacv.FFmpegFrameGrabber1

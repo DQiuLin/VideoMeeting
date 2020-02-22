@@ -9,7 +9,6 @@ import videomeeting.pcClient.Boot.executor
 import io.circe.{Encoder, Json}
 import io.circe.syntax._
 import videomeeting.protocol.ptcl.CommonRsp
-import videomeeting.protocol.ptcl.client2Manager.http.RecordCommentProtocol.{AddRecordCommentReq, GetRecordCommentListReq, GetRecordCommentListRsp}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -30,12 +29,12 @@ object RMClient extends HttpUtil {
   private val log = LoggerFactory.getLogger(this.getClass)
 
   //注册
-  def signUp( username: String, pwd: String): Future[Either[Throwable, SignUpRsp]] = {
+  def signUp(username: String, pwd: String): Future[Either[Throwable, SignUpRsp]] = {
 
     val methodName = "signUp"
     val url = Routes.signUp
 
-    val data = SignUp(username, pwd,"").asJson.noSpaces
+    val data = SignUp(username, pwd).asJson.noSpaces
 
     postJsonRequestSend(methodName, url, Nil, data, timeOut = 60 * 1000, needLogRsp = false).map {
       case Right(jsonStr) =>
@@ -128,72 +127,72 @@ object RMClient extends HttpUtil {
 
   }
 
-  //获取录像列表及地址
-  def getRecordList(sortBy: String, pageNum: Int, pageSize: Int): Future[Either[Throwable, GetRecordListRsp]] = {
-    val methodName = "getRecordList"
-    val url = Routes.getRecordList(sortBy, pageNum, pageSize)
-
-    getRequestSend(methodName, url, Nil, needLogRsp = false).map {
-      case Right(jsonStr) =>
-//        Future{
-//          decode[GetRecordListRsp](jsonStr)
-//        }.onComplete{
-//          case Success(value) => log.debug(s"decode[GetRecordListRsp] success")
-//          case Failure(exception) => log.debug(s"decode[GetRecordListRsp] failed: $exception")
-//        }
-        decode[GetRecordListRsp](jsonStr)
-
-      case Left(error) =>
-        log.debug(s"getRecordList error.")
-        Left(error)
-
-    }
-
-  }
-
-  def searchRecord(roomId: Long, startTime: Long, userId: Option[Long]) : Future[Either[Throwable, SearchRecordRsp]] = {
-    val methodName = "searchRecord"
-    val url = Routes.searchRecord
-
-    val data = SearchRecord(roomId, startTime, System.currentTimeMillis(), userId).asJson.noSpaces
-
-    postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
-      case Right(jsonStr) =>
-        decode[SearchRecordRsp](jsonStr)
-      case Left(error) =>
-        log.debug(s"searchRecord error: $error")
-        Left(error)
-    }
-
-  }
-
-  //主播页面获取录像列表 删除录像
-  def getRecordList2(roomId:Long): Future[Either[Throwable, GetAuthorRecordListRsp]] = {
-    val methodName = "getRecordList2"
-    val url = Routes.getAuthorRecordList(roomId)
-
-    getRequestSend(methodName, url, Nil, needLogRsp = false).map {
-      case Right(jsonStr) =>
-        decode[GetAuthorRecordListRsp](jsonStr)
-      case Left(error) =>
-        log.debug(s"getRecordList2 in host page error.")
-        Left(error)
-    }
-  }
-
-  def deleteRecord(recordId:Long): Future[Either[Throwable, CommonRsp]] = {
-    val methodName = "deleteRecord"
-    val url = Routes.deleteRecord
-    val data = AuthorDeleteRecordReq(recordId).asJson.noSpaces
-
-    postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
-      case Right(rsp) =>
-        decode[CommonRsp](rsp)
-      case Left(error) =>
-        log.debug(s"deleteRecord error: $error")
-        Left(error)
-    }
-  }
+  //    //获取录像列表及地址
+  //    def getRecordList(sortBy: String, pageNum: Int, pageSize: Int): Future[Either[Throwable, GetRecordListRsp]] = {
+  //      val methodName = "getRecordList"
+  //      val url = Routes.getRecordList(sortBy, pageNum, pageSize)
+  //
+  //      getRequestSend(methodName, url, Nil, needLogRsp = false).map {
+  //        case Right(jsonStr) =>
+  //  //        Future{
+  //  //          decode[GetRecordListRsp](jsonStr)
+  //  //        }.onComplete{
+  //  //          case Success(value) => log.debug(s"decode[GetRecordListRsp] success")
+  //  //          case Failure(exception) => log.debug(s"decode[GetRecordListRsp] failed: $exception")
+  //  //        }
+  //          decode[GetRecordListRsp](jsonStr)
+  //
+  //        case Left(error) =>
+  //          log.debug(s"getRecordList error.")
+  //          Left(error)
+  //
+  //      }
+  //
+  //    }
+  //
+  //    def searchRecord(roomId: Long, startTime: Long, userId: Option[Long]) : Future[Either[Throwable, SearchRecordRsp]] = {
+  //      val methodName = "searchRecord"
+  //      val url = Routes.searchRecord
+  //
+  //      val data = SearchRecord(roomId, startTime, System.currentTimeMillis(), userId).asJson.noSpaces
+  //
+  //      postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
+  //        case Right(jsonStr) =>
+  //          decode[SearchRecordRsp](jsonStr)
+  //        case Left(error) =>
+  //          log.debug(s"searchRecord error: $error")
+  //          Left(error)
+  //      }
+  //
+  //    }
+  //
+  //    //主播页面获取录像列表 删除录像
+  //    def getRecordList2(roomId:Long): Future[Either[Throwable, GetAuthorRecordListRsp]] = {
+  //      val methodName = "getRecordList2"
+  //      val url = Routes.getAuthorRecordList(roomId)
+  //
+  //      getRequestSend(methodName, url, Nil, needLogRsp = false).map {
+  //        case Right(jsonStr) =>
+  //          decode[GetAuthorRecordListRsp](jsonStr)
+  //        case Left(error) =>
+  //          log.debug(s"getRecordList2 in host page error.")
+  //          Left(error)
+  //      }
+  //    }
+  //
+  //    def deleteRecord(recordId:Long): Future[Either[Throwable, CommonRsp]] = {
+  //      val methodName = "deleteRecord"
+  //      val url = Routes.deleteRecord
+  //      val data = AuthorDeleteRecordReq(recordId).asJson.noSpaces
+  //
+  //      postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
+  //        case Right(rsp) =>
+  //          decode[CommonRsp](rsp)
+  //        case Left(error) =>
+  //          log.debug(s"deleteRecord error: $error")
+  //          Left(error)
+  //      }
+  //    }
 
   //修改昵称
   def changeUserName(userId: Long, newName: String): Future[Either[Throwable, CommonRsp]] = {
@@ -246,47 +245,48 @@ object RMClient extends HttpUtil {
 
   }
 
-  //获取评论列表
-  def getRecCommentList(roomId: Long, recordTime: Long): Future[Either[Throwable, GetRecordCommentListRsp]] = {
 
-    val methodName = "getRecCommentList"
-    val url = Routes.getCommentList
-
-    val data = GetRecordCommentListReq(roomId, recordTime).asJson.noSpaces
-
-    postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
-      case Right(jsonStr) =>
-        decode[GetRecordCommentListRsp](jsonStr)
-      case Left(error) =>
-        log.debug(s"getCommentList error: $error")
-        Left(error)
-    }
-  }
-
-  //增加评论
-  def addRecComment(
-    roomId:Long,          //录像的房间id
-    recordTime:Long,      //录像的时间戳
-    comment:String,       //评论内容
-    commentTime:Long,     //评论的时间
-    relativeTime: Long,   //相对视频的时间
-    commentUid:Long,      //评论的用户id
-    authorUidOpt:Option[Long] = None    //被评论的用户id，None--回复主播
-  ): Future[Either[Throwable, CommonRsp]] = {
-
-    val methodName = "addRecComment"
-    val url = Routes.sendComment
-
-    val data = AddRecordCommentReq(roomId, recordTime, comment, commentTime, relativeTime, commentUid, authorUidOpt).asJson.noSpaces
-
-    postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
-      case Right(jsonStr) =>
-        decode[CommonRsp](jsonStr)
-      case Left(error) =>
-        log.debug(s"addRecComment error: $error")
-        Left(error)
-    }
-  }
+  //  //获取评论列表
+  //  def getRecCommentList(roomId: Long, recordTime: Long): Future[Either[Throwable, GetRecordCommentListRsp]] = {
+  //
+  //    val methodName = "getRecCommentList"
+  //    val url = Routes.getCommentList
+  //
+  //    val data = GetRecordCommentListReq(roomId, recordTime).asJson.noSpaces
+  //
+  //    postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
+  //      case Right(jsonStr) =>
+  //        decode[GetRecordCommentListRsp](jsonStr)
+  //      case Left(error) =>
+  //        log.debug(s"getCommentList error: $error")
+  //        Left(error)
+  //    }
+  //  }
+  //
+  //  //增加评论
+  //  def addRecComment(
+  //    roomId:Long,          //录像的房间id
+  //    recordTime:Long,      //录像的时间戳
+  //    comment:String,       //评论内容
+  //    commentTime:Long,     //评论的时间
+  //    relativeTime: Long,   //相对视频的时间
+  //    commentUid:Long,      //评论的用户id
+  //    authorUidOpt:Option[Long] = None    //被评论的用户id，None--回复主播
+  //  ): Future[Either[Throwable, CommonRsp]] = {
+  //
+  //    val methodName = "addRecComment"
+  //    val url = Routes.sendComment
+  //
+  //    val data = AddRecordCommentReq(roomId, recordTime, comment, commentTime, relativeTime, commentUid, authorUidOpt).asJson.noSpaces
+  //
+  //    postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
+  //      case Right(jsonStr) =>
+  //        decode[CommonRsp](jsonStr)
+  //      case Left(error) =>
+  //        log.debug(s"addRecComment error: $error")
+  //        Left(error)
+  //    }
+  //  }
 
 
 }

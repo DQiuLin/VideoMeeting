@@ -12,7 +12,7 @@ import videomeeting.pcClient.core.collector.CaptureActor
 import videomeeting.pcClient.core.rtp._
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.stream.StreamPuller.{PackageLossInfo, PullCommand}
-import videomeeting.pcClient.scene.{AudienceScene, HostScene}
+import videomeeting.pcClient.scene.{AudienceScene, StartScene}
 import videomeeting.pcClient.utils.{GetAllPixel, NetUtil, RtpUtil}
 import videomeeting.rtpClient.{PullStreamClient, PushStreamClient}
 import videomeeting.pcClient.utils.RtpUtil.{clientHost, clientHostQueue}
@@ -72,7 +72,7 @@ object LiveManager {
 
   final case class Ask4State(reply: ActorRef[Boolean]) extends LiveCommand
 
-  final case class PullStream(liveId: String, joinInfo: Option[JoinInfo] = None, watchInfo: Option[WatchInfo] = None, audienceScene: Option[AudienceScene] = None, hostScene: Option[HostScene] = None) extends LiveCommand
+  final case class PullStream(liveId: String, joinInfo: Option[JoinInfo] = None, watchInfo: Option[WatchInfo] = None, audienceScene: Option[AudienceScene] = None, hostScene: Option[StartScene] = None) extends LiveCommand
 
   final case object StopPull extends LiveCommand
 
@@ -305,7 +305,7 @@ object LiveManager {
     joinInfo: Option[JoinInfo],
     watchInfo: Option[WatchInfo],
     audienceScene : Option[AudienceScene],
-    hostScene: Option[HostScene]
+    hostScene: Option[StartScene]
   ) = {
     val childName = s"streamPuller-$liveId"
     ctx.child(childName).getOrElse {

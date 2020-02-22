@@ -14,7 +14,7 @@ import javafx.scene.{Group, Scene}
 import videomeeting.pcClient.Boot
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.common._
-import videomeeting.protocol.ptcl.CommonInfo.{MeetingInfo, RecordInfo, RoomInfo, UserInfo}
+import videomeeting.protocol.ptcl.CommonInfo.MeetingInfo
 import org.slf4j.LoggerFactory
 import javafx.scene.Scene
 import javafx.scene.paint.Color

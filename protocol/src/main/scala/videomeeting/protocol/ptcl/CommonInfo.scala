@@ -46,7 +46,6 @@ object CommonInfo {
                         meetingName: String,
                         userId: Int,
                         username: String,
-                        coverImgUrl:String,
                         var attendanceNum: Int = 0,
                         var rtmp: Option[String] = None
                         )

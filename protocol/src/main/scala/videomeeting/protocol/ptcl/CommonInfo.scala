@@ -44,7 +44,7 @@ object CommonInfo {
   case class MeetingInfo(
                         meetingId: Int,
                         meetingName: String,
-                        userId: Int,
+                        userId: Long,
                         username: String,
                         coverImgUrl:String,
                         var attendanceNum: Int = 0,
@@ -121,6 +121,11 @@ object CommonInfo {
                            userName: String,
                            liveId: String
                          )
+
+  object ImgType{
+    val headImg = 0//头像图片
+    val coverImg = 1//封面图片
+  }
 
 //  case class MeetingInfo(
 //    roomId: Long,

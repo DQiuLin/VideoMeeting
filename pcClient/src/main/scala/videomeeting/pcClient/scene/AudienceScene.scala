@@ -23,7 +23,7 @@ import videomeeting.pcClient.component._
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.stream.StreamPuller.{BandWidthInfo, PackageLossInfo}
 import videomeeting.pcClient.utils.{NetUsage, TimeUtil}
-import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, RoomInfo, UserDes}
+import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, MeetingInfo, UserDes}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol.Comment
 import org.slf4j.LoggerFactory
 
@@ -41,42 +41,22 @@ object AudienceScene {
 
   trait AudienceSceneListener {
 
-    def sendCmt(comment: Comment)
-
-    def sendRecCmt(
-      comment: String,       //评论内容
-      commentTime: Long,     //评论的时间
-      relativeTime: Long,    //相对视频的时间
-      authorUidOpt: Option[Long] = None
-    )
-
-    def refreshRecCmt()
-
     def joinReq(roomId: Long)
+
+    def changeOption(needImage: Boolean = true, needSound: Boolean = true)
 
     def quitJoin(roomId: Long)
 
     def gotoHomeScene()
 
-    def setFullScreen(isRecord: Boolean)
-
-    def exitFullScreen(isRecord: Boolean)
-
-    def like(userId: Long, roomId: Long, UpDown: Int)
-
-    def changeOption(needImage: Boolean = true, needSound: Boolean = true)
-
     def ask4Loss()
 
-    def pausePlayRec(recordInfo: RecordInfo)
-
-    def continuePlayRec(recordInfo: RecordInfo)
   }
 
 
 }
 
-class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: String = "") {
+class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: String = "") {
   import AudienceScene._
 
   private val width = Constants.AppWindow.width * 0.9
@@ -119,7 +99,6 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
   //  var recordUrl: Option[String] = None
   var commentPrefix = "effectType0"
 
-  var isFullScreen = false
   var hasReqJoin = false
 
   var audienceStatus: Int = AudienceStatus.LIVE
@@ -134,88 +113,9 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
   val waitPulling = new Image("img/waitPulling.gif")
 
 
-  /*点赞*/
-  val unLikeIcon: ImageView = Common.getImageView("img/like.png", 30, 30)
-  val likeIcon: ImageView = Common.getImageView("img/liked.png", 30, 30)
-
-  val likeNum: Label = new Label(s"${album.like}")
-  likeNum.getStyleClass.add("hostScene-rightArea-label")
-
-  val likeBtn = new ToggleButton("", unLikeIcon)
-  likeBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
-  if (!isRecord) {
-    likeBtn.setOnAction(_ => {
-      if (RmManager.userInfo.nonEmpty) {
-        if (likeBtn.isSelected) {
-          listener.like(RmManager.userInfo.get.userId, album.roomId, 1)
-          likeBtn.setGraphic(likeIcon)
-        } else {
-          listener.like(RmManager.userInfo.get.userId, album.roomId, 0)
-          likeBtn.setGraphic(unLikeIcon)
-        }
-      } else {
-        WarningDialog.initWarningDialog("请先登陆哦~")
-      }
-    }
-    )
-    val shadow = new DropShadow(10, Color.GRAY)
-    likeBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-      likeBtn.setEffect(shadow)
-    })
-    likeBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-      likeBtn.setEffect(null)
-    })
-  } else{
-    likeBtn.setDisable(true)
-  }
-
-  /*留言*/
-  val commentFiled = new TextField()
-  val sendIcon: ImageView = Common.getImageView("img/confirm.png", 20, 20)
-  val sendBtn = new Button("发送", sendIcon)
-  val gift = new GiftBar(group)
-  val linkBtn = new Button("申请连线", new ImageView("img/link.png"))
-  val exitBtn = new Button("中断连线", new ImageView("img/shutdown.png"))
-  val emojiBtn = new Button("\uD83D\uDE00")
-
-  val effectOptions: ObservableList[String] =
-    FXCollections.observableArrayList(
-      "普通弹幕",
-      "放大缩小",
-      "闪入闪出",
-      "定点放缩"
-    )
-  val effectChoiceCBx = new ComboBox(effectOptions)
-
-  def BtnDis():Unit = {
-    sendBtn.setDisable(true)
-    likeBtn.setDisable(true)
-    linkBtn.setDisable(true)
-    exitBtn.setDisable(true)
-    emojiBtn.setDisable(true)
-    effectChoiceCBx.setDisable(true)
-    gift.gift1.removeEventHandler(MouseEvent.MOUSE_CLICKED,gift.EventHandler1)
-    gift.gift2.removeEventHandler(MouseEvent.MOUSE_CLICKED,gift.EventHandler2)
-    gift.gift3.removeEventHandler(MouseEvent.MOUSE_CLICKED,gift.EventHandler3)
-    gift.gift4.removeEventHandler(MouseEvent.MOUSE_CLICKED,gift.EventHandler4)
-    gift.gift5.removeEventHandler(MouseEvent.MOUSE_CLICKED,gift.EventHandler5)
-    gift.gift6.removeEventHandler(MouseEvent.MOUSE_CLICKED,gift.EventHandler6)
-
-
-  }
   /*屏幕下方功能条*/
-  val liveBar: LiveBar = if(!isRecord){
-    //看直播
-    new LiveBar(Constants.WindowStatus.AUDIENCE_LIVE, width = Constants.DefaultPlayer.width, height = Constants.DefaultPlayer.height * 0.1)
-  } else {
-    //看录像
-    new LiveBar(Constants.WindowStatus.AUDIENCE_REC, width = Constants.DefaultPlayer.width, height = Constants.DefaultPlayer.height * 0.1, Some(album.toRecordInfo.duration))
-  }
+  val liveBar: LiveBar = new LiveBar(Constants.WindowStatus.AUDIENCE_REC, width = Constants.DefaultPlayer.width, height = Constants.DefaultPlayer.height * 0.1)
 
-  liveBar.fullScreenIcon.setOnAction{ _ =>
-    if(!isFullScreen) listener.setFullScreen(isRecord)
-    else listener.exitFullScreen(isRecord)
-  }
   val imageToggleBtn: ToggleButton = liveBar.imageToggleButton
   val soundToggleBtn: ToggleButton = liveBar.soundToggleButton
 
@@ -229,28 +129,10 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
       listener.changeOption(needImage = imageToggleBtn.isSelected, needSound = soundToggleBtn.isSelected)
   }
 
-  liveBar.startTimer()
+//  liveBar.startTimer()
 
-  liveBar.playToggleButton.setOnAction {
-    _ =>
-      if (liveBar.playToggleButton.isSelected) {
-        listener.continuePlayRec(album.toRecordInfo)
-        liveBar.resetStartPlayTime(System.currentTimeMillis())
-        Tooltip.install(liveBar.playToggleButton, new Tooltip("点击暂停"))
-      } else {
-        listener.pausePlayRec(album.toRecordInfo)
-        liveBar.isPlaying = false
-        //        liveBar.hasplayedTime = liveBar.showedPlayTime
-        Tooltip.install(liveBar.playToggleButton, new Tooltip("点击继续"))
-      }
-
-  }
 
   val liveBarBox: VBox = liveBar.barVBox
-
-  /*emoji*/
-  val emoji = new Emoji(commentFiled, width * 0.6, height * 0.6)
-  val emojiFont: String = emoji.emojiFont
 
   /*liveImage view*/
 
@@ -265,55 +147,28 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
   val connectionBg = new Image("img/connectionBg.jpg")
 
 
-  /*record*/
-  val media: Media = if (isRecord) new Media(recordUrl) else null
-  val playerPane: PlayerPane = if (isRecord) new PlayerPane(media, liveBar) else null
-  private val player: MediaPlayer = if (isRecord) playerPane.getMediaPlayer else null
-  val recView: MediaView = if (isRecord) playerPane.getMediaView else null
-  if (isRecord) {
-    recView.setFitHeight(Constants.DefaultPlayer.width)
-    recView.setFitHeight(Constants.DefaultPlayer.height)
-  }
-
-  def playRecord(): Unit = {
-    player.setStartTime(new util.Duration(0))
-    player.play()
-  }
-
-  def pauseRecord(): Unit = {
-    player.pause()
-  }
-
-  def stopRecord(): Unit = {
-    player.stop()
-  }
-
-  def continueRecord(): Unit = {
-    val status = player.getStatus
-    if ((status eq Status.UNKNOWN) || (status eq Status.HALTED)) return
-    if ((status eq Status.PAUSED) || (status eq Status.STOPPED) || (status eq Status.READY)) player.play()
-  }
-
-  def resetBack(): Unit = {
-    gc.clearRect(0,0,gc.getCanvas.getWidth, gc.getCanvas.getHeight)
-    gc.drawImage(connectionBg, 0, 0, gc.getCanvas.getWidth, gc.getCanvas.getHeight)
-    val sWidth = gc.getCanvas.getWidth
-    val sHeight = gc.getCanvas.getHeight
-    gc.drawImage(waitPulling, sWidth / 2, sHeight / 4, sWidth / 2, sHeight / 2)
-    gc.drawImage(waitPulling, 0, sHeight / 4, sWidth / 2, sHeight / 2)
-    gc.setFont(Font.font(emojiFont, 25))
-    gc.setFill(Color.BLACK)
-    gc.fillText(s"连线中", imgView.getWidth / 2 - 40, imgView.getHeight / 8)
-  }
 
 
-  def resetBack2():Unit={
-    gc.clearRect(0,0,gc.getCanvas.getWidth, gc.getCanvas.getHeight)
-    gc.drawImage(connectionBg, 0, 0, gc.getCanvas.getWidth, gc.getCanvas.getHeight)
-    gc.setFont(Font.font(emojiFont, 25))
-    gc.setFill(Color.BLACK)
-    gc.fillText(s"连线中", imgView.getWidth / 2 - 40, imgView.getHeight / 8)
-  }
+//  def resetBack(): Unit = {
+//    gc.clearRect(0,0,gc.getCanvas.getWidth, gc.getCanvas.getHeight)
+//    gc.drawImage(connectionBg, 0, 0, gc.getCanvas.getWidth, gc.getCanvas.getHeight)
+//    val sWidth = gc.getCanvas.getWidth
+//    val sHeight = gc.getCanvas.getHeight
+//    gc.drawImage(waitPulling, sWidth / 2, sHeight / 4, sWidth / 2, sHeight / 2)
+//    gc.drawImage(waitPulling, 0, sHeight / 4, sWidth / 2, sHeight / 2)
+//    gc.setFont(Font.font(emojiFont, 25))
+//    gc.setFill(Color.BLACK)
+//    gc.fillText(s"连线中", imgView.getWidth / 2 - 40, imgView.getHeight / 8)
+//  }
+//
+//
+//  def resetBack2():Unit={
+//    gc.clearRect(0,0,gc.getCanvas.getWidth, gc.getCanvas.getHeight)
+//    gc.drawImage(connectionBg, 0, 0, gc.getCanvas.getWidth, gc.getCanvas.getHeight)
+//    gc.setFont(Font.font(emojiFont, 25))
+//    gc.setFill(Color.BLACK)
+//    gc.fillText(s"连线中", imgView.getWidth / 2 - 40, imgView.getHeight / 8)
+//  }
 
   def loadingBack(): Unit = {
     gc.drawImage(waitPulling, 0, 0, gc.getCanvas.getWidth, gc.getCanvas.getHeight)
@@ -326,57 +181,28 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
       case AudienceStatus.LIVE =>
         loadingBack()
       case AudienceStatus.CONNECT =>
-        resetBack()
+        //resetBack()
     }
 
   }
 
   def autoReset2():Unit={
-    resetBack2()
+    //resetBack2()
   }
-
-  /*弹幕*/
-  val barrage: Barrage = if(!isRecord){
-    new Barrage(Constants.WindowStatus.AUDIENCE_LIVE, imgView.getWidth, imgView.getHeight)
-  } else {
-    new Barrage(Constants.WindowStatus.AUDIENCE_REC, imgView.getWidth, imgView.getHeight, Some(player))
-  }
-  val barrageCanvas: Canvas = barrage.barrageView
-
-  /*留言板*/
-  val commentBoard = new CommentBoard(imgView.getWidth, height * 0.18)
-  val commentArea: VBox = commentBoard.commentArea
 
   /*观看列表*/
   val watchingList = new WatchingList(width * 0.1, width * 0.15, height * 0.3, None)
-  val watchingState: Text = if (!isRecord) watchingList.watchingState else new Text(s"有${album.observerNum}人已经看过该录像")
+  val watchingState: Text = watchingList.watchingState
   val watchingTable: TableView[WatchingList.WatchingListInfo] = watchingList.watchingTable
-
-  /*录像留言列表*/
-  //  val refreshBtn = new Button("刷新")
-  //  refreshBtn.setOnAction(_ => listener.refreshRecCmt())
-  val recCommentBoard = new RecordCommentBoard(width * 0.25, 400, commentFiled)
-  val recCmtBox: ListView[VBox] = recCommentBoard.floorListView
 
   private val scene = new Scene(group, width, height)
   scene.getStylesheets.add(
     this.getClass.getClassLoader.getResource("css/common.css").toExternalForm
   )
-  scene.setOnKeyPressed { e =>
-    if (e.getCode == javafx.scene.input.KeyCode.ESCAPE) listener.exitFullScreen(isRecord)
-  }
-  if(isRecord){
-    scene.setOnMouseClicked { e =>
-      commentFiled.setPromptText(s"^_^点我发弹幕~")
-      recCommentBoard.sayTo = None
-    }
-  }
 
   def getScene: Scene = this.scene
 
-  def getRoomInfo: RoomInfo = this.album.toRoomInfo
-
-  def getRecordInfo: RecordInfo = this.album.toRecordInfo
+  def getRoomInfo: MeetingInfo = this.room
 
   def getIsRecord: Boolean = this.isRecord
 
@@ -388,14 +214,14 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
 
   def createIDcard: HBox = {
 
-    val header = Pictures.getPic(album.headImgUrl)
-    header.setFitHeight(40)
-    header.setFitWidth(40)
+//    val header = Pictures.getPic(room.headImgUrl)
+//    header.setFitHeight(40)
+//    header.setFitWidth(40)
 
-    val userName = new Label(s"${album.userName}")
+    val userName = new Label(s"${room.username}")
     userName.getStyleClass.add("hostScene-rightArea-label")
 
-    val userId = new Label(s"${album.userId}")
+    val userId = new Label(s"${room.userId}")
     userName.getStyleClass.add("hostScene-rightArea-label")
 
     val userInfo = new VBox()
@@ -406,14 +232,11 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
 
 
     val viewIcon = Common.getImageView("img/view.png", 30, 30)
-    val viewLabel = new Label(album.observerNum.toString, viewIcon)
+    val viewLabel = new Label(room.attendanceNum.toString, viewIcon)
     viewLabel.setPadding(new Insets(0,0,0,6))
 
-    val IDcard = if(!isRecord){
-      new HBox(header, userInfo, likeBtn, likeNum)
-    } else {
-      new HBox(header, userInfo, likeBtn, likeNum, viewLabel)
-    }
+    val IDcard = new HBox(userInfo, viewLabel)
+
     IDcard.setAlignment(Pos.CENTER_LEFT)
     IDcard.setPadding(new Insets(6, 5, 6, 3))
     IDcard.getStyleClass.add("hostScene-rightArea-IDcard")
@@ -439,7 +262,7 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
     def createRoomInfoBox: VBox = {
       //roomName
       val roomNameIcon = Common.getImageView("img/roomName.png", 30, 30)
-      val roomNameText = new Text(album.roomName)
+      val roomNameText = new Text(room.meetingName)
       roomNameText.setWrappingWidth(width * 0.2)
       roomNameText.getStyleClass.add("audienceScene-leftArea-roomNameText")
 
@@ -450,21 +273,21 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
       roomName.setSpacing(8)
 
       //roomDes
-      val roomDesIcon = Common.getImageView("img/roomDes.png", 30, 30)
-      val roomDesText = if(album.roomDes.nonEmpty){
-        new Text(album.roomDes)
-      } else {
-        new Text("TA还没有描述哦~")
-      }
-      roomDesText.setWrappingWidth(width * 0.2)
-      roomDesText.getStyleClass.add("audienceScene-leftArea-roomDesText")
+//      val roomDesIcon = Common.getImageView("img/roomDes.png", 30, 30)
+//      val roomDesText = if(room.roomDes.nonEmpty){
+//        new Text(room.roomDes)
+//      } else {
+//        new Text("TA还没有描述哦~")
+//      }
+//      roomDesText.setWrappingWidth(width * 0.2)
+//      roomDesText.getStyleClass.add("audienceScene-leftArea-roomDesText")
+//
+//      val roomDes = new HBox()
+//      roomDes.getChildren.addAll(roomDesIcon, roomDesText)
+//      roomDes.setAlignment(Pos.CENTER_LEFT)
+//      roomDes.setSpacing(8)
 
-      val roomDes = new HBox()
-      roomDes.getChildren.addAll(roomDesIcon, roomDesText)
-      roomDes.setAlignment(Pos.CENTER_LEFT)
-      roomDes.setSpacing(8)
-
-      val infoBox = new VBox(roomName, roomDes)
+      val infoBox = new VBox(roomName)
       infoBox.setSpacing(20)
       infoBox.setPadding(new Insets(0, 0, 40, 0))
 
@@ -472,20 +295,20 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
     }
 
     def createButtonBox: HBox = {
-      //      val linkBtn = new Button("申请连线", new ImageView("img/link.png"))
+      val linkBtn = new Button("申请发言", new ImageView("img/link.png"))
       linkBtn.getStyleClass.add("audienceScene-leftArea-linkBtn")
       linkBtn.setOnAction{ _ =>
         if(!hasReqJoin) {
-          listener.joinReq(album.roomId)
+          listener.joinReq(room.meetingId)
           hasReqJoin = true
         }
         else WarningDialog.initWarningDialog("已经发送过申请啦~")
       }
       Common.addButtonEffect(linkBtn)
 
-      //      val exitBtn = new Button("中断连线", new ImageView("img/shutdown.png"))
+      val exitBtn = new Button("中断发言", new ImageView("img/shutdown.png"))
       exitBtn.getStyleClass.add("audienceScene-leftArea-linkBtn")
-      exitBtn.setOnAction(_ => listener.quitJoin(album.roomId))
+      exitBtn.setOnAction(_ => listener.quitJoin(room.meetingId))
       Common.addButtonEffect(exitBtn)
 
       val buttonBox = new HBox(linkBtn, exitBtn)
@@ -505,21 +328,12 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
 
     }
 
-    val leftAreaBox = if (!isRecord) {
-      //看直播
-      new VBox(createRoomInfoBox, createButtonBox, createAudLbArea, watchingState, watchingTable)
-    } else {
-      //看录像
-      new VBox(createRoomInfoBox, recCmtBox)
-    }
-    if(!isRecord) {
-      leftAreaBox.setSpacing(5)
-      leftAreaBox.setPadding(new Insets(25, 10, 10, 10))
-    } else {
-      leftAreaBox.setSpacing(15)
-      leftAreaBox.setPadding(new Insets(25, 10, 10, 10))
-      leftAreaBox.setPrefWidth(width*0.3)
-    }
+    val leftAreaBox = new VBox(createRoomInfoBox, createButtonBox, createAudLbArea, watchingState, watchingTable)
+
+
+    leftAreaBox.setSpacing(5)
+    leftAreaBox.setPadding(new Insets(25, 10, 10, 10))
+
     leftAreaBox.setPrefHeight(height)
     leftAreaBox.getStyleClass.add("hostScene-leftArea-wholeBox")
     leftAreaBox
@@ -548,11 +362,9 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
     }
 
     val livePane = new StackPane()
-    if (!isRecord) {
-      livePane.getChildren.addAll(imgView, statisticsCanvas, barrageCanvas)
-    } else {
-      livePane.getChildren.addAll(playerPane.getMediaView, barrageCanvas)
-    }
+
+    livePane.getChildren.addAll(imgView, statisticsCanvas)
+
     livePane.setAlignment(Pos.BOTTOM_RIGHT)
 
     livePane.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
@@ -578,174 +390,13 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
 
     //    val gift = new GiftBar(group)
 
-    def sendGiftAction(input: TextField, btn: Button, name: String, giftDes: VBox, giftType: Int): Unit = {
-      btn.setOnAction(_ => {
-        if (input.getText.nonEmpty) {
-          listener.sendCmt(Comment(RmManager.userInfo.get.userId, album.roomId,s"送出${input.getText()}个$name！", extension = Some(s"gift$giftType")))
-          input.clear()
-          group.getChildren.remove(giftDes)
-        }
-        else WarningDialog.initWarningDialog("请输入数量")
-      }
-      )
-    }
-
-    sendGiftAction(gift.input1, gift.sendBtn1, "冰可乐", gift.gift1Des, 1)
-    sendGiftAction(gift.input2, gift.sendBtn2, "雪糕", gift.gift2Des, 2)
-    sendGiftAction(gift.input3, gift.sendBtn3, "巧克力", gift.gift3Des, 3)
-    sendGiftAction(gift.input4, gift.sendBtn4, "鲜花", gift.gift4Des, 4)
-    sendGiftAction(gift.input5, gift.sendBtn5, "飞船", gift.gift5Des, 5)
-    sendGiftAction(gift.input6, gift.sendBtn6, "火箭", gift.gift6Des, 6)
 
     val hBox = new HBox()
-    if (!isRecord) {
-      hBox.getChildren.addAll(livePane, gift.giftBox)
-    } else {
-      hBox.getChildren.addAll(livePane)
-    }
 
-    def createWriteLiveComment: HBox = {
+    hBox.getChildren.add(livePane)
 
-      /* val effectOptions: ObservableList[String] =
-         FXCollections.observableArrayList(
-           "普通弹幕",
-           "放大缩小",
-           "闪入闪出",
-           "定点放缩"
-           )
-       val effectChoiceCBx = new ComboBox(effectOptions)  */
-      effectChoiceCBx.setValue("普通弹幕")
+    val vBox = new VBox(createTopBox(), hBox)
 
-      effectChoiceCBx.setOnAction {
-        _ => {
-          effectChoiceCBx.getValue match {
-            case "普通弹幕" =>
-              commentPrefix = "effectType0"
-            case "放大缩小" =>
-              commentPrefix = "effectType1"
-            case "闪入闪出" =>
-              commentPrefix = "effectType2"
-            case "定点放缩" =>
-              commentPrefix = "effectType3"
-            case _ =>
-              commentPrefix = "effectType0"
-          }
-        }
-      }
-
-      commentFiled.setPrefWidth(imgView.getWidth * 0.65)
-      commentFiled.setPrefHeight(30)
-      commentFiled.setFont(Font.font(emojiFont, 15))
-      commentFiled.setPromptText("输入你的留言~")
-      commentFiled.getStyleClass.add("text-area")
-      commentFiled.setOnKeyPressed { e =>
-        if (e.getCode == javafx.scene.input.KeyCode.ENTER) {
-          val comment = Comment(RmManager.roomInfo.get.userId, album.roomId, s"${commentFiled.getText}", extension = Some(commentPrefix))
-          listener.sendCmt(comment)
-          commentFiled.clear()
-        }
-      }
-
-      //      val emojiBtn = new Button("\uD83D\uDE00")
-      emojiBtn.setStyle("-fx-background-radius: 5px;")
-      emojiBtn.setFont(Font.font(emojiFont, 15))
-      val emojiArea = emoji.getEmojiGridPane
-
-      var emojiBtnClick = true
-      emojiBtn.setOnAction { _ =>
-        if (emojiBtnClick) {
-          group.getChildren.add(1, emojiArea)
-        } else {
-          group.getChildren.remove(emojiArea)
-        }
-        emojiBtnClick = !emojiBtnClick
-      }
-      Common.addButtonEffect(emojiBtn)
-
-      //      val sendIcon = Common.getImageView("img/confirm.png", 20, 20)
-      //      val sendBtn = new Button("发送", sendIcon)
-      sendBtn.getStyleClass.add("audienceScene-leftArea-sendBtn")
-      sendBtn.setOnAction { _ =>
-        if (commentFiled.getText != null) {
-          if (RmManager.userInfo.nonEmpty) {
-            val comment = Comment(RmManager.roomInfo.get.userId, album.roomId, s"${commentFiled.getText}", extension = Some(commentPrefix))
-            listener.sendCmt(comment)
-            commentFiled.clear()
-          } else {
-            WarningDialog.initWarningDialog("请先登录哦~")
-          }
-        } else {
-          WarningDialog.initWarningDialog("评论输入不能为空！")
-        }
-      }
-      Common.addButtonEffect(sendBtn)
-
-
-      val commentBox = new HBox(commentFiled, emojiBtn, effectChoiceCBx, sendBtn)
-      commentBox.setAlignment(Pos.CENTER)
-      commentBox.setSpacing(10)
-      commentBox
-
-    }
-
-    def createWriteRecComment: HBox = {
-      commentFiled.setPrefWidth(imgView.getWidth * 0.8)
-      commentFiled.setPrefHeight(30)
-      commentFiled.setFont(Font.font(emojiFont, 15))
-      commentFiled.setPromptText("^_^点我发弹幕~")
-      commentFiled.getStyleClass.add("text-area")
-      commentFiled.setOnKeyPressed { e =>
-        if (e.getCode == javafx.scene.input.KeyCode.ENTER) {
-          listener.sendRecCmt(s"${commentFiled.getText}", System.currentTimeMillis(), player.getCurrentTime.toMillis.toLong, recCommentBoard.sayTo)
-          commentFiled.clear()
-        }
-      }
-
-      val emojiBtn = new Button("\uD83D\uDE00")
-      emojiBtn.setStyle("-fx-background-radius: 5px;")
-      emojiBtn.setFont(Font.font(emojiFont, 15))
-      val emojiArea = emoji.getEmojiGridPane
-
-      var emojiBtnClick = true
-      emojiBtn.setOnAction { _ =>
-        if (emojiBtnClick) {
-          group.getChildren.add(1, emojiArea)
-        } else {
-          group.getChildren.remove(emojiArea)
-        }
-        emojiBtnClick = !emojiBtnClick
-      }
-      Common.addButtonEffect(emojiBtn)
-
-
-      sendBtn.getStyleClass.add("audienceScene-leftArea-sendBtn")
-      sendBtn.setOnAction { _ =>
-        if (commentFiled.getText != null) {
-          if (RmManager.userInfo.nonEmpty) {
-            listener.sendRecCmt(s"${commentFiled.getText}", System.currentTimeMillis(), player.getCurrentTime.toMillis.toLong, recCommentBoard.sayTo)
-            commentFiled.clear()
-          } else {
-            WarningDialog.initWarningDialog("请先登录哦~")
-          }
-        } else {
-          WarningDialog.initWarningDialog("评论输入不能为空！")
-        }
-      }
-      Common.addButtonEffect(sendBtn)
-
-
-      val commentBox = new HBox(commentFiled, emojiBtn, sendBtn)
-      commentBox.setAlignment(Pos.CENTER)
-      commentBox.setSpacing(10)
-      commentBox
-
-    }
-
-    val vBox = if (!isRecord) {
-      new VBox(createTopBox(), hBox, commentArea, createWriteLiveComment)
-    } else {
-      new VBox(createTopBox(), hBox, createWriteRecComment)
-    }
     vBox.getStyleClass.add("hostScene-rightArea-wholeBox")
     if(!isRecord){
       vBox.setSpacing(10)
@@ -773,17 +424,17 @@ class AudienceScene(album: AlbumInfo, isRecord: Boolean = false, recordUrl: Stri
 
   def removeAllElement(): Unit = {
     group.getChildren.clear()
-    fullScreenImage.getChildren.addAll(imgView, barrageCanvas, statisticsCanvas)
+    fullScreenImage.getChildren.addAll(imgView,statisticsCanvas)
     fullScreenImage.setLayoutX(0)
     fullScreenImage.setLayoutY(0)
-    if (isRecord) fullScreenImage.getChildren.addAll(recView, liveBarBox)
+//    if (isRecord) fullScreenImage.getChildren.add(liveBarBox)
     group.getChildren.add(fullScreenImage)
   }
 
   def drawPackageLoss(info: mutable.Map[String, PackageLossInfo], bandInfo: Map[String, BandWidthInfo]): Unit = {
     ctx.save()
     //    println(s"draw loss, ${ctx.getCanvas.getWidth}, ${ctx.getCanvas.getHeight}")
-    ctx.setFont(new Font("Comic Sans Ms", if(!isFullScreen) 10 else 20))
+    ctx.setFont(new Font("Comic Sans Ms", 20))
     ctx.setFill(Color.WHITE)
     val loss: Double = if (info.values.headOption.nonEmpty) info.values.head.lossScale2 else 0
     val band: Double = if (bandInfo.values.headOption.nonEmpty) bandInfo.values.head.bandWidth2s else 0

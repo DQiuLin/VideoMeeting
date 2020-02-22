@@ -98,7 +98,7 @@ class EditController(
       coverLabel.setStyle("-fx-font: 20 KaiTi;-fx-fill: #333f50")
 
       val a =RmManager.roomInfo.get
-      val coverImg = Pictures.getPic(RmManager.roomInfo.get, isHeader = false)
+      val coverImg = Pictures.getPic(RmManager.roomInfo.get.coverImgUrl, isHeader = false)
       coverImg.setFitHeight(Constants.DefaultPlayer.height / 3)
       coverImg.setFitWidth(Constants.DefaultPlayer.width / 3)
       val coverImgBox = new HBox()

@@ -14,7 +14,7 @@ import javafx.scene.{Group, Scene}
 import videomeeting.pcClient.Boot
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.common._
-import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, RoomInfo, UserInfo}
+import videomeeting.protocol.ptcl.CommonInfo.{MeetingInfo, RecordInfo, RoomInfo, UserInfo}
 import org.slf4j.LoggerFactory
 import javafx.scene.Scene
 import javafx.scene.paint.Color
@@ -92,7 +92,7 @@ class FindScene {
 
   def getScene: Scene = this.scene
 
-  var roomList: List[RoomInfo] = List(RoomInfo(19908.toLong,"hope's room","http",190075.toLong,"hope","img/defaultCover.png","img/defaultCover.png",3,3))
+  var roomList: List[MeetingInfo] = Nil
 
   val waitingGif = new ImageView("img/waiting.gif")
   waitingGif.setFitHeight(50)
@@ -158,7 +158,7 @@ class FindScene {
 
 
 
-  def createOnePage(pageIndex: Int, itemsPerPage: Int, albumList: List[AlbumInfo]): VBox = {
+  def createOnePage(pageIndex: Int, itemsPerPage: Int, roomList: List[MeetingInfo]): VBox = {
     val vBox = new VBox()
     vBox.setPadding(new Insets(10, 110, 20, 110))
     vBox.setSpacing(30)
@@ -166,27 +166,27 @@ class FindScene {
     hBox1.setSpacing(25)
     val hBox2 = new HBox()
     hBox2.setSpacing(25)
-    val totalLen = albumList.length
+    val totalLen = roomList.length
     val start = pageIndex * itemsPerPage + 1
     val end = (pageIndex + 1) * itemsPerPage
     for (i <- start to (start + 2)) {
       if (i <= totalLen) {
         val roomBox = new VBox(3)
         // stackPane: roomPic & picBar(userName & viewNum & likeNum)
-        val roomPic = Pictures.getPic(albumList(i - 1).coverImgUrl, isHeader = false)
+        val roomPic = Pictures.getPic(roomList(i - 1).coverImgUrl, isHeader = false)
         roomPic.setFitHeight(Constants.DefaultPlayer.height / 2.5)
         roomPic.setFitWidth(Constants.DefaultPlayer.width / 2.5)
         roomPic.addEventHandler(MouseEvent.MOUSE_CLICKED, (_: MouseEvent) => {
-          listener.enter(albumList(i - 1).roomId, albumList(i - 1).timestamp)
+          listener.enter(roomList(i - 1).meetingId)
         })
 
 
-        val userName = new Label(s"${albumList(i - 1).userName}")
+        val userName = new Label(s"${roomList(i - 1).username}")
         userName.setPrefWidth(120)
         userName.getStyleClass.add("roomScene-userName")
 
         val audienceNumIcon = Common.getImageView("img/roomScene-view.png", 25, 25)
-        val audienceNum = new Label(s"${albumList(i - 1).observerNum}", audienceNumIcon)
+        val audienceNum = new Label(s"${roomList(i - 1).attendanceNum}", audienceNumIcon)
         audienceNum.setPrefWidth(80)
         audienceNum.getStyleClass.add("roomScene-userName")
 
@@ -201,26 +201,26 @@ class FindScene {
         picPane.getChildren.addAll(roomPic)
 
         // roomName
-        val roomName = new Label(s"${albumList(i - 1).roomName}")
+        val roomName = new Label(s"${roomList(i - 1).meetingName}")
         roomName.setPrefWidth(200)
         roomName.getStyleClass.add("roomScene-roomName")
 
         // timeBox(startTime & duration)
         val timeIcon = getImageView("img/date.png", 20, 20)
-        val liveTime = if (albumList(i - 1).timestamp != 0L) new Label(TimeUtil.timeStamp2DetailDate(albumList(i - 1).timestamp), timeIcon) else new Label("")
-        liveTime.setPrefWidth(160)
-        liveTime.getStyleClass.add("roomScene-time")
+//        val liveTime = if (roomList(i - 1).timestamp != 0L) new Label(TimeUtil.timeStamp2DetailDate(roomList(i - 1).timestamp), timeIcon) else new Label("")
+//        liveTime.setPrefWidth(160)
+//        liveTime.getStyleClass.add("roomScene-time")
 
         val durationIcon = getImageView("img/clock.png", 20, 20)
-        val duration = if(albumList(i - 1).timestamp != 0L) new Label(s"${albumList(i - 1).duration}", durationIcon) else new Label("")
-        duration.setPrefWidth(100)
-        duration.getStyleClass.add("roomScene-time")
-
-        val timeBox = new HBox(liveTime, duration)
-        timeBox.setAlignment(Pos.CENTER_LEFT)
+//        val duration = if(roomList(i - 1).timestamp != 0L) new Label(s"${roomList(i - 1).duration}", durationIcon) else new Label("")
+//        duration.setPrefWidth(100)
+//        duration.getStyleClass.add("roomScene-time")
+//
+//        val timeBox = new HBox(liveTime, duration)
+//        timeBox.setAlignment(Pos.CENTER_LEFT)
 
         //roomBox
-        roomBox.getChildren.addAll(picPane, roomName, timeBox)
+        roomBox.getChildren.addAll(picPane, roomName)
         roomBox.setStyle("-fx-cursor: hand;")
         val shadow = new DropShadow(10, Color.GRAY)
         roomBox.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
@@ -240,28 +240,28 @@ class FindScene {
         //        println(s"i${i}, sum: ${totalLen}")
         val roomBox = new VBox(3)
         // stackPane: roomPic & picBar(userName & viewNum & likeNum)
-        val roomPic = Pictures.getPic(albumList(i - 1).coverImgUrl, isHeader = false)
+        val roomPic = Pictures.getPic(roomList(i - 1).coverImgUrl, isHeader = false)
         roomPic.setFitHeight(Constants.DefaultPlayer.height / 2.5)
         roomPic.setFitWidth(Constants.DefaultPlayer.width / 2.5)
         roomPic.addEventHandler(MouseEvent.MOUSE_CLICKED, (_: MouseEvent) => {
-          listener.enter(albumList(i - 1).roomId, albumList(i - 1).timestamp)
+          listener.enter(roomList(i - 1).meetingId)
         })
 
-        val userName = new Label(s"${albumList(i - 1).userName}")
+        val userName = new Label(s"${roomList(i - 1).meetingName}")
         userName.setPrefWidth(120)
         userName.getStyleClass.add("roomScene-userName")
 
         val audienceNumIcon = Common.getImageView("img/roomScene-view.png", 25, 25)
-        val audienceNum = new Label(s"${albumList(i - 1).observerNum}", audienceNumIcon)
+        val audienceNum = new Label(s"${roomList(i - 1).attendanceNum}", audienceNumIcon)
         audienceNum.setPrefWidth(80)
         audienceNum.getStyleClass.add("roomScene-userName")
 
-        val likeNumIcon = Common.getImageView("img/roomScene-like.png", 20, 20)
-        val likeNum = new Label(s"${albumList(i - 1).like}", likeNumIcon)
-        likeNum.setPrefWidth(80)
-        likeNum.getStyleClass.add("roomScene-userName")
+//        val likeNumIcon = Common.getImageView("img/roomScene-like.png", 20, 20)
+//        val likeNum = new Label(s"${roomList(i - 1).like}", likeNumIcon)
+//        likeNum.setPrefWidth(80)
+//        likeNum.getStyleClass.add("roomScene-userName")
 
-        val picBar = new HBox(userName, audienceNum, likeNum)
+        val picBar = new HBox(userName, audienceNum)
         picBar.setMaxSize(roomPic.getFitWidth, roomPic.getFitHeight * 0.2)
         picBar.setPadding(new Insets(3,0,3,0))
         picBar.setAlignment(Pos.CENTER_LEFT)
@@ -272,26 +272,26 @@ class FindScene {
         picPane.getChildren.addAll(roomPic)
 
         // roomName
-        val roomName = new Label(s"${albumList(i - 1).roomName}")
+        val roomName = new Label(s"${roomList(i - 1).meetingName}")
         roomName.setPrefWidth(200)
         roomName.getStyleClass.add("roomScene-roomName")
 
         // timeBox(startTime & duration)
-        val timeIcon = getImageView("img/date.png", 20, 20)
-        val liveTime = if (albumList(i - 1).timestamp != 0L) new Label(TimeUtil.timeStamp2DetailDate(albumList(i - 1).timestamp), timeIcon) else new Label("")
-        liveTime.setPrefWidth(160)
-        liveTime.getStyleClass.add("roomScene-time")
-
-        val durationIcon = getImageView("img/clock.png", 20, 20)
-        val duration = new Label(s"${albumList(i - 1).duration}", durationIcon)
-        duration.setPrefWidth(100)
-        duration.getStyleClass.add("roomScene-time")
-
-        val timeBox = new HBox(liveTime, duration)
-        timeBox.setAlignment(Pos.CENTER_LEFT)
+//        val timeIcon = getImageView("img/date.png", 20, 20)
+//        val liveTime = if (roomList(i - 1).timestamp != 0L) new Label(TimeUtil.timeStamp2DetailDate(roomList(i - 1).timestamp), timeIcon) else new Label("")
+//        liveTime.setPrefWidth(160)
+//        liveTime.getStyleClass.add("roomScene-time")
+//
+//        val durationIcon = getImageView("img/clock.png", 20, 20)
+//        val duration = new Label(s"${roomList(i - 1).duration}", durationIcon)
+//        duration.setPrefWidth(100)
+//        duration.getStyleClass.add("roomScene-time")
+//
+//        val timeBox = new HBox(liveTime, duration)
+//        timeBox.setAlignment(Pos.CENTER_LEFT)
 
         //roomBox
-        roomBox.getChildren.addAll(picPane, roomName, timeBox)
+        roomBox.getChildren.addAll(picPane, roomName)
         roomBox.setStyle("-fx-cursor: hand;")
         val shadow = new DropShadow(10, Color.GRAY)
         roomBox.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
@@ -322,7 +322,7 @@ class FindScene {
     * update roomList  func
     *
     **/
-  def updateRoomList(roomList: List[RoomInfo] = Nil): Unit = {
+  def updateRoomList(roomList: List[MeetingInfo] = Nil): Unit = {
     //    log.debug(s"update room list: r$roomList")
     if (roomList.isEmpty) {
       val label = new Label("暂无房间")
@@ -342,7 +342,7 @@ class FindScene {
         if (pageIndex >= pageNum)
           null
         else {
-          createOnePage(pageIndex, itemsPerPage, roomList.map(_.toAlbum))
+          createOnePage(pageIndex, itemsPerPage, roomList)
         }
       })
       val center = new VBox(10)

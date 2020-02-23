@@ -13,7 +13,7 @@ import javafx.stage.{FileChooser, Stage}
 import videomeeting.pcClient.Boot
 import videomeeting.pcClient.common._
 import videomeeting.pcClient.core.RmManager
-import videomeeting.pcClient.scene.{FindScene}
+import videomeeting.pcClient.scene.FindScene
 import videomeeting.pcClient.utils.RMClient
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.component.WarningDialog

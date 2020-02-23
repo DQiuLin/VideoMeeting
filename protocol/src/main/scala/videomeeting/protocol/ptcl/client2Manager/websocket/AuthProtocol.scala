@@ -145,7 +145,7 @@ object AuthProtocol {
 
   case class JoinRsp(
     hostLiveId: Option[String] = None, //房主liveId
-    joinInfo: Option[Int] = None, //连线者live信息
+    joinInfo: Option[LiveInfo] = None, //连线者live信息
     errCode: Int = 0,
     msg: String = "ok"
   ) extends WsMsgRm2Audience

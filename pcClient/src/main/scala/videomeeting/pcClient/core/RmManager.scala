@@ -59,8 +59,7 @@ object RmManager {
 
   /*未登录观众建立ws临时使用信息*/
   var guestInfo: Option[UserInfo] = None
-  var rtmpServer: Option[String] = Some("rtmp://txy.live-send.acg.tv/live-txy/?streamname=live_44829093_50571972&key=faf3125e8c84c88ad7f05e4fcc017149")
-//  var rtmpServer: Option[String] =None
+
   sealed trait RmCommand
 
   final case class GetHomeItems(homeScene: HomeScene, homeController: HomeController) extends RmCommand
@@ -155,7 +154,7 @@ object RmManager {
 
   final case class StartJoin(hostLiveId: String, audienceLiveInfo: LiveInfo)  extends RmCommand
 
-  final case class Devicesuccess(hostLiveId: String, audienceLiveInfo: LiveInfo) extends RmCommand
+//  final case class Devicesuccess(hostLiveId: String, audienceLiveInfo: LiveInfo) extends RmCommand
 
   final case class StopJoinAndWatch(liveId:String) extends RmCommand //停止和主播连线
 
@@ -263,6 +262,7 @@ object RmManager {
               rst match {
                 case Right(rsp) =>
                   if(rsp.errCode == 0) {
+                    //todo: 给主持人发消息申请加入会议
                     ctx.self ! GoToWatch(rsp.meetingInfo.get)
                   }
                   else if(rsp.errCode == 100008){
@@ -333,18 +333,15 @@ object RmManager {
 //          Behaviors.same
 
         case msg: GoToWatch =>
-
-          //todo: 给主持人发消息，申请加入会议
-
-          //成功加入会议后：
-          //todo: 如果主持人还未开始会议，等待
-          //主持人已经开始会议：
           val audienceScene = new AudienceScene(msg.roomInfo)
           val audienceController = new AudienceController(stageCtx, audienceScene, ctx.self)
           if (msg.roomInfo.rtmp.nonEmpty) {
              audienceScene.liveId = msg.roomInfo.rtmp
             val info = WatchInfo(msg.roomInfo.meetingId, audienceScene.gc)
             liveManager ! LiveManager.PullStream(msg.roomInfo.rtmp.get, watchInfo = Some(info), audienceScene = Some(audienceScene))
+
+//            /*打开摄像头*/
+//            liveManager ! LiveManager.DevicesOn(audienceScene.gc)
 
             ctx.self ! AudienceWsEstablish
 
@@ -771,10 +768,12 @@ object RmManager {
               mediaPlayer.stop(playId, audienceScene.autoReset)
               liveManager ! LiveManager.StopPush
               liveManager ! LiveManager.DeviceOff
-            case AudienceStatus.RECORD =>
+//            case AudienceStatus.RECORD =>
 //              val playId = s"record${audienceScene.getRecordInfo.roomId}time${audienceScene.getRecordInfo.startTime}"
 //              mediaPlayer.stop(playId, audienceScene.resetBack)
-              audienceScene.pauseRecord()
+//              audienceScene.pauseRecord()
+            case _=>
+              //do nothing
           }
 
           Boot.addToPlatform {
@@ -904,21 +903,21 @@ object RmManager {
       case msg: StartJoin =>
         //case StartJoin =>
           log.info(s"Start join.")
-          assert(userInfo.nonEmpty)
+//          assert(userInfo.nonEmpty)
 
          // val userId = userInfo.get.userId
 
           /*暂停第三方播放*/
-          val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
+//          val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
 //          s"room${audienceScene.getRoomInfo.meetingId}"
 //          println(s"pause player ${playId}")
 //          mediaPlayer.pause(playId)
 
-          mediaPlayer.setConnectState(playId , true, () => audienceScene.autoReset())
-          audienceScene.audienceStatus = AudienceStatus.CONNECT
+//          mediaPlayer.setConnectState(playId , true, () => audienceScene.autoReset())
+//          audienceScene.audienceStatus = AudienceStatus.CONNECT
 
          // val playId = Ids.getPlayId(AudienceStatus.LIVE,Some(audienceScene.getMeetingInfo.roomId))
-          println(s"after join playId:$playId")
+//          println(s"after join playId:$playId")
 
           /*背景改变*/
 //         audienceScene.autoReset()
@@ -929,29 +928,31 @@ object RmManager {
 //          mediaPlayer.stop(playId, audienceScene.autoReset)
 
           /*开启媒体设备*/
-          def callBack(): Unit ={
-            ctx.self ! Devicesuccess(msg.hostLiveId,msg.audienceLiveInfo)//(htLiveId,audLiveInfo)
-          }
+//          def callBack(): Unit ={
+//            ctx.self ! Devicesuccess(msg.hostLiveId,msg.audienceLiveInfo)//(htLiveId,audLiveInfo)
+//          }
 //          liveManager ! LiveManager.StopPull
-          liveManager ! LiveManager.DevicesOn(audienceScene.gc, isJoin = true,callBackFunc = Some(callBack) )
+
+          liveManager ! LiveManager.DevicesOn(audienceScene.gc, isJoin = true)
+          liveManager ! LiveManager.PushStream(msg.audienceLiveInfo.liveId, msg.audienceLiveInfo.liveCode)
           audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, sender, isStop, Some((msg.audienceLiveInfo, msg.hostLiveId)), audienceStatus = AudienceStatus.CONNECT,anchorLiveId)
 
 
         /*开始推流*/
-        case msg: Devicesuccess =>
-          val userId = userInfo.get.userId
-//          audienceScene.autoReset2()
-          liveManager ! LiveManager.PushStream(msg.audienceLiveInfo.liveId, msg.audienceLiveInfo.liveCode)
-
-          /*开始拉取并播放主播rtp流*/
-//          val joinInfo = JoinInfo(
-//            audienceScene.getMeetingInfo.roomId, //观看房间id
-//            userId, //观众id
-//            audienceScene.gc //观众页画布gc
-//          )
+//        case msg: Devicesuccess =>
+//          val userId = userInfo.get.userId
+////          audienceScene.autoReset2()
+//          liveManager ! LiveManager.PushStream(msg.audienceLiveInfo.liveId, msg.audienceLiveInfo.liveCode)
 //
-//          liveManager ! LiveManager.PullStream(msg.hostLiveId, joinInfo = Some(joinInfo))
-          audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, sender, isStop, Some((msg.audienceLiveInfo, msg.hostLiveId)), audienceStatus = AudienceStatus.CONNECT,anchorLiveId)
+//          /*开始拉取并播放主播rtp流*/
+////          val joinInfo = JoinInfo(
+////            audienceScene.getMeetingInfo.roomId, //观看房间id
+////            userId, //观众id
+////            audienceScene.gc //观众页画布gc
+////          )
+////
+////          liveManager ! LiveManager.PullStream(msg.hostLiveId, joinInfo = Some(joinInfo))
+//          audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, sender, isStop, Some((msg.audienceLiveInfo, msg.hostLiveId)), audienceStatus = AudienceStatus.CONNECT,anchorLiveId)
 
         case msg: ExitJoin =>
           log.debug("disconnection with host.")

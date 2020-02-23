@@ -180,7 +180,7 @@ lazy val tmp = (project in file("tmp")).enablePlugins(PackPlugin)
   .settings(scalaJSUseMainModuleInitializer := false)
   .dependsOn(protocolJvm)
 
-val pcClientMain = "videomeeting.Boot"
+val pcClientMain = "videomeeting.pcClient.Boot"
 lazy val pcClient = (project in file("pcClient")).enablePlugins(PackPlugin)
   .settings(commonSettings: _*)
   .settings(

@@ -34,7 +34,7 @@ object MeetingManager {
 
   case class GetMeetingList(replyTo: ActorRef[MeetingListRsp]) extends Command
 
-  case class SearchMeeting(userId:  Option[Long], roomId: Long, replyTo:ActorRef[SearchMeetingRsp]) extends Command
+  case class SearchMeeting(userId:  Option[Int], roomId: Long, replyTo:ActorRef[SearchMeetingRsp]) extends Command
 
   case class UserInfoChange(userId:Int,temporary:Boolean) extends Command
 

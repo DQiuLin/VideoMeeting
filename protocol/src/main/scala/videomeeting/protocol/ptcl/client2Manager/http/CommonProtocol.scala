@@ -15,11 +15,11 @@ object CommonProtocol {
   //TODO 具体错误情况和错误码由room manager细化
 
   /**
-   * 注册 & 登录 & 查询房间
-   *
-   * POST
-   *
-   **/
+    * 注册 & 登录 & 查询房间
+    *
+    * POST
+    *
+    **/
   case class SignUp(
                      userName: String,
                      password: String
@@ -56,8 +56,8 @@ object CommonProtocol {
                         ) extends Response
 
   case class SearchMeetingReq(
-                               userId: Option[Long],
-                               roomId: Long
+                               userId: Option[Int],
+                               roomId: Int
                              ) extends Request
 
   case class SearchMeetingRsp(
@@ -68,14 +68,14 @@ object CommonProtocol {
 
 
   /**
-   * 录像
-   */
+    * 录像
+    */
 
 
   /**
-   *
-   * 头像 昵称
-   */
+    *
+    * 头像 昵称
+    */
 
   case class ImgChangeRsp(
                            url: String,
@@ -100,11 +100,11 @@ object CommonProtocol {
   val SearchRoomError4ProcessorDead = SearchMeetingRsp(None, 100006, msg = "error: processor failed")
 
   /**
-   *
-   * 建立websocket
-   *
-   * post
-   */
+    *
+    * 建立websocket
+    *
+    * post
+    */
   case class SetupWsReq(
                          userId: Int,
                          token: String
@@ -124,12 +124,12 @@ object CommonProtocol {
                               ) extends Response
 
   /**
-   *
-   * 获取房间列表
-   *
-   * GET
-   *
-   **/
+    *
+    * 获取房间列表
+    *
+    * GET
+    *
+    **/
 
   case class MeetingListRsp(
                              meetingList: Option[List[MeetingInfo]] = None,
@@ -147,8 +147,8 @@ object CommonProtocol {
                                       ) extends Response
 
   /**
-   * 根据userId,token查询roomInfo接口
-   **/
+    * 根据userId,token查询roomInfo接口
+    **/
   final case class GetMeetingInfoReq(
                                       userId: Int,
                                       token: String
@@ -161,8 +161,8 @@ object CommonProtocol {
                                  )
 
   /**
-   * 获取LiveInfo
-   */
+    * 获取LiveInfo
+    */
   case class GetLiveInfoRsp(
                              liveInfo: LiveInfo,
                              errCode: Int = 0,
@@ -170,8 +170,8 @@ object CommonProtocol {
                            ) extends Response
 
   /**
-   * WebClient
-   */
+    * WebClient
+    */
   final case class InitiateRsp(
                                 meetingList: Option[List[InitiateMeetingInfo]] = None,
                                 errCode: Int = 0,

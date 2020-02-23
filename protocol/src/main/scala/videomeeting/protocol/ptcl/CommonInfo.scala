@@ -9,8 +9,8 @@ object CommonInfo {
 
   object ScreenLayout {
     val EQUAL = 0 //对等窗口
-    val HOST_MAIN_LEFT = 1 //大小窗口（主播大，观众再左边）
-    val HOST_MAIN_RIGHT = 1 //大小窗口（主播大，观众再右边）
+    val HOST_MAIN_LEFT = 1 //大小窗口（主播大，观众在左边）
+    val HOST_MAIN_RIGHT = 1 //大小窗口（主播大，观众在右边）
     val AUDIENCE_MAIN_LEFT = 2 //大小窗口（观众大，主播在左边）
     val AUDIENCE_MAIN_RIGHT = 2 //大小窗口（观众大，主播在右边）
   }
@@ -21,7 +21,7 @@ object CommonInfo {
 
   }
 
-  object CameraPosition{
+  object CameraPosition {
     val left_top = 0
     val right_top = 1
     val right_bottom = 2
@@ -29,40 +29,40 @@ object CommonInfo {
   }
 
   case class User(
-                   id: Long,
+                   id: Int,
                    name: String,
                    password: String,
                    avatar: String
                  )
 
   case class UserInfo(
-                       userId: Long,
+                       userId: Int,
                        userName: String,
-                       headImgUrl:String,
+                       headImgUrl: String,
                      )
 
   case class MeetingInfo(
-                        meetingId: Int,
-                        meetingName: String,
-                        userId: Long,
-                        username: String,
-                        var attendanceNum: Int = 0,
-                        var rtmp: Option[String] = None
+                          meetingId: Int,
+                          meetingName: String,
+                          userId: Int,
+                          username: String,
+                          var attendanceNum: Int = 0,
+                          var rtmp: Option[String] = None
                         )
 
   case class RecordInfo(
-                         recordId:Long,//数据库中的录像id，用于删除录像
-                         roomId:Long,
-                         recordName:String,
-                         recordDes:String,
-                         userId:Long,
-                         userName:String,
-                         startTime:Long,
-                         headImg:String,
-                         coverImg:String,
-                         observeNum:Int, //浏览量
-                         likeNum:Int,
-                         duration:String = ""
+                         recordId: Int, //数据库中的录像id，用于删除录像
+                         roomId: Int,
+                         recordName: String,
+                         recordDes: String,
+                         userId: Int,
+                         userName: String,
+                         startTime: Long,
+                         headImg: String,
+                         coverImg: String,
+                         observeNum: Int, //浏览量
+                         likeNum: Int,
+                         duration: String = ""
                        )
 
   case class InviteMeetingInfo(
@@ -116,34 +116,35 @@ object CommonInfo {
 
   /*参会者信息*/
   case class AttendenceInfo(
-                           userId: Int,
-                           userName: String,
-                           liveId: String
-                         )
+                             userId: Int,
+                             userName: String,
+                             liveId: String
+                           )
 
-  object ImgType{
-    val headImg = 0//头像图片
-    val coverImg = 1//封面图片
+  object ImgType {
+    val headImg = 0 //头像图片
+    val coverImg = 1 //封面图片
   }
 
-//  case class MeetingInfo(
-//    roomId: Long,
-//    roomName: String,
-//    roomDes: String,
-//    userId: Long,  //房主id
-//    userName:String,
-//    headImgUrl:String,
-//    coverImgUrl:String,
-//    var observerNum:Int,
-//    var like:Int,
-//    var mpd: Option[String] = None,
-//    var rtmp: Option[String] = None
-//    //var liveAdd: Option[String] = None
-//  )
+  //  case class MeetingInfo(
+  //    roomId: Int,
+  //    roomName: String,
+  //    roomDes: String,
+  //    userId: Int,  //房主id
+  //    userName:String,
+  //    headImgUrl:String,
+  //    coverImgUrl:String,
+  //    var observerNum:Int,
+  //    var like:Int,
+  //    var mpd: Option[String] = None,
+  //    var rtmp: Option[String] = None
+  //    //var liveAdd: Option[String] = None
+  //  )
 
   case class UserDes(
-    userId: Long,
-    userName: String,
-    headImgUrl:String
-  )
+                      userId: Int,
+                      userName: String,
+                      headImgUrl: String
+                    )
+
 }

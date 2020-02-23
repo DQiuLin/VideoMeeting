@@ -53,8 +53,8 @@ object RmManager {
 
   //var userInfo: Option[UserInfo] = Some(new UserInfo(10075,"hope","http","test",100928.toLong,false))
   //var roomInfo: Option[MeetingInfo] = Some(new MeetingInfo(367.toLong,"hope's room","test",10075,"hope","test","test",1,1))
-  var userInfo: Option[UserInfo] =None
-  var roomInfo: Option[MeetingInfo] =None
+  var userInfo: Option[UserInfo] = None
+  var roomInfo: Option[MeetingInfo] = None
   val likeMap: mutable.HashMap[(Long, Long), Boolean] = mutable.HashMap.empty //(userId,roomId) -> true
 
   /*未登录观众建立ws临时使用信息*/
@@ -71,7 +71,7 @@ object RmManager {
 
   final case object GoToRoomHall extends RmCommand
 
-  final case class GetRoomDetail(roomId: Long) extends RmCommand
+  final case class GetRoomDetail(roomId: Int) extends RmCommand
 
   final case class GetRecordDetail(recordInfo: RecordInfo) extends RmCommand
 
@@ -269,15 +269,15 @@ object RmManager {
                     log.info(s"got roomInfo error: 无actor。")
                     Boot.addToPlatform {
                       roomController.get.removeLoading()
-                      WarningDialog.initWarningDialog("主播已关闭房间！")
+                      WarningDialog.initWarningDialog("主持人已关闭会议室！")
                       roomController.foreach(_.refreshList)
                     }
                   }
                   else if(rsp.errCode == 100009){
-                    log.info(s"got roomInfo error: 主播停播，房间还在.")
+                    log.info(s"got roomInfo error: 主持人关闭会议，会议室还在。")
                     Boot.addToPlatform {
                       roomController.get.removeLoading()
-                      WarningDialog.initWarningDialog("主播已关闭直播。")
+                      WarningDialog.initWarningDialog("主持人已关闭会议。")
                       roomController.foreach(_.refreshList)
                     }
                   }
@@ -333,6 +333,12 @@ object RmManager {
 //          Behaviors.same
 
         case msg: GoToWatch =>
+
+          //todo: 给主持人发消息，申请加入会议
+
+          //成功加入会议后：
+          //todo: 如果主持人还未开始会议，等待
+          //主持人已经开始会议：
           val audienceScene = new AudienceScene(msg.roomInfo)
           val audienceController = new AudienceController(stageCtx, audienceScene, ctx.self)
           if (msg.roomInfo.rtmp.nonEmpty) {
@@ -377,10 +383,10 @@ object RmManager {
           homeController.foreach(_.showScene())
           Behaviors.same
 
-        case msg: ChangeCover =>
-          log.info("change cover.")
-          this.roomInfo = roomInfo.map(_.copy(coverImgUrl = msg.newCoverUrl))
-          Behaviors.same
+//        case msg: ChangeCover =>
+//          log.info("change cover.")
+//          this.roomInfo = roomInfo.map(_.copy(coverImgUrl = msg.newCoverUrl))
+//          Behaviors.same
 
         case msg: ChangeUserName =>
           log.info("change userName.")
@@ -904,7 +910,7 @@ object RmManager {
 
           /*暂停第三方播放*/
           val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
-          s"room${audienceScene.getRoomInfo.meetingId}"
+//          s"room${audienceScene.getRoomInfo.meetingId}"
 //          println(s"pause player ${playId}")
 //          mediaPlayer.pause(playId)
 

@@ -10,17 +10,17 @@ import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, RoomInfo}
 package object common {
   /*room or record*/
   case class AlbumInfo(
-    roomId: Long,
+    roomId: Int,
     roomName: String,
     roomDes: String,
-    userId: Long,
+    userId: Int,
     userName: String,
     headImgUrl: String,
     coverImgUrl: String,
     observerNum: Int,
     like: Int,
     streamId: Option[String] = None,
-    recordId: Long = 0L,
+    recordId: Int = 0,
     timestamp: Long = 0l,
     duration: String = ""
   ) {

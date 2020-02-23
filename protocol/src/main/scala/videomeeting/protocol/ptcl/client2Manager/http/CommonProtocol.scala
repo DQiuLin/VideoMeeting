@@ -56,8 +56,8 @@ object CommonProtocol {
                         ) extends Response
 
   case class SearchMeetingReq(
-                               userId: Option[Int],
-                               roomId: Int
+                               userId: Option[Long],
+                               roomId: Long
                              ) extends Request
 
   case class SearchMeetingRsp(

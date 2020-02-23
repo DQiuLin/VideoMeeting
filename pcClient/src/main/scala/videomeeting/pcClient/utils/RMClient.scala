@@ -96,15 +96,15 @@ object RMClient extends HttpUtil {
 
   }
 
-  def getRoomInfo(userId: Long, token: String): Future[Either[Throwable, RoomInfoRsp]] = {
+  def getRoomInfo(userId: Int, token: String): Future[Either[Throwable, MeetingInfoRsp]] = {
 
     val methodName = "getRoomInfo"
     val url = Routes.getRoomInfo
 
-    val data = GetRoomInfoReq(userId, token).asJson.noSpaces
+    val data = GetMeetingInfoReq(userId, token).asJson.noSpaces
     postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
       case Right(jsonStr) =>
-        decode[RoomInfoRsp](jsonStr)
+        decode[MeetingInfoRsp](jsonStr)
       case Left(error) =>
         log.error(s"user-$userId getRoomInfo error: $error")
         Left(error)
@@ -211,16 +211,16 @@ object RMClient extends HttpUtil {
   }
 
 
-  def searchRoom(userId: Option[Long] = None, roomId: Long): Future[Either[Throwable, SearchRoomRsp]] = {
+  def searchRoom(userId: Option[Long] = None, roomId: Long): Future[Either[Throwable, SearchMeetingRsp]] = {
 
     val methodName = "searchRoom"
     val url = Routes.searchRoom
 
-    val data = SearchRoomReq(userId, roomId).asJson.noSpaces
+    val data = SearchMeetingReq(userId, roomId).asJson.noSpaces
 
     postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {
       case Right(jsonStr) =>
-        decode[SearchRoomRsp](jsonStr)
+        decode[SearchMeetingRsp](jsonStr)
       case Left(error) =>
         log.debug(s"searchRoom error: $error")
         Left(error)

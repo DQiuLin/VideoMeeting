@@ -106,9 +106,9 @@ object AuthProtocol {
 
   /*连线控制*/
 
-  case class AudienceJoin(userId: Long, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
+  case class AudienceJoin(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
 
-  case class JoinAccept(roomId: Long, userId: Long, clientType: Int, accept: Boolean) extends WsMsgHost //审批某个用户连线请求
+  case class JoinAccept(roomId: Int, userId: Int, clientType: Int, accept: Boolean) extends WsMsgHost //审批某个用户连线请求
 
   case class AudienceJoinRsp(
     joinInfo: Option[Int] = None, //连线者信息
@@ -140,7 +140,7 @@ object AuthProtocol {
 
 
   /*申请连线*/
-  case class JoinReq(userId: Long, roomId: Long, clientType: Int) extends WsMsgAudience
+  case class JoinReq(userId: Int, roomId: Int, clientType: Int) extends WsMsgAudience
 
 
   case class JoinRsp(
@@ -181,7 +181,7 @@ object AuthProtocol {
 
   val JoinRefused = JoinRsp(errCode = 300002, msg = "host refuse your request.") //房主拒绝连线申请
 
-  case class AudienceShutJoin(roomId: Long) extends WsMsgAudience //断开与房主的连线请求
+  case class AudienceShutJoin(roomId: Int, userId:Int) extends WsMsgAudience //断开与房主的连线请求
 
   //fixme 切断与某个用户的连线，增加userId，拓展多个用户连线的情况
   case class AudienceShutJoinPlus(userId:Long) extends WsMsgAudience //断开与房主的连线请求

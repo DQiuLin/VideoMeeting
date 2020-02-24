@@ -41,11 +41,11 @@ object AudienceScene {
 
   trait AudienceSceneListener {
 
-    def joinReq(roomId: Long)
+    def joinReq(roomId: Int)
 
     def changeOption(needImage: Boolean = true, needSound: Boolean = true)
 
-    def quitJoin(roomId: Long)
+    def quitJoin(roomId: Int, userId:Int)
 
     def gotoHomeScene()
 
@@ -295,17 +295,21 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
       val linkBtn = new Button("申请发言", new ImageView("img/link.png"))
       linkBtn.getStyleClass.add("audienceScene-leftArea-linkBtn")
       linkBtn.setOnAction{ _ =>
-        if(!hasReqJoin) {
-          listener.joinReq(room.meetingId)
-          hasReqJoin = true
-        }
-        else WarningDialog.initWarningDialog("已经发送过申请啦~")
+//        if(!hasReqJoin) {
+//          listener.joinReq(room.meetingId)
+//          hasReqJoin = true
+//        }
+//        else WarningDialog.initWarningDialog("已经发送过申请啦~")
+        //TODo 申请发言
       }
       Common.addButtonEffect(linkBtn)
 
       val exitBtn = new Button("中断发言", new ImageView("img/shutdown.png"))
       exitBtn.getStyleClass.add("audienceScene-leftArea-linkBtn")
-      exitBtn.setOnAction(_ => listener.quitJoin(room.meetingId))
+      exitBtn.setOnAction( _ => {
+        //TODO 中断发言
+//        listener.quitJoin(room.meetingId)
+      })
       Common.addButtonEffect(exitBtn)
 
       val buttonBox = new HBox(linkBtn, exitBtn)
@@ -321,15 +325,21 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
     liveToggleButton.setOnAction(_ => {
       if(liveToggleButton.isSelected){
         liveToggleButton.setText("退出会议")
-        //TODO 开会
+        //加入会议
+        if(!hasReqJoin) {
+          listener.joinReq(room.meetingId)
+          hasReqJoin = true
+        }
+        else WarningDialog.initWarningDialog("已经发送过申请啦~")
       }else{
         liveToggleButton.setText("加入会议")
-        //TODO 结束会议
+        //退出会议
+        listener.quitJoin(room.meetingId, room.userId)
       }
     }
     )
 
-    val leftAreaBox = new VBox(createRoomInfoBox, createButtonBox,liveToggleButton)
+    val leftAreaBox = new VBox(createRoomInfoBox, createButtonBox, liveToggleButton)
 
 
     leftAreaBox.setSpacing(5)

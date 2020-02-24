@@ -67,10 +67,9 @@ class AudienceController(
 
   audienceScene.setListener(new AudienceSceneListener {
 
-    override def joinReq(meetingId: Long): Unit = {
+    override def joinReq(meetingId: Int): Unit = {
       if (RmManager.userInfo.nonEmpty) {
-        WarningDialog.initWarningDialog("连线申请已" +
-                                        "发送！")
+        WarningDialog.initWarningDialog("加入会议申请已发送")
         rmManager ! RmManager.JoinRoomReq(meetingId)
       } else {
         WarningDialog.initWarningDialog("请先登录哦~")
@@ -78,9 +77,9 @@ class AudienceController(
 
     }
 
-    override def quitJoin(meetingId: Long): Unit = {
+    override def quitJoin(meetingId: Int, userId:Int): Unit = {
       if (RmManager.userInfo.nonEmpty) {
-        rmManager ! RmManager.ExitJoin(meetingId)
+        rmManager ! RmManager.ExitJoin(meetingId, userId)
       } else {
         WarningDialog.initWarningDialog("请先登录哦~")
       }

@@ -151,7 +151,7 @@ object RmManager {
 
   final case class SendLikeRoom(likeRoom: LikeRoom) extends RmCommand
 
-  final case class JoinRoomReq(roomId: Long) extends RmCommand
+  final case class JoinRoomReq(roomId: Int) extends RmCommand
 
   final case class StartJoin(hostLiveId: String, audienceLiveInfo: LiveInfo)  extends RmCommand
 
@@ -159,7 +159,7 @@ object RmManager {
 
   final case class StopJoinAndWatch(liveId:String) extends RmCommand //停止和主播连线
 
-  final case class ExitJoin(roomId: Long) extends RmCommand //主动关闭和主播的连线
+  final case class ExitJoin(roomId: Int, userId:Int) extends RmCommand //主动关闭和主播的连线
 
   final case class StartRecord(outFilePath: String) extends  RmCommand //开始录制
 
@@ -263,7 +263,6 @@ object RmManager {
               rst match {
                 case Right(rsp) =>
                   if(rsp.errCode == 0) {
-                    //todo: 给主持人发消息申请加入会议
                     ctx.self ! GoToWatch(rsp.meetingInfo.get)
                   }
                   else if(rsp.errCode == 100008){
@@ -340,9 +339,6 @@ object RmManager {
              audienceScene.liveId = msg.roomInfo.rtmp
             val info = WatchInfo(msg.roomInfo.meetingId, audienceScene.gc)
             liveManager ! LiveManager.PullStream(msg.roomInfo.rtmp.get, watchInfo = Some(info), audienceScene = Some(audienceScene))
-
-//            /*打开摄像头*/
-//            liveManager ! LiveManager.DevicesOn(audienceScene.gc)
 
             ctx.self ! AudienceWsEstablish
 
@@ -958,7 +954,7 @@ object RmManager {
         case msg: ExitJoin =>
           log.debug("disconnection with host.")
           if (audienceStatus == AudienceStatus.CONNECT) {
-            sender.foreach(_ ! AudienceShutJoin(msg.roomId))
+            sender.foreach(_ ! AudienceShutJoin(msg.roomId,msg.userId))
             ctx.self ! StopJoinAndWatch("")
           }
           Behaviors.same

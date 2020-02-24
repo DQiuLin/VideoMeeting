@@ -92,6 +92,8 @@ class FindScene {
 
   def getScene: Scene = this.scene
 
+  /*live*/
+  var roomList: List[MeetingInfo] = Nil
 
   /*buttons*/
 

@@ -26,6 +26,7 @@ import videomeeting.meetingManager.common.Common
 import videomeeting.meetingManager.common.Common.{Like, Role, Subscriber}
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
+import videomeeting.meetingManager.protocol.CommonInfoProtocol.WholeRoomInfo
 import videomeeting.meetingManager.utils.RtpClient
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol
 
@@ -106,7 +107,7 @@ object MeetingActor {
               case Right(rsp) =>
                 if (userTableOpt.nonEmpty) {
                   log.info(s"start meeting succeed")
-                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, 0, None)
+                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, UserInfoDao.getHeadImg(userTableOpt.get.headImg), 0, None)
                   dispatchTo(subscribers)(List((userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
                   val startTime = System.currentTimeMillis()
                   ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, startTime))
@@ -129,7 +130,7 @@ object MeetingActor {
             replyTo ! meetingInfoOpt.get
           }else {
             log.debug("会议信息未更新")
-            replyTo ! MeetingInfo(-1, "", -1, "", -1, None)
+            replyTo ! MeetingInfo(-1, "", "", -1, "", "", -1, None)
           }
           Behaviors.same
 
@@ -228,7 +229,7 @@ object MeetingActor {
           val temporaryList = subscribe.filterNot(_._1 == (meetingInfo.userId, false)).keys.toList.filter(r => r._2).map(_._1)
           UserInfoDao.getUserInfo(attendanceList).onComplete {
             case Success(rst) =>
-              val temporaryUserDesList = temporaryList.map(r => UserInfo(r, s"guest_$r", Common.DefaultImg.headImg))
+              val temporaryUserDesList = temporaryList.map(r => UserInfo(r, s"guest_$r", Common.DefaultImg.headImg, "", -1L))
               dispatch(subscribe)(UpdateAudienceInfo(rst ++ temporaryUserDesList))
             case Failure(_) =>
 
@@ -314,7 +315,7 @@ object MeetingActor {
     *
     **/
   private def handleWebSocketMsg(
-    meetingInfo: MeetingInfo,
+    wholeRoomInfo: WholeRoomInfo,
     subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //包括主播在内的所有用户
     liveInfoMap: mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]], //"audience"/"anchor"->Map(userId->LiveInfo)
     startTime: Long,
@@ -328,6 +329,37 @@ object MeetingActor {
       sendBuffer: MiddleBufferInJvm
     ): Behavior[Command] = {
     msg match {
+
+      case JoinReq(userId4Audience, `roomId`, clientType) =>
+        if (wholeRoomInfo.isJoinOpen) {
+          UserInfoDao.searchById(userId4Audience).map { r =>
+            if (r.nonEmpty) {
+              dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
+            } else {
+              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$roomId")
+              dispatchTo(List((userId4Audience, false)), JoinAccountError)
+            }
+          }.recover {
+            case e: Exception =>
+              log.debug(s"${ctx.self.path} 连线请求失败，内部错误error=$e")
+              dispatchTo(List((userId4Audience, false)), JoinInternalError)
+          }
+        } else {
+          dispatchTo(List((userId4Audience, false)), JoinInvalid)
+        }
+        Behaviors.same
+
+      case AudienceShutJoin(`roomId`, `userId`) =>
+        log.debug(s"${ctx.self.path} the audience connection has been shut")
+        //TODO 目前是某个观众退出则关闭会议，应该修改为不关闭整个会议
+        liveInfoMap.clear()
+        ctx.self ! UpdateRTMP(wholeRoomInfo.liveInfo.liveId)
+        //            val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)
+        //            ProcessorClient.updateRoomInfo(wholeRoomInfo.roomInfo.roomId, liveList, wholeRoomInfo.layout, wholeRoomInfo.aiMode, 0l)
+        dispatch(AuthProtocol.AudienceDisconnect(wholeRoomInfo.liveInfo.liveId))
+        dispatch(RcvComment(-1l, "", s"the audience has shut the join in room $roomId"))
+        Behaviors.same
+
       case x =>
         Behaviors.same
     }

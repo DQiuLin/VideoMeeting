@@ -34,7 +34,7 @@ object AuthProtocol {
 
   /**
     *
-    * 主播端
+    * 主持人端
     *
     **/
 
@@ -42,16 +42,15 @@ object AuthProtocol {
   sealed trait WsMsgHost extends WsMsgClient
 
 
-  /*roomManager发送*/
+  /*meetingManager发送*/
   sealed trait WsMsgRm2Host extends WsMsgRm
 
   /*心跳包*/
-
   case object PingPackage extends WsMsgClient with WsMsgRm
 
   case class HeatBeat(ts: Long) extends WsMsgRm
 
-  case object AccountSealed extends WsMsgRm// 被封号
+  case object AccountSealed extends WsMsgRm //被封号
 
   case object NoUser extends WsMsgRm
 
@@ -61,6 +60,7 @@ object AuthProtocol {
   case class UpdateAudienceInfo(AudienceList: List[UserInfo]) extends WsMsgRm   //当前房间内所有观众的id和昵称,新加入--join--true
 
 //  case class ReFleshRoomInfo(roomInfo: RoomInfo) extends WsMsgRm
+
   /*申请直播*/
   case class StartLiveReq(
     userId: Long,
@@ -80,7 +80,6 @@ object AuthProtocol {
 
 
   /*修改房间信息*/
-
   case class ModifyRoomInfo(
     roomName: Option[String] = None,
     roomDes: Option[String] = None
@@ -92,7 +91,6 @@ object AuthProtocol {
 
 
   /*设置直播内容*/
-
   case class ChangeLiveMode(
     isJoinOpen: Option[Boolean] = None, //是否开启连线
     aiMode: Option[Int] = None, //是否开启人脸识别
@@ -104,14 +102,13 @@ object AuthProtocol {
   val ChangeModeError = ChangeModeRsp(errCode = 200020, msg = "change live mode error.")
 
 
-  /*连线控制*/
+  /*会议控制*/
+  case class AudienceJoin(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请加入会议者信息
 
-  case class AudienceJoin(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
-
-  case class JoinAccept(roomId: Int, userId: Int, clientType: Int, accept: Boolean) extends WsMsgHost //审批某个用户连线请求
+  case class JoinAccept(roomId: Int, userId: Int, clientType: Int, accept: Boolean) extends WsMsgHost //主持人审批某个用户的加入会议请求
 
   case class AudienceJoinRsp(
-    joinInfo: Option[Int] = None, //连线者信息
+    joinInfo: Option[Int] = None, //参会者信息
     errCode: Int = 0,
     msg: String = "ok"
   ) extends WsMsgRm2Host //拒绝成功不发joinInfo，仅发送默认状态信息
@@ -127,7 +124,7 @@ object AuthProtocol {
 
   /**
     *
-    * 观众端
+    * 参会者端
     *
     **/
 
@@ -181,10 +178,7 @@ object AuthProtocol {
 
   val JoinRefused = JoinRsp(errCode = 300002, msg = "host refuse your request.") //房主拒绝连线申请
 
-  case class AudienceShutJoin(roomId: Int, userId:Int) extends WsMsgAudience //断开与房主的连线请求
-
-  //fixme 切断与某个用户的连线，增加userId，拓展多个用户连线的情况
-  case class AudienceShutJoinPlus(userId:Long) extends WsMsgAudience //断开与房主的连线请求
+  case class AudienceShutJoin(roomId: Int, userId:Int) extends WsMsgAudience //某个用户退出会议
 
   case class HostDisconnect(hostLiveId: String) extends WsMsgRm2Audience //房主断开连线通知 (之后rm断开ws连接)
 
@@ -193,6 +187,13 @@ object AuthProtocol {
 
 
   case object BanOnAnchor extends WsMsgRm2Host//禁播消息
+
+  case class UpdateRoomInfo2Client(
+                                    roomName: String,
+                                    roomDec: String
+                                  ) extends WsMsgRm2Audience
+
+  case object HostStopPushStream2Client extends WsMsgRm2Audience
 
   /**
     * 所有用户
@@ -215,11 +216,6 @@ object AuthProtocol {
     extension: Option[String] = None
   ) extends WsMsgRm
 
-  case class UpdateRoomInfo2Client(
-    roomName: String,
-    roomDec: String
-  ) extends WsMsgRm2Audience
 
-  case object HostStopPushStream2Client extends WsMsgRm2Audience
 
 }

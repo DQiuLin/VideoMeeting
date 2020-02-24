@@ -59,7 +59,8 @@ object RmManager {
 
   /*未登录观众建立ws临时使用信息*/
   var guestInfo: Option[UserInfo] = None
-
+  var rtmpServer: Option[String] = Some("rtmp://txy.live-send.acg.tv/live-txy/?streamname=live_44829093_50571972&key=faf3125e8c84c88ad7f05e4fcc017149")
+//  var rtmpServer: Option[String] =None
   sealed trait RmCommand
 
   final case class GetHomeItems(homeScene: HomeScene, homeController: HomeController) extends RmCommand
@@ -215,14 +216,14 @@ object RmManager {
         case msg: SignInSuccess =>
           userInfo = Some(msg.userInfo)
           roomInfo = Some(msg.roomInfo)
-          //token维护（缓存登录时）token先不要了
-//          if(msg.getTokenTime.nonEmpty){
-//            val getTokenTime = msg.getTokenTime.get
-//            val tokenExistTime = msg.userInfo.tokenExistTime
-//            if(System.currentTimeMillis() - getTokenTime > tokenExistTime  * 0.8 ){
-//              homeController.get.updateCache()
-//            }
-//          }
+//          token维护（缓存登录时）
+          if(msg.getTokenTime.nonEmpty){
+            val getTokenTime = msg.getTokenTime.get
+            val tokenExistTime = msg.userInfo.tokenExistTime
+            if(System.currentTimeMillis() - getTokenTime > tokenExistTime  * 0.8 ){
+              homeController.get.updateCache()
+            }
+          }
           Behaviors.same
 
         case GoToLive =>
@@ -715,7 +716,7 @@ object RmManager {
                 }
 
                 def failureFunc(): Unit = {
-//                  val playId = s"room${audienceScene.getMeetingInfo.roomId}"
+//                  val playId = s"room${audienceScene.getRoomInfo.meetingId}"
 //                  mediaPlayer.stop(playId, audienceScene.resetBack)
                   Boot.addToPlatform {
                     WarningDialog.initWarningDialog("连接失败！")
@@ -923,8 +924,8 @@ object RmManager {
 //         audienceScene.autoReset()
 //         mediaPlayer.continue(playId)
           /*暂停第三方播放*/
-//          val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getMeetingInfo.roomId))
-//            s"room${audienceScene.getMeetingInfo.roomId}"
+//          val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
+//            s"room${audienceScene.getRoomInfo.meetingId}"
 //          mediaPlayer.stop(playId, audienceScene.autoReset)
 
           /*开启媒体设备*/
@@ -943,7 +944,7 @@ object RmManager {
 //          val userId = userInfo.get.userId
 ////          audienceScene.autoReset2()
 //          liveManager ! LiveManager.PushStream(msg.audienceLiveInfo.liveId, msg.audienceLiveInfo.liveCode)
-//
+
 //          /*开始拉取并播放主播rtp流*/
 ////          val joinInfo = JoinInfo(
 ////            audienceScene.getMeetingInfo.roomId, //观看房间id
@@ -986,8 +987,8 @@ object RmManager {
 //
 //            /*停止播放主播rtp流*/
 //            val userId = userInfo.get.userId
-//            val playId = Ids.getPlayId(AudienceStatus.CONNECT, roomId = Some(audienceScene.getMeetingInfo.roomId), audienceId = Some(userId))
-//            //            s"room${audienceScene.getMeetingInfo.roomId}-audience$userId"
+//            val playId = Ids.getPlayId(AudienceStatus.CONNECT, roomId = Some(audienceScene.getRoomInfo.meetingId), audienceId = Some(userId))
+//            //            s"room${audienceScene.getRoomInfo.meetingId}-audience$userId"
 //            mediaPlayer.stop(playId, audienceScene.autoReset)
 //
 //            /*断开连线，停止推拉*/
@@ -996,7 +997,7 @@ object RmManager {
 //            liveManager ! LiveManager.DeviceOff
 //
 //            /*恢复第三方播放*/
-//            val info = WatchInfo(audienceScene.getMeetingInfo.roomId, audienceScene.gc)
+//            val info = WatchInfo(audienceScene.getRoomInfo.meetingId, audienceScene.gc)
 //            liveManager ! LiveManager.PullStream(audienceScene.liveId.get, watchInfo = Some(info))
 //          }
           audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, sender, isStop, audienceLiveInfo, audienceStatus = AudienceStatus.LIVE,anchorLiveId)

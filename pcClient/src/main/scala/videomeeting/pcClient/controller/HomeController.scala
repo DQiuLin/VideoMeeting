@@ -281,30 +281,33 @@ class HomeController(
         userInfo = Some(UserInfo(
           bufferedReader.readLine().split(":").last.toLong,
           bufferedReader.readLine().split(":").last,
-          bufferedReader.readLine().split(":").last
+          bufferedReader.readLine().split(":").last,
+          bufferedReader.readLine().split(":").last,
+          bufferedReader.readLine().split(":").last.toLong,
+
         ))
         roomInfo = Some(MeetingInfo(
           bufferedReader.readLine().split(":").last.toInt,
           bufferedReader.readLine().split(":").last,
-//          bufferedReader.readLine().split(":").last,
+          bufferedReader.readLine().split(":").last,
           userInfo.get.userId,
           userInfo.get.userName,
-          bufferedReader.readLine().split(":").last,
+          userInfo.get.headImgUrl,
           0
         ))
-       // getTokenTime = Some(bufferedReader.readLine().split(":").last.toLong)
+        getTokenTime = Some(bufferedReader.readLine().split(":").last.toLong)
         bufferedReader.close()
       }
 
-//      if(System.currentTimeMillis() - getTokenTime.get > userInfo.get.tokenExistTime ){
-//        deleteLoginTemp()
-//        log.debug("deleteLoginTemp")
-//        removeLoading()
-//        Boot.addToPlatform {
-//          WarningDialog.initWarningDialog("登录信息过期，请重新登录账号密码")
-//        }
-//
-//      }else {
+      if(System.currentTimeMillis() - getTokenTime.get > userInfo.get.tokenExistTime ){
+        deleteLoginTemp()
+        log.debug("deleteLoginTemp")
+        removeLoading()
+        Boot.addToPlatform {
+          WarningDialog.initWarningDialog("登录信息过期，请重新登录账号密码")
+        }
+
+      }else {
         log.debug(s"login.")
         rmManager ! RmManager.SignInSuccess(userInfo.get, roomInfo.get, getTokenTime)
         RmManager.userInfo = userInfo
@@ -312,10 +315,11 @@ class HomeController(
         removeLoading()
         Boot.addToPlatform {
           showScene()
-//        }
+        }
       }
     }
   }
+
 
   /**
     * 更新缓存文件 token
@@ -343,7 +347,7 @@ class HomeController(
         userName = Some(bufferedReader.readLine().split(":").last)
         bufferedReader.close()
       }
-      RMClient.signIn(userName.getOrElse(""), password.getOrElse("")).map{
+      RMClient.signIn(userName.getOrElse(""), password.getOrElse("")).map {
         case Right(rsp) =>
           if (rsp.errCode == 0) {
             rmManager ! RmManager.SignInSuccess(rsp.userInfo.get, rsp.roomInfo.get)
@@ -363,11 +367,8 @@ class HomeController(
       }
 
     }
-
-
-
   }
-//密码加密
+    //密码加密
 private val password = "gjh%^&(&  {}77"
   def jdkAESEncode(str:String):String= try {
     //生成key
@@ -432,9 +433,11 @@ private val password = "gjh%^&(&  {}77"
       bufferedWriter.write(s"userId:${userInfo.userId}\n")
       bufferedWriter.write(s"userName:${userInfo.userName}\n")
       bufferedWriter.write(s"headImgUrl:${userInfo.headImgUrl}\n")
+      bufferedWriter.write(s"token:${userInfo.token}\n")
+      bufferedWriter.write(s"tokenExistTime:${userInfo.tokenExistTime}\n")
       bufferedWriter.write(s"roomId:${roomInfo.meetingId}\n")
       bufferedWriter.write(s"roomName:${roomInfo.meetingName}\n")
-//      bufferedWriter.write(s"roomDes:${roomInfo.roomDes}\n")
+      bufferedWriter.write(s"roomDes:${roomInfo.roomDes}\n")
       bufferedWriter.write(s"coverImgUrl:${roomInfo.coverImgUrl}\n")
       bufferedWriter.write(s"getTokenTime:${System.currentTimeMillis()}\n")
       bufferedWriter.close()

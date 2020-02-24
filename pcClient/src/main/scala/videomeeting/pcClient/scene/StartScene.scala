@@ -100,6 +100,11 @@ object StartScene {
 
     def gotoHomeScene()
 
+    def modifyRoomInfo(
+      name: Option[String] = None,
+      des: Option[String] = None
+    )
+
     def ask4Loss()
 
   }
@@ -160,6 +165,14 @@ class StartScene(stage: Stage) {
     *左侧导航栏
     *
     **/
+  var roomNameField = new TextField(s"${RmManager.roomInfo.get.meetingName}")
+  roomNameField.setPrefWidth(width * 0.15)
+  var roomDesArea = new TextArea(s"${RmManager.roomInfo.get.roomDes}")
+  roomDesArea.setPrefSize(width * 0.15, height * 0.1)
+
+  val roomInfoIcon = new ImageView("img/roomInfo.png")
+  roomInfoIcon.setFitWidth(20)
+  roomInfoIcon.setFitHeight(20)
 
   val userIcon = new ImageView("img2/2user.png")
   userIcon.setFitWidth(20)
@@ -176,6 +189,22 @@ class StartScene(stage: Stage) {
   tb1.getStyleClass.add("hostScene-leftArea-toggleButton")
   val tb2 = new ToggleButton("申请发言人", applyIcon)
   tb2.getStyleClass.add("hostScene-leftArea-toggleButton")
+  val tb3 = new ToggleButton("房间 ", roomInfoIcon)
+  tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
+
+  val liveToggleButton = new ToggleButton("开始会议")
+  liveToggleButton.getStyleClass.add("hostScene-rightArea-liveBtn")
+  liveToggleButton.setOnAction(_ => {
+    if(liveToggleButton.isSelected){
+      liveToggleButton.setText("结束会议")
+      //TODO 开会
+    }else{
+      liveToggleButton.setText("开始会议")
+      //TODO 结束会议
+      }
+    }
+  )
+
 
   /**
     * canvas
@@ -323,17 +352,19 @@ class StartScene(stage: Stage) {
   }
 
   def addLeftArea(): VBox = {
-    tb1.setSelected(true)
+    tb3.setSelected(true)
 
     val group = new ToggleGroup
     tb1.setToggleGroup(group)
     tb2.setToggleGroup(group)
+    tb3.setToggleGroup(group)
 
     val tbBox = new HBox()
-    tbBox.getChildren.addAll(tb1, tb2)
+    tbBox.getChildren.addAll(tb3,tb1, tb2)
 
     val left1Area = addLeftChild1Area()
     val left2Area = addLeftChild2Area()
+    val left3Area = addLeftChild3Area()
 
     content.getChildren.add(left1Area)
     content.setPrefSize(width * 0.32, height)
@@ -348,6 +379,13 @@ class StartScene(stage: Stage) {
       tb2.setGraphic(applyIcon)
       content.getChildren.clear()
       content.getChildren.add(left2Area)
+    }
+    )
+
+    tb3.setOnAction(_ => {
+      tb2.setGraphic(roomInfoIcon)
+      content.getChildren.clear()
+      content.getChildren.add(left3Area)
     }
     )
 
@@ -399,6 +437,92 @@ class StartScene(stage: Stage) {
     }
 
     vBox
+
+  }
+
+  def addLeftChild3Area(): VBox = {
+    val backIcon = new ImageView("img/hideBtn.png")
+    val backBtn = new Button("", backIcon)
+    backBtn.getStyleClass.add("roomScene-backBtn")
+    backBtn.setOnAction(_ => listener.gotoHomeScene())
+    Common.addButtonEffect(backBtn)
+
+    val leftAreaBox = new VBox()
+    leftAreaBox.getChildren.addAll(createRoomInfoLabel, createRoomInfoBox)
+    leftAreaBox.setSpacing(10)
+    leftAreaBox.setPadding(new Insets(5, 0, 0, 0))
+    leftAreaBox.getStyleClass.add("hostScene-leftArea-wholeBox")
+    leftAreaBox.setPrefHeight(height)
+
+
+    def createRoomInfoLabel: HBox = {
+      val box = new HBox()
+      box.getChildren.add(backBtn)
+      box.setSpacing(210)
+      box.setAlignment(Pos.CENTER_LEFT)
+      box.setPadding(new Insets(0, 0, 0, 5))
+      box
+
+    }
+
+    def createRoomInfoBox: VBox = {
+      val roomId = new Text(s"房间 ID：${RmManager.roomInfo.get.meetingId}")
+      roomId.getStyleClass.add("hostScene-leftArea-text")
+
+      val userId = new Text(s"房主 ID：${RmManager.roomInfo.get.userId}")
+      userId.getStyleClass.add("hostScene-leftArea-text")
+
+      val roomNameText = new Text("房间名:")
+      roomNameText.getStyleClass.add("hostScene-leftArea-text")
+
+      val confirmIcon1 = new ImageView("img/confirm.png")
+      confirmIcon1.setFitHeight(15)
+      confirmIcon1.setFitWidth(15)
+
+      val roomNameBtn = new Button("确认", confirmIcon1)
+      roomNameBtn.getStyleClass.add("hostScene-leftArea-confirmBtn")
+      roomNameBtn.setOnAction {
+        _ =>
+          roomInfoMap = Map(RmManager.roomInfo.get.meetingId -> List(RmManager.roomInfo.get.meetingName, RmManager.roomInfo.get.roomDes))
+          listener.modifyRoomInfo(name = Option(roomNameField.getText()))
+      }
+      Common.addButtonEffect(roomNameBtn)
+
+      val roomName = new HBox()
+      roomName.setAlignment(Pos.CENTER_LEFT)
+      roomName.getChildren.addAll(roomNameField, roomNameBtn)
+      roomName.setSpacing(5)
+
+      val roomDesText = new Text("房间描述:")
+      roomDesText.getStyleClass.add("hostScene-leftArea-text")
+
+      val confirmIcon2 = new ImageView("img/confirm.png")
+      confirmIcon2.setFitHeight(15)
+      confirmIcon2.setFitWidth(15)
+
+      val roomDesBtn = new Button("确认", confirmIcon2)
+      roomDesBtn.getStyleClass.add("hostScene-leftArea-confirmBtn")
+      roomDesBtn.setOnAction {
+        _ =>
+          roomInfoMap = Map(RmManager.roomInfo.get.meetingId -> List(RmManager.roomInfo.get.meetingName, RmManager.roomInfo.get.roomDes))
+          listener.modifyRoomInfo(des = Option(roomDesArea.getText()))
+      }
+      Common.addButtonEffect(roomDesBtn)
+
+      val roomDes = new HBox()
+      roomDes.setAlignment(Pos.CENTER_LEFT)
+      roomDes.getChildren.addAll(roomDesArea, roomDesBtn)
+      roomDes.setSpacing(5)
+
+      val roomInfoBox = new VBox()
+      roomInfoBox.getChildren.addAll(roomId, userId, roomNameText, roomName, roomDesText, roomDes,liveToggleButton)
+      roomInfoBox.setPadding(new Insets(5, 30, 0, 30))
+      roomInfoBox.setSpacing(15)
+      roomInfoBox
+    }
+
+
+    leftAreaBox
 
   }
 

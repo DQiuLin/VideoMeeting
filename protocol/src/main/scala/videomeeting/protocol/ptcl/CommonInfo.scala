@@ -39,13 +39,17 @@ object CommonInfo {
                        userId: Int,
                        userName: String,
                        headImgUrl: String,
+                       token: String,
+                       tokenExistTime: Long
                      )
 
   case class MeetingInfo(
                           meetingId: Int,
                           meetingName: String,
+                          roomDes: String,
                           userId: Int,
                           username: String,
+                          coverImgUrl: String,
                           var attendanceNum: Int = 0,
                           var rtmp: Option[String] = None
                         )

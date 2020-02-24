@@ -14,7 +14,7 @@ import javafx.scene.{Group, Scene}
 import videomeeting.pcClient.Boot
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.common._
-import videomeeting.protocol.ptcl.CommonInfo.{MeetingInfo, RecordInfo, RoomInfo, UserInfo}
+import videomeeting.protocol.ptcl.CommonInfo.{MeetingInfo, RecordInfo, UserInfo}
 import org.slf4j.LoggerFactory
 import javafx.scene.Scene
 import javafx.scene.paint.Color
@@ -92,29 +92,13 @@ class FindScene {
 
   def getScene: Scene = this.scene
 
-  var roomList: List[MeetingInfo] = Nil
-
-  val waitingGif = new ImageView("img/waiting.gif")
-  waitingGif.setFitHeight(50)
-  waitingGif.setFitWidth(50)
-  waitingGif.setLayoutX(width / 2 - 25)
-  waitingGif.setLayoutY(height / 2 - 25)
 
   /*buttons*/
-  private val refreshBtn = new Button("", new ImageView("img/refreshBtn.png"))
-  refreshBtn.getStyleClass.add("roomScene-refreshBtn")
 
   val backBtn = new Button("", new ImageView("img/backBtn1.png"))
   backBtn.getStyleClass.add("roomScene-backBtn")
 
   val shadow = new DropShadow()
-
-  refreshBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-    refreshBtn.setEffect(shadow)
-  })
-  refreshBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-    refreshBtn.setEffect(null)
-  })
 
   backBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
     backBtn.setEffect(shadow)
@@ -123,7 +107,6 @@ class FindScene {
     backBtn.setEffect(null)
   })
 
-  refreshBtn.setOnAction(_ => listener.refresh())
   backBtn.setOnAction(_ => listener.gotoHomeScene())
 
   /*layout*/
@@ -132,226 +115,39 @@ class FindScene {
   backBtnBox.setPadding(new Insets(15, 0, 0, 20))
   backBtnBox.setAlignment(Pos.TOP_LEFT)
 
-  val refreshBtnBox = new HBox()
-  refreshBtnBox.getChildren.add(refreshBtn)
-  refreshBtnBox.setPadding(new Insets(15, 20, 0, 0))
-  refreshBtnBox.setAlignment(Pos.TOP_RIGHT)
-
-  //  //这个以后加个 现有会议室 上去
-  //  val roomTableLabelBox = new HBox(25)
-  //  roomTableLabelBox.setPadding(new Insets(0, 0, 15, 0))
-  //  roomTableLabelBox.setAlignment(Pos.BOTTOM_CENTER)
-
-  /*liveBox*/
-  val liveInfo = new Text("")
-  liveInfo.setFont(Font.font(25))
-  val liveBox = new HBox(20, liveInfo)
-  liveBox.setAlignment(Pos.CENTER_LEFT)
-  liveBox.setPadding(new Insets(0, 0, 15, 0))
 
   val topBox = new HBox()
-  topBox.getChildren.addAll(backBtnBox, liveBox, refreshBtnBox)
+  topBox.getChildren.add(backBtnBox)
   //topBox.getStyleClass.add("hostScene-leftArea-wholeBox")
   topBox.setPrefSize(width, height * 0.15)
   topBox.setSpacing(width * 0.33)
   topBox.setAlignment(Pos.CENTER)
 
+  /*find space*/
+  val roomIcon = new ImageView("img/userName.png")
+  roomIcon.setFitHeight(30)
+  roomIcon.setFitWidth(30)
+  val roomLabel = new Label("会议号:")
+  roomLabel.setFont(Font.font(18))
+  val roomIdField = new TextField("")
+  val goBtn = new Button("前往")
+  //这里要加一个验证，是否为纯粹的数字
+  goBtn.setOnAction(_ => listener.enter(roomIdField.getText.toLong))
 
+  val findRoomGrid = new GridPane //格子布局
+  findRoomGrid.setHgap(20)
+  findRoomGrid.setVgap(30)
+  findRoomGrid.add(roomIcon, 0, 0)
+  findRoomGrid.add(roomLabel, 1, 0)
+  findRoomGrid.add(roomIdField, 2, 0)
+  findRoomGrid.add(goBtn, 1, 1)
+  findRoomGrid.setStyle("-fx-background-color:#d4dbe3;")
+  findRoomGrid.setPadding(new Insets(60, 20, 60, 20))
 
-  def createOnePage(pageIndex: Int, itemsPerPage: Int, roomList: List[MeetingInfo]): VBox = {
-    val vBox = new VBox()
-    vBox.setPadding(new Insets(10, 110, 20, 110))
-    vBox.setSpacing(30)
-    val hBox1 = new HBox()
-    hBox1.setSpacing(25)
-    val hBox2 = new HBox()
-    hBox2.setSpacing(25)
-    val totalLen = roomList.length
-    val start = pageIndex * itemsPerPage + 1
-    val end = (pageIndex + 1) * itemsPerPage
-    for (i <- start to (start + 2)) {
-      if (i <= totalLen) {
-        val roomBox = new VBox(3)
-        // stackPane: roomPic & picBar(userName & viewNum & likeNum)
-        val roomPic = Pictures.getPic(roomList(i - 1).coverImgUrl, isHeader = false)
-        roomPic.setFitHeight(Constants.DefaultPlayer.height / 2.5)
-        roomPic.setFitWidth(Constants.DefaultPlayer.width / 2.5)
-        roomPic.addEventHandler(MouseEvent.MOUSE_CLICKED, (_: MouseEvent) => {
-          listener.enter(roomList(i - 1).meetingId)
-        })
-
-
-        val userName = new Label(s"${roomList(i - 1).username}")
-        userName.setPrefWidth(120)
-        userName.getStyleClass.add("roomScene-userName")
-
-        val audienceNumIcon = Common.getImageView("img/roomScene-view.png", 25, 25)
-        val audienceNum = new Label(s"${roomList(i - 1).attendanceNum}", audienceNumIcon)
-        audienceNum.setPrefWidth(80)
-        audienceNum.getStyleClass.add("roomScene-userName")
-
-        val picBar = new HBox(userName, audienceNum)
-        picBar.setMaxSize(roomPic.getFitWidth, roomPic.getFitHeight * 0.15)
-        picBar.setPadding(new Insets(3,0,3,0))
-        picBar.setAlignment(Pos.CENTER_LEFT)
-        picBar.getStyleClass.add("roomScene-picBar")
-
-        val picPane = new StackPane()
-        picPane.setAlignment(Pos.BOTTOM_CENTER)
-        picPane.getChildren.addAll(roomPic)
-
-        // roomName
-        val roomName = new Label(s"${roomList(i - 1).meetingName}")
-        roomName.setPrefWidth(200)
-        roomName.getStyleClass.add("roomScene-roomName")
-
-        // timeBox(startTime & duration)
-        val timeIcon = getImageView("img/date.png", 20, 20)
-//        val liveTime = if (roomList(i - 1).timestamp != 0L) new Label(TimeUtil.timeStamp2DetailDate(roomList(i - 1).timestamp), timeIcon) else new Label("")
-//        liveTime.setPrefWidth(160)
-//        liveTime.getStyleClass.add("roomScene-time")
-
-        val durationIcon = getImageView("img/clock.png", 20, 20)
-//        val duration = if(roomList(i - 1).timestamp != 0L) new Label(s"${roomList(i - 1).duration}", durationIcon) else new Label("")
-//        duration.setPrefWidth(100)
-//        duration.getStyleClass.add("roomScene-time")
-//
-//        val timeBox = new HBox(liveTime, duration)
-//        timeBox.setAlignment(Pos.CENTER_LEFT)
-
-        //roomBox
-        roomBox.getChildren.addAll(picPane, roomName)
-        roomBox.setStyle("-fx-cursor: hand;")
-        val shadow = new DropShadow(10, Color.GRAY)
-        roomBox.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-          picPane.getChildren.add(picBar)
-          roomPic.setEffect(shadow)
-        })
-        roomBox.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-          picPane.getChildren.remove(picBar)
-          roomPic.setEffect(null)
-        })
-        hBox1.getChildren.add(roomBox)
-      }
-    }
-    for (i <- (start + 3) to end) {
-
-      if (i <= totalLen) {
-        //        println(s"i${i}, sum: ${totalLen}")
-        val roomBox = new VBox(3)
-        // stackPane: roomPic & picBar(userName & viewNum & likeNum)
-        val roomPic = Pictures.getPic(roomList(i - 1).coverImgUrl, isHeader = false)
-        roomPic.setFitHeight(Constants.DefaultPlayer.height / 2.5)
-        roomPic.setFitWidth(Constants.DefaultPlayer.width / 2.5)
-        roomPic.addEventHandler(MouseEvent.MOUSE_CLICKED, (_: MouseEvent) => {
-          listener.enter(roomList(i - 1).meetingId)
-        })
-
-        val userName = new Label(s"${roomList(i - 1).meetingName}")
-        userName.setPrefWidth(120)
-        userName.getStyleClass.add("roomScene-userName")
-
-        val audienceNumIcon = Common.getImageView("img/roomScene-view.png", 25, 25)
-        val audienceNum = new Label(s"${roomList(i - 1).attendanceNum}", audienceNumIcon)
-        audienceNum.setPrefWidth(80)
-        audienceNum.getStyleClass.add("roomScene-userName")
-
-//        val likeNumIcon = Common.getImageView("img/roomScene-like.png", 20, 20)
-//        val likeNum = new Label(s"${roomList(i - 1).like}", likeNumIcon)
-//        likeNum.setPrefWidth(80)
-//        likeNum.getStyleClass.add("roomScene-userName")
-
-        val picBar = new HBox(userName, audienceNum)
-        picBar.setMaxSize(roomPic.getFitWidth, roomPic.getFitHeight * 0.2)
-        picBar.setPadding(new Insets(3,0,3,0))
-        picBar.setAlignment(Pos.CENTER_LEFT)
-        picBar.getStyleClass.add("roomScene-picBar")
-
-        val picPane = new StackPane()
-        picPane.setAlignment(Pos.BOTTOM_CENTER)
-        picPane.getChildren.addAll(roomPic)
-
-        // roomName
-        val roomName = new Label(s"${roomList(i - 1).meetingName}")
-        roomName.setPrefWidth(200)
-        roomName.getStyleClass.add("roomScene-roomName")
-
-        // timeBox(startTime & duration)
-//        val timeIcon = getImageView("img/date.png", 20, 20)
-//        val liveTime = if (roomList(i - 1).timestamp != 0L) new Label(TimeUtil.timeStamp2DetailDate(roomList(i - 1).timestamp), timeIcon) else new Label("")
-//        liveTime.setPrefWidth(160)
-//        liveTime.getStyleClass.add("roomScene-time")
-//
-//        val durationIcon = getImageView("img/clock.png", 20, 20)
-//        val duration = new Label(s"${roomList(i - 1).duration}", durationIcon)
-//        duration.setPrefWidth(100)
-//        duration.getStyleClass.add("roomScene-time")
-//
-//        val timeBox = new HBox(liveTime, duration)
-//        timeBox.setAlignment(Pos.CENTER_LEFT)
-
-        //roomBox
-        roomBox.getChildren.addAll(picPane, roomName)
-        roomBox.setStyle("-fx-cursor: hand;")
-        val shadow = new DropShadow(10, Color.GRAY)
-        roomBox.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-          picPane.getChildren.add(picBar)
-          roomPic.setEffect(shadow)
-        })
-        roomBox.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-          picPane.getChildren.remove(picBar)
-          roomPic.setEffect(null)
-        })
-        hBox2.getChildren.add(roomBox)
-      }
-    }
-    //两行是Hbox,把两行放在VBOX里
-    vBox.getChildren.addAll(hBox1, hBox2)
-    vBox
-  }
-
-  val loading = new Label("房间加载中……")
-  loading.setFont(Font.font("Verdana", 30))
-  loading.setPadding(new Insets(200, 0, 0, 0))
   val borderPane = new BorderPane()
   borderPane.setTop(topBox)
-  borderPane.setCenter(loading)
+  borderPane.setCenter(findRoomGrid)
   group.getChildren.addAll(backIcon,borderPane)
-
-  /**
-    * update roomList  func
-    *
-    **/
-  def updateRoomList(roomList: List[MeetingInfo] = Nil): Unit = {
-    //    log.debug(s"update room list: r$roomList")
-    if (roomList.isEmpty) {
-      val label = new Label("暂无房间")
-      label.setFont(Font.font("Verdana", 30))
-      label.setPadding(new Insets(200, 0, 0, 0))
-      borderPane.setCenter(label)
-    } else {
-      val itemsPerPage = 6
-      val pageNum = if (roomList.length % itemsPerPage.toInt == 0) {
-        roomList.length / itemsPerPage.toInt
-      }
-      else {
-        roomList.length / itemsPerPage.toInt + 1
-      }
-      val pagination = new Pagination(pageNum, 0)
-      pagination.setPageFactory((pageIndex: Integer) => {
-        if (pageIndex >= pageNum)
-          null
-        else {
-          createOnePage(pageIndex, itemsPerPage, roomList)
-        }
-      })
-      val center = new VBox(10)
-      liveInfo.setText(s"当前共有${roomList.length}个会议室")
-      center.getChildren.addAll(pagination)
-      borderPane.setCenter(center)
-    }
-
-  }
 
 
   var listener: FindSceneListener = _

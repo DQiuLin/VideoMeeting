@@ -191,9 +191,6 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
   }
 
   /*观看列表*/
-  val watchingList = new WatchingList(width * 0.1, width * 0.15, height * 0.3, None)
-  val watchingState: Text = watchingList.watchingState
-  val watchingTable: TableView[WatchingList.WatchingListInfo] = watchingList.watchingTable
 
   private val scene = new Scene(group, width, height)
   scene.getStylesheets.add(
@@ -319,16 +316,20 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
 
     }
 
-    def createAudLbArea: Label = {
-
-      val audienceIcon = Common.getImageView("img/watching.png",30,30)
-      val audienceLabel = new Label("观众列表",audienceIcon)
-      audienceLabel.getStyleClass.add("hostScene-leftArea-label")
-      audienceLabel
-
+    val liveToggleButton = new ToggleButton("加入会议")
+    liveToggleButton.getStyleClass.add("hostScene-rightArea-liveBtn")
+    liveToggleButton.setOnAction(_ => {
+      if(liveToggleButton.isSelected){
+        liveToggleButton.setText("退出会议")
+        //TODO 开会
+      }else{
+        liveToggleButton.setText("加入会议")
+        //TODO 结束会议
+      }
     }
+    )
 
-    val leftAreaBox = new VBox(createRoomInfoBox, createButtonBox, createAudLbArea, watchingState, watchingTable)
+    val leftAreaBox = new VBox(createRoomInfoBox, createButtonBox,liveToggleButton)
 
 
     leftAreaBox.setSpacing(5)

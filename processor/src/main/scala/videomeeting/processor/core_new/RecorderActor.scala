@@ -14,6 +14,7 @@ import videomeeting.processor.common.AppSettings.{addTs, bitRate, debugPath, isD
 import org.slf4j.LoggerFactory
 import videomeeting.processor.utils.TimeUtil
 
+import scala.collection.mutable
 import scala.concurrent.duration._
 
 
@@ -46,6 +47,8 @@ object RecorderActor {
 
   case object CloseRecorder extends Command
 
+  case class ForceExit4Client(liveId: String) extends Command
+
   case class NewFrame(liveId: String, frame: Frame) extends Command
 
   case class UpdateRecorder(channel: Int, sampleRate: Int, frameRate: Double, width: Int, height: Int, liveId: String) extends Command
@@ -58,7 +61,11 @@ object RecorderActor {
 
   case class Image4Host(frame: Frame) extends VideoCommand
 
-  case class Image4Client(frame: Frame) extends VideoCommand
+  case class Image4Client(frame: Frame, liveId: String) extends VideoCommand
+
+  case object StartDrawing extends VideoCommand
+
+  case class ReStartDrawing(clientInfo: List[String], exitLiveId: String) extends VideoCommand
 
   case class SetLayout(layout: Int) extends VideoCommand
 
@@ -79,7 +86,7 @@ object RecorderActor {
   private val emptyAudio = ShortBuffer.allocate(1024 * 2)
   private val emptyAudio4one = ShortBuffer.allocate(1152)
 
-  def create(roomId: Long, host: String, client: String, layout: Int, output: OutputStream): Behavior[Command] = {
+  def create(roomId: Long, host: String, client: List[String], layout: Int, output: OutputStream): Behavior[Command] = {
     Behaviors.setup[Command] { ctx =>
       implicit val stashBuffer: StashBuffer[Command] = StashBuffer[Command](Int.MaxValue)
       Behaviors.withTimers[Command] {
@@ -99,34 +106,45 @@ object RecorderActor {
             case e: Exception =>
               log.error(s" recorder meet error when start:$e")
           }
-          roomManager ! RoomManager.RecorderRef(roomId, ctx.self) //fixme 取消注释
+          roomManager ! RoomManager.RecorderRef(roomId, ctx.self)
           ctx.self ! Init
-          single(roomId,  host, client, layout, recorder4ts, null, null, null, null, output, 30000, (0, 0))
+          single(roomId,  host, client, layout, recorder4ts, null, null, null,  null,null, mutable.Map[String, BufferedImage](), output, 30000, (0, 0))
       }
     }
   }
 
-  def single(roomId: Long,  host: String, client: String, layout: Int,
-  recorder4ts: FFmpegFrameRecorder,
-  ffFilter: FFmpegFrameFilter,
-  drawer: ActorRef[VideoCommand],
-  ts4Host: Ts4Host,
-  ts4Client: Ts4Client,
-  out: OutputStream,
-  tsDiffer: Int = 30000, canvasSize: (Int, Int))(implicit timer: TimerScheduler[Command],
-  stashBuffer: StashBuffer[Command]): Behavior[Command] = {
+  def single(roomId: Long, host: String, client: List[String], layout: Int,
+             recorder4ts: FFmpegFrameRecorder,
+             ffFilter: FFmpegFrameFilter,
+             drawer: ActorRef[VideoCommand],
+             ts4Host: Ts4Host,
+             ts4Client: mutable.Map[String,Ts4Client],
+             hostImage: BufferedImage,
+             clientImage: mutable.Map[String, BufferedImage],
+             out: OutputStream,
+             tsDiffer: Int = 30000, canvasSize: (Int, Int))(implicit timer: TimerScheduler[Command],
+                                                            stashBuffer: StashBuffer[Command]): Behavior[Command] = {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case Init =>
           if (ffFilter != null) {
             ffFilter.close()
           }
-          val ffFilterN = new FFmpegFrameFilter("[0:a][1:a] amix=inputs=2:duration=longest:dropout_transition=3:weights=1 1[a]", audioChannels)
+          val ffFilterN = if(client.size == 1){
+            new FFmpegFrameFilter(s"[0:a][1:a] amix=inputs=2:duration=longest:dropout_transition=3:weights=1 1[a]", audioChannels)
+          } else if(client.size == 2){
+            new FFmpegFrameFilter(s"[0:a][1:a][2:a] amix=inputs=3:duration=longest:dropout_transition=3:weights=1 1[a]", audioChannels)
+          } else if( client.size == 3){
+            new FFmpegFrameFilter(s"[0:a][1:a][2:a][3:a] amix=inputs=4:duration=longest:dropout_transition=3:weights=1 1[a]", audioChannels)
+          } else {
+            new FFmpegFrameFilter(s"[0:a][1:a] amix=inputs=2:duration=longest:dropout_transition=3:weights=1 1[a]", audioChannels)
+          }
+          //val ffFilterN = new FFmpegFrameFilter("[0:a][1:a] amix=inputs=2:duration=longest:dropout_transition=3:weights=1 1[a]", audioChannels)
           ffFilterN.setAudioChannels(audioChannels)
           ffFilterN.setSampleFormat(sampleFormat)
-          ffFilterN.setAudioInputs(2)
+          ffFilterN.setAudioInputs(client.size + 1)
           ffFilterN.start()
-          single(roomId,  host, client, layout, recorder4ts, ffFilterN, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
+          single(roomId,  host, client,layout, recorder4ts, ffFilterN, drawer, ts4Host, ts4Client, hostImage, clientImage, out, tsDiffer, canvasSize)
 
         case UpdateRecorder(channel, sampleRate, f, width, height, liveId) =>
           if(liveId == host) {
@@ -138,7 +156,7 @@ object RecorderActor {
             ffFilter.setSampleRate(sampleRate)
             recorder4ts.setImageWidth(width)
             recorder4ts.setImageHeight(height)
-            single(roomId,  host, client, layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer,  (640,  480))
+            single(roomId,  host, client, layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client,hostImage, clientImage, out, tsDiffer,  (640,  480))
           }else{
             Behaviors.same
           }
@@ -149,8 +167,8 @@ object RecorderActor {
             Behaviors.same
           }else{
             val canvas = new BufferedImage(640, 480, BufferedImage.TYPE_3BYTE_BGR)
-            val drawer = ctx.spawn(draw(canvas, canvas.getGraphics, Ts4LastImage(), Image(), recorder4ts,
-              new Java2DFrameConverter(), new Java2DFrameConverter(),new Java2DFrameConverter, layout, "defaultImg.jpg", roomId, (640, 480)), s"drawer_$roomId")
+            val drawer = ctx.spawn(draw(canvas, canvas.getGraphics, Ts4LastImage(), hostImage, clientImage, client, recorder4ts,
+              new Java2DFrameConverter(), new Java2DFrameConverter, layout, "defaultImg.jpg", roomId, (640, 480)), s"drawer_$roomId")
             ctx.self ! NewFrame(liveId, frame)
             work(roomId,host,client,layout,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
           }
@@ -179,12 +197,12 @@ object RecorderActor {
     }
   }
 
-  def work(roomId: Long,  host: String, client: String, layout: Int,
+  def work(roomId: Long, host: String, client: List[String], layout: Int,
            recorder4ts: FFmpegFrameRecorder,
            ffFilter: FFmpegFrameFilter,
            drawer: ActorRef[VideoCommand],
            ts4Host: Ts4Host,
-           ts4Client: Ts4Client,
+           ts4Client: mutable.Map[String,Ts4Client],
            out: OutputStream,
            tsDiffer: Int = 30000, canvasSize: (Int, Int))
           (implicit timer: TimerScheduler[Command],
@@ -197,7 +215,7 @@ object RecorderActor {
             if (liveId == host) {
               drawer ! Image4Host(frame)
             } else if (liveId == client) {
-              drawer ! Image4Client(frame)
+              drawer ! Image4Client(frame,liveId)
             } else {
               log.info(s"wrong, liveId, work got wrong img")
             }
@@ -228,7 +246,7 @@ object RecorderActor {
             drawer ! SetLayout(msg.layout)
           }
           ctx.self ! RestartRecord
-          work(roomId,  host, client, msg.layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
+          work(roomId, host, client, msg.layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
 
         case m@RestartRecord =>
           log.info(s"couple state get $m")
@@ -255,69 +273,96 @@ object RecorderActor {
           timer.startSingleTimer(TimerKey4Close, CloseRecorder, 1.seconds)
           Behaviors.same
 
+        case msg: ForceExit4Client =>
+          log.info(s"${ctx.self} receive a msg $msg")
+          val newClient = client.filter(c => c != msg.liveId)
+          drawer ! ReStartDrawing(newClient, msg.liveId)
+          work(roomId, host, newClient, layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
+
         case x =>
           Behaviors.same
       }
     }
   }
 
-  def draw(canvas: BufferedImage, graph: Graphics, lastTime: Ts4LastImage, clientFrame: Image,
-           recorder4ts: FFmpegFrameRecorder, convert1: Java2DFrameConverter, convert2: Java2DFrameConverter,convert:Java2DFrameConverter,
+  def draw(canvas: BufferedImage, graph: Graphics, lastTime: Ts4LastImage, hostFrame: BufferedImage, clientFrame: mutable.Map[String, BufferedImage], clientInfo: List[String],
+           recorder4ts: FFmpegFrameRecorder, convert4Host: Java2DFrameConverter, convert: Java2DFrameConverter,
            layout: Int = 0, bgImg: String, roomId: Long, canvasSize: (Int, Int)): Behavior[VideoCommand] = {
     Behaviors.setup[VideoCommand] { ctx =>
       Behaviors.receiveMessage[VideoCommand] {
         case t: Image4Host =>
-          val time = t.frame.timestamp
-          val img = convert1.convert(t.frame)
-          val clientImg = convert2.convert(clientFrame.frame)
-//          graph.clearRect(0, 0, canvasSize._1, canvasSize._2)
-          layout match {
-            case 0 =>
-              graph.drawImage(img, 0, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
-              graph.drawString("主播", 24, 24)
-              graph.drawImage(clientImg, canvasSize._1 / 2, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
-              graph.drawString("观众", 344, 24)
-
-            case 1 =>
-              graph.drawImage(img, 0, 0, canvasSize._1, canvasSize._2, null)
-              graph.drawString("主播", 24, 24)
-              graph.drawImage(clientImg, canvasSize._1 / 4 * 3, 0, canvasSize._1 / 4, canvasSize._2 / 4, null)
-              graph.drawString("观众", 584, 24)
-
-            case 2 =>
-              graph.drawImage(clientImg, 0, 0, canvasSize._1, canvasSize._2, null)
-              graph.drawString("观众", 24, 24)
-              graph.drawImage(img, canvasSize._1 / 4 * 3, 0, canvasSize._1 / 4, canvasSize._2 / 4, null)
-              graph.drawString("主播", 584, 24)
-
-          }
-//          if (addTs) {
-//            val serverTime = ChannelWorker.pullClient.getServerTimestamp()
-//             val ts = TimeUtil.format(serverTime)
-//             graph.drawString(ts, canvasSize._1 - 200, 40)
-//          }
-          //fixme 此处为何不直接recordImage
-          val frame = convert.convert(canvas)
-          recorder4ts.record(frame.clone())
-//            lastTime.time = time
-          Behaviors.same
+          val img = convert4Host.convert(t.frame)
+          ctx.self ! StartDrawing
+          draw(canvas, graph, lastTime, img, clientFrame, clientInfo, recorder4ts, convert4Host, convert, layout, bgImg, roomId, canvasSize)
 
         case t: Image4Client =>
-          clientFrame.frame = t.frame
+          clientInfo.foreach { client =>
+            if (client == t.liveId) {
+              val clientConvert = new Java2DFrameConverter()
+              val clientImg = clientConvert.convert(t.frame)
+              clientFrame.put(client, clientImg)
+            }
+          }
+          ctx.self ! StartDrawing
+          draw(canvas, graph, lastTime, hostFrame, clientFrame, clientInfo, recorder4ts, convert4Host, convert, layout, bgImg, roomId, canvasSize)
+
+        case StartDrawing =>
+          //根据不同的参会人数设置不同的排列方式
+          if (clientInfo.size == clientFrame.values.toList.size) {
+            clientInfo.size match {
+              case 0 =>
+                graph.drawImage(hostFrame, 0, canvasSize._2 / 4, canvasSize._1, canvasSize._2, null)
+                graph.drawString("主持人", 24, 25)
+              case 1 =>
+                graph.drawImage(hostFrame, 0, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("主持人", 24, 25)
+                graph.drawImage(clientFrame.values.toList.head, canvasSize._1 / 2, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("参会人1", 344, 25)
+              case 2 =>
+                graph.drawImage(hostFrame, canvasSize._1 / 4, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("主持人", 310, 0)
+                graph.drawImage(clientFrame.values.head, 0, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("参会人1", 150, 250)
+                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("参会人2", 470, 250)
+              case 3 =>
+                graph.drawImage(hostFrame, 0, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("主持人", 150, 0)
+                graph.drawImage(clientFrame.values.head, canvasSize._1 / 2, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("参会人1", 470, 0)
+                graph.drawImage(clientFrame.values.toList(1), 0, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("参会人2", 150, 250)
+                graph.drawImage(clientFrame.values.toList(2), canvasSize._1 / 2, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawString("参会人3", 470, 25)
+
+            }
+          } else {
+            log.info(s"${ctx.self} is waiting to drawing")
+          }
+
+          val frame = convert.convert(canvas)
+          recorder4ts.record(frame.clone())
           Behaviors.same
 
-        case m@NewRecord4Ts(recorder4ts) =>
-          log.info(s"got msg: $m")
-          draw(canvas, graph, lastTime, clientFrame, recorder4ts, convert1, convert2,convert, layout, bgImg, roomId, canvasSize)
+        case t: ReStartDrawing =>
+          ctx.self ! StartDrawing
+          clientFrame.remove(t.exitLiveId)
+          graph.clearRect(0, 0, canvasSize._1, canvasSize._2)
+          draw(canvas, graph, lastTime, hostFrame, clientFrame, t.clientInfo, recorder4ts, convert4Host, convert, layout, bgImg, roomId, canvasSize)
+
 
         case Close =>
           log.info(s"drawer stopped")
           recorder4ts.releaseUnsafe()
           Behaviors.stopped
 
-        case t: SetLayout =>
-          log.info(s"got msg: $t")
-          draw(canvas, graph, lastTime, clientFrame, recorder4ts, convert1, convert2,convert, t.layout, bgImg, roomId, canvasSize)
+        //        case m@NewRecord4Ts(recorder4ts) =>
+        //          log.info(s"got msg: $m")
+        //          draw(canvas, graph, lastTime, clientFrame, recorder4ts, convert1, convert2,convert, layout, bgImg, roomId, canvasSize)
+        //
+        //        case t: SetLayout =>
+        //          log.info(s"got msg: $t")
+        //          draw(canvas, graph, lastTime, clientFrame, recorder4ts, convert1, convert2,convert, t.layout, bgImg, roomId, canvasSize)
       }
     }
   }

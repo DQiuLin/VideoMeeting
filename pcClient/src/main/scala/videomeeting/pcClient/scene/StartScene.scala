@@ -47,11 +47,11 @@ import scala.collection.mutable
 object StartScene {
 
   case class WatchListInfo(
-    userInfo: StringProperty,
-    toBeHostBtn: ObjectProperty[Button],
-    soundCtrBtn: ObjectProperty[Button],
-    imageCtrBtn: ObjectProperty[Button],
-  ) {
+                            userInfo: StringProperty,
+                            toBeHostBtn: ObjectProperty[Button],
+                            soundCtrBtn: ObjectProperty[Button],
+                            imageCtrBtn: ObjectProperty[Button],
+                          ) {
     def getUserInfo: String = userInfo.get()
 
     def setUserInfo(info: String): Unit = userInfo.set(info)
@@ -70,10 +70,10 @@ object StartScene {
   }
 
   case class SpeakListInfo(
-    userInfo: StringProperty,
-    agreeBtn: ObjectProperty[Button],
-    refuseBtn: ObjectProperty[Button]
-  ) {
+                            userInfo: StringProperty,
+                            agreeBtn: ObjectProperty[Button],
+                            refuseBtn: ObjectProperty[Button]
+                          ) {
     def getUserInfo: String = userInfo.get()
 
     def setUserInfo(info: String): Unit = userInfo.set(info)
@@ -101,11 +101,16 @@ object StartScene {
     def gotoHomeScene()
 
     def modifyRoomInfo(
-      name: Option[String] = None,
-      des: Option[String] = None
-    )
+                        name: Option[String] = None,
+                        des: Option[String] = None
+                      )
 
     def ask4Loss()
+
+    def inviteAudience(
+                        meetingId: String,
+                        email: String
+                      )
 
   }
 
@@ -481,7 +486,14 @@ class StartScene(stage: Stage) {
       emailBtn.getStyleClass.add("hostScene-leftArea-confirmBtn")
       emailBtn.setOnAction {
         _ =>
-          //TODO
+          //邀请参会人员
+          if (emailText.getText.nonEmpty) {
+            listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString, emailText.getText)
+          } else {
+            Boot.addToPlatform(
+              WarningDialog.initWarningDialog("输入不能为空")
+            )
+          }
       }
       Common.addButtonEffect(emailBtn)
 

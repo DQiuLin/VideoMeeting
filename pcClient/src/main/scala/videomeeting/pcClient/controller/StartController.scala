@@ -77,6 +77,15 @@ class StartController(
     override def ask4Loss(): Unit = {
       rmManager ! RmManager.GetPackageLoss
     }
+
+    override def inviteAudience(meetingId: String, email: String): Unit = {
+
+    }
+
+    override def modifyRoomInfo(name: Option[String], des: Option[String]): Unit = {
+      rmManager ! RmManager.ModifyRoom(name, des)
+    }
+
   }
   )
 

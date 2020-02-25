@@ -7,11 +7,12 @@ import java.nio.channels.Pipe.{SinkChannel, SourceChannel}
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import videomeeting.processor.common.AppSettings.{debugPath, isDebug}
+import videomeeting.processor.stream.PipeStream
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
+
 import videomeeting.processor.Boot.{streamPullActor, streamPushActor}
-import videomeeting.processor.stream.PipeStream
 
 import scala.collection.mutable
 
@@ -33,6 +34,8 @@ object RoomActor {
   case class NewRoom(roomId: Long, host: String, client: String, pushLiveId: String, pushLiveCode: String, layout: Int) extends Command
 
   case class UpdateRoomInfo(roomId: Long, layout: Int) extends Command
+
+  case class ForceClientExit(roomId:Long,liveId:String) extends Command
 
   case class Recorder(roomId: Long, recorderRef: ActorRef[RecorderActor.Command]) extends Command
 
@@ -59,7 +62,7 @@ object RoomActor {
   val pullPipeMap = mutable.Map[String, ActorRef[StreamPullPipe.Command]]()
   val pushPipeMap = mutable.Map[String, ActorRef[StreamPushPipe.Command]]()
 
-  def create(roomId: Long, host: String, client: String, pushLiveId: String, pushLiveCode: String,  layout: Int): Behavior[Command]= {
+  def create(roomId: Long, host: String, client: String, pushLiveId: String, pushLiveCode: String,  startTime:Long): Behavior[Command]= {
     Behaviors.setup[Command]{ ctx =>
       implicit val stashBuffer: StashBuffer[Command] = StashBuffer[Command](Int.MaxValue)
       Behaviors.withTimers[Command] {
@@ -71,11 +74,11 @@ object RoomActor {
   }
 
   def work(
-    grabberMap: mutable.Map[Long, List[ActorRef[GrabberActor.Command]]],
-    recorderMap: mutable.Map[Long,ActorRef[RecorderActor.Command]],
-    roomLiveMap: mutable.Map[Long, List[String]]
-  )(implicit stashBuffer: StashBuffer[Command],
-    timer: TimerScheduler[Command]):Behavior[Command] = {
+            grabberMap: mutable.Map[Long, List[ActorRef[GrabberActor.Command]]],
+            recorderMap: mutable.Map[Long,ActorRef[RecorderActor.Command]],
+            roomLiveMap: mutable.Map[Long, List[String]]
+          )(implicit stashBuffer: StashBuffer[Command],
+            timer: TimerScheduler[Command]):Behavior[Command] = {
     Behaviors.receive[Command]{(ctx, msg) =>
       msg match {
 
@@ -142,6 +145,11 @@ object RoomActor {
           } else {
             log.info(s"${msg.roomId} grabbers not exist")
           }
+          Behaviors.same
+
+        case msg:ForceClientExit =>
+          //TODO
+
           Behaviors.same
 
         case CloseRoom(roomId) =>
@@ -218,7 +226,7 @@ object RoomActor {
     }.unsafeUpcast[GrabberActor.Command]
   }
 
-  def getRecorderActor(ctx: ActorContext[Command], roomId: Long, host: String, client:String, pushLiveId: String,  pushLiveCode: String,layout: Int,  out: OutputStream) = {
+  def getRecorderActor(ctx: ActorContext[Command], roomId: Long, host: String, client:List[String], pushLiveId: String,  pushLiveCode: String,layout: Int,  out: OutputStream) = {
     val childName = s"recorderActor_$pushLiveId"
     ctx.child(childName).getOrElse{
       val actor = ctx.spawn(RecorderActor.create(roomId, host, client, layout, out), childName)

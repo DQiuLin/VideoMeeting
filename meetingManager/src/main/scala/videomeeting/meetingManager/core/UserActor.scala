@@ -11,7 +11,7 @@ import org.seekloud.byteobject.MiddleBufferInJvm
 import videomeeting.protocol.ptcl.CommonInfo
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
-import videomeeting.meetingManager.Boot.{executor, meetingManager, scheduler}
+import videomeeting.meetingManager.Boot.{executor, meetingManager, scheduler, emailActor}
 import videomeeting.meetingManager.common.Common
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
@@ -182,6 +182,12 @@ object UserActor {
                         meetingManager ! ActorProtocol.StartLiveAgain(meetingId)
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
+                      case Invite(email, meetingNum) =>
+                        log.debug("send email to email actor")
+                        emailActor ! EmailActor.SendInviteEmail(email, meetingNum)
+                        clientActor ! Wrap(InviteRsp.asInstanceOf[WsMsgRm].fillMiddleBuffer(sendBuffer).result())
+                        ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+
                       case x =>
                         meetingManager ! ActorProtocol.WebSocketMsgWithActor(userId, meetingId, x)
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
@@ -282,6 +288,11 @@ object UserActor {
                         case StartLiveReq(`userId`, token, clientType) =>
                           meetingManager ! ActorProtocol.StartMeeting4Host(userId, meetingId, ctx.self)
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+
+                        case Invite(email,meetingNum)=>
+                          emailActor ! EmailActor.SendInviteEmail(email, meetingNum)
+                          clientActor ! Wrap(AuthProtocol.InviteRsp.asInstanceOf[WsMsgRm].fillMiddleBuffer(sendBuffer).result())
+                          ctx.self ! SwitchBehavior("host",host(userId,clientActor,meetingId))
 
                         case x =>
                           meetingManager ! ActorProtocol.WebSocketMsgWithActor(userId, meetingId, req)

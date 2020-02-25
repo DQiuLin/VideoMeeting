@@ -13,10 +13,10 @@ object Processor {
   case class NewConnect(
                          roomId: Long,
                          host: String,
-                         client: String,
+                         client: List[String], //多个参会人员的liveId
                          pushLiveId:String,
                          pushLiveCode:String,
-                         layout: Int = 1
+                         startTime: Long
                        )
 
   case class NewConnectRsp(
@@ -50,5 +50,17 @@ object Processor {
                         msg:String = "ok"
                       ) extends CommonRsp
 
+  /**  url:processor/forceExit
+    *  post
+    */
+  case class ForceExit(
+                        roomId: Long,
+                        liveId: String,
+                        startTime: Long
+                      )
 
+  case class ExitRsp(
+                      errCode: Int = 0,
+                      msg: String = "ok"
+                    ) extends CommonRsp
 }

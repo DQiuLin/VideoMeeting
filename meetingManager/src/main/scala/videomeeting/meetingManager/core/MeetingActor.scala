@@ -4,6 +4,7 @@ import akka.actor
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
 import org.seekloud.byteobject.MiddleBufferInJvm
+import org.slf4j.LoggerFactory
 import videomeeting.protocol.ptcl.CommonInfo._
 import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.GetMeetInfoRsp4RM
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol.{HostCloseRoom, _}
@@ -15,8 +16,7 @@ import videomeeting.meetingManager.core.MeetingManager.GetRtmpLiveInfo
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
 import videomeeting.meetingManager.protocol.ActorProtocol.BanOnAnchor
-import videomeeting.meetingManager.utils.RtpClient
-import org.slf4j.LoggerFactory
+import videomeeting.meetingManager.utils.{ProcessorClient, RtpClient}
 
 import scala.collection.mutable
 import scala.concurrent.duration.{FiniteDuration, _}
@@ -26,6 +26,7 @@ import videomeeting.meetingManager.common.Common
 import videomeeting.meetingManager.common.Common.{Like, Role, Subscriber}
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
+import videomeeting.meetingManager.protocol.CommonInfoProtocol.WholeRoomInfo
 import videomeeting.meetingManager.utils.RtpClient
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol
 
@@ -44,20 +45,20 @@ object MeetingActor {
   //private final case object DelayUpdateRtmpKey
 
   private final case class SwitchBehavior(
-                                           name: String,
-                                           behavior: Behavior[Command],
-                                           durationOpt: Option[FiniteDuration] = None,
-                                           timeOut: TimeOut = TimeOut("busy time error")
-                                         ) extends Command
+    name: String,
+    behavior: Behavior[Command],
+    durationOpt: Option[FiniteDuration] = None,
+    timeOut: TimeOut = TimeOut("busy time error")
+  ) extends Command
 
   private case class TimeOut(msg: String) extends Command
 
   private final case object BehaviorChangeKey
 
   private[this] def switchBehavior(ctx: ActorContext[Command],
-                                   behaviorName: String, behavior: Behavior[Command], durationOpt: Option[FiniteDuration] = None, timeOut: TimeOut = TimeOut("busy time error"))
-                                  (implicit stashBuffer: StashBuffer[Command],
-                                   timer: TimerScheduler[Command]) = {
+    behaviorName: String, behavior: Behavior[Command], durationOpt: Option[FiniteDuration] = None, timeOut: TimeOut = TimeOut("busy time error"))
+    (implicit stashBuffer: StashBuffer[Command],
+      timer: TimerScheduler[Command]) = {
     timer.cancel(BehaviorChangeKey)
     durationOpt.foreach(timer.startSingleTimer(BehaviorChangeKey, timeOut, _))
     stashBuffer.unstashAll(ctx, behavior)
@@ -84,15 +85,15 @@ object MeetingActor {
   }
 
   private def init(
-                    meetingId: Int,
-                    subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]],
-                    meetingInfoOpt: Option[MeetingInfo] = None
-                  )
-                  (
-                    implicit stashBuffer: StashBuffer[Command],
-                    timer: TimerScheduler[Command],
-                    sendBuffer: MiddleBufferInJvm
-                  ): Behavior[Command] = {
+    meetingId: Int,
+    subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]],
+    meetingInfoOpt: Option[MeetingInfo] = None
+  )
+    (
+      implicit stashBuffer: StashBuffer[Command],
+      timer: TimerScheduler[Command],
+      sendBuffer: MiddleBufferInJvm
+    ): Behavior[Command] = {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case ActorProtocol.StartMeeting4Host(userId, `meetingId`, actor) =>
@@ -149,16 +150,16 @@ object MeetingActor {
   }
 
   private def idle(
-                    meetingInfo: MeetingInfo,
-                    liveInfoMap: mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]],
-                    subscribe: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //需要区分订阅的用户的身份，注册用户还是临时用户(uid,是否是临时用户true:是)
-                    viewNum: Int,
-                    startTime: Long
-                  )
-                  (implicit stashBuffer: StashBuffer[Command],
-                   timer: TimerScheduler[Command],
-                   sendBuffer: MiddleBufferInJvm
-                  ): Behavior[Command] = {
+    meetingInfo: MeetingInfo,
+    liveInfoMap: mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]],
+    subscribe: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //需要区分订阅的用户的身份，注册用户还是临时用户(uid,是否是临时用户true:是)
+    viewNum: Int,
+    startTime: Long
+  )
+    (implicit stashBuffer: StashBuffer[Command],
+      timer: TimerScheduler[Command],
+      sendBuffer: MiddleBufferInJvm
+    ): Behavior[Command] = {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case ActorProtocol.AddUserActor4Test(userId, roomId, userActor) =>
@@ -228,7 +229,7 @@ object MeetingActor {
           val temporaryList = subscribe.filterNot(_._1 == (meetingInfo.userId, false)).keys.toList.filter(r => r._2).map(_._1)
           UserInfoDao.getUserInfo(attendanceList).onComplete {
             case Success(rst) =>
-              val temporaryUserDesList = temporaryList.map(r => UserInfo(r, s"guest_$r", Common.DefaultImg.headImg))
+              val temporaryUserDesList = temporaryList.map(r => UserInfo(r, s"guest_$r", Common.DefaultImg.headImg, "", -1L))
               dispatch(subscribe)(UpdateAudienceInfo(rst ++ temporaryUserDesList))
             case Failure(_) =>
 
@@ -250,20 +251,20 @@ object MeetingActor {
               case Right(rsp) =>
                 liveInfoMap.put(Role.host, mutable.HashMap(meetingInfo.userId -> rsp.liveInfo))
                 val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)
-              //timer.startSingleTimer(DelayUpdateRtmpKey + roomId.toString, UpdateRTMP(rsp.liveInfo.liveId), 4.seconds)
-              //                DistributorClient.startPull(roomId, rsp.liveInfo.liveId).map {
-              //                  case Right(r) =>
-              //                    log.info("distributor startPull succeed")
-              //                    val startTime = r.startTime
-              //                    val newWholeRoomInfo = wholeRoomInfo.copy(roomInfo = wholeRoomInfo.roomInfo.copy(observerNum = 0, like = 0, mpd = Some(r.liveAdd), rtmp = Some(rsp.liveInfo.liveId)))
-              //                    dispatchTo(subscribe)(List((wholeRoomInfo.roomInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
-              //                    ctx.self ! SwitchBehavior("idle", idle(newWholeRoomInfo, liveInfoMap, subscribe, liker, startTime, 0, isJoinOpen))
-              //                  case Left(e) =>
-              //                    log.error(s"distributor startPull error: $e")
-              //                    val newWholeRoomInfo = wholeRoomInfo.copy(roomInfo = wholeRoomInfo.roomInfo.copy(observerNum = 0, like = 0))
-              //                    dispatchTo(subscribe)(List((wholeRoomInfo.roomInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
-              //                    ctx.self ! SwitchBehavior("idle", idle(newWholeRoomInfo, liveInfoMap, subscribe, liker, startTime, 0, isJoinOpen))
-              //                }
+                //timer.startSingleTimer(DelayUpdateRtmpKey + roomId.toString, UpdateRTMP(rsp.liveInfo.liveId), 4.seconds)
+//                DistributorClient.startPull(roomId, rsp.liveInfo.liveId).map {
+//                  case Right(r) =>
+//                    log.info("distributor startPull succeed")
+//                    val startTime = r.startTime
+//                    val newWholeRoomInfo = wholeRoomInfo.copy(roomInfo = wholeRoomInfo.roomInfo.copy(observerNum = 0, like = 0, mpd = Some(r.liveAdd), rtmp = Some(rsp.liveInfo.liveId)))
+//                    dispatchTo(subscribe)(List((wholeRoomInfo.roomInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
+//                    ctx.self ! SwitchBehavior("idle", idle(newWholeRoomInfo, liveInfoMap, subscribe, liker, startTime, 0, isJoinOpen))
+//                  case Left(e) =>
+//                    log.error(s"distributor startPull error: $e")
+//                    val newWholeRoomInfo = wholeRoomInfo.copy(roomInfo = wholeRoomInfo.roomInfo.copy(observerNum = 0, like = 0))
+//                    dispatchTo(subscribe)(List((wholeRoomInfo.roomInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
+//                    ctx.self ! SwitchBehavior("idle", idle(newWholeRoomInfo, liveInfoMap, subscribe, liker, startTime, 0, isJoinOpen))
+//                }
 
 
               case Left(str) =>
@@ -283,11 +284,11 @@ object MeetingActor {
   }
 
   private def busy()
-                  (
-                    implicit stashBuffer: StashBuffer[Command],
-                    timer: TimerScheduler[Command],
-                    sendBuffer: MiddleBufferInJvm
-                  ): Behavior[Command] =
+    (
+      implicit stashBuffer: StashBuffer[Command],
+      timer: TimerScheduler[Command],
+      sendBuffer: MiddleBufferInJvm
+    ): Behavior[Command] =
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case SwitchBehavior(name, b, durationOpt, timeOut) =>
@@ -306,27 +307,27 @@ object MeetingActor {
 
   //websocket处理消息的函数
   /**
-   * userActor --> roomManager --> roomActor --> userActor
-   * roomActor
-   * subscribers:map(userId,userActor)
-   *
-   *
-   *
-   **/
+    * userActor --> roomManager --> roomActor --> userActor
+    * roomActor
+    * subscribers:map(userId,userActor)
+    *
+    *
+    *
+    **/
   private def handleWebSocketMsg(
-                                  meetingInfo: MeetingInfo,
-                                  subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //包括主播在内的所有用户
-                                  liveInfoMap: mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]], //"audience"/"anchor"->Map(userId->LiveInfo)
-                                  startTime: Long,
-                                  dispatch: WsMsgRm => Unit,
-                                  dispatchTo: (List[(Int, Boolean)], WsMsgRm) => Unit
-                                )
-                                (ctx: ActorContext[Command], userId: Int, meetingId: Int, msg: WsMsgClient)
-                                (
-                                  implicit stashBuffer: StashBuffer[Command],
-                                  timer: TimerScheduler[Command],
-                                  sendBuffer: MiddleBufferInJvm
-                                ): Behavior[Command] = {
+    wholeRoomInfo: WholeRoomInfo,
+    subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //包括主持人在内的所有用户
+    liveInfoMap: mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]], //除主持人外的所有用户的liveInfo
+    startTime: Long,
+    dispatch: WsMsgRm => Unit,
+    dispatchTo: (List[(Int, Boolean)], WsMsgRm) => Unit
+  )
+    (ctx: ActorContext[Command], userId: Int, roomId: Int, msg: WsMsgClient)
+    (
+      implicit stashBuffer: StashBuffer[Command],
+      timer: TimerScheduler[Command],
+      sendBuffer: MiddleBufferInJvm
+    ): Behavior[Command] = {
     msg match {
       case msg: CloseUserImageAndAudio =>
         dispatchTo(List((msg.userId, false)), HostCloseUser(msg.image, msg.audio))
@@ -351,6 +352,48 @@ object MeetingActor {
         }
         Behaviors.same
 
+
+      case JoinReq(userId4Audience, `roomId`, clientType) =>
+        if (wholeRoomInfo.isJoinOpen) {
+          UserInfoDao.searchById(userId4Audience).map { r =>
+            if (r.nonEmpty) {
+              dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
+            } else {
+              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$roomId")
+              dispatchTo(List((userId4Audience, false)), JoinAccountError)
+            }
+          }.recover {
+            case e: Exception =>
+              log.debug(s"${ctx.self.path} 连线请求失败，内部错误error=$e")
+              dispatchTo(List((userId4Audience, false)), JoinInternalError)
+          }
+        } else {
+          dispatchTo(List((userId4Audience, false)), JoinInvalid)
+        }
+        Behaviors.same
+
+      case AudienceShutJoin(`roomId`, `userId`) =>
+        log.debug(s"${ctx.self.path} the audience connection has been shut")
+        //TODO 目前是某个观众退出则关闭会议，应该修改为不关闭整个会议
+        liveInfoMap.clear()
+        ctx.self ! UpdateRTMP(wholeRoomInfo.liveInfo.liveId)
+        //            val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)
+        //            ProcessorClient.updateRoomInfo(wholeRoomInfo.roomInfo.roomId, liveList, wholeRoomInfo.layout, wholeRoomInfo.aiMode, 0l)
+        dispatch(AuthProtocol.AudienceDisconnect(wholeRoomInfo.liveInfo.liveId))
+        dispatch(RcvComment(-1l, "", s"the audience has shut the join in room $roomId"))
+        Behaviors.same
+
+      case ForceExit(userId4Audience,userNa4Audience)=>
+        if(liveInfoMap.contains(userId4Audience)){
+          log.debug(s"host force user-$userId4Audience to exit")
+          ProcessorClient.forceExit(roomId, liveInfoMap(userId4Audience).liveId, System.currentTimeMillis())
+          liveInfoMap.remove(userId4Audience)
+          dispatchTo(subscribers.filter(_._1._1 != userId).keys.toList,ForceExitRsp(userId4Audience, userNa4Audience))
+        } else{
+          log.debug(s"host force user-$userId4Audience to leave, but there is no user!")
+        }
+        Behaviors.same
+
       case x =>
         Behaviors.same
     }
@@ -362,10 +405,10 @@ object MeetingActor {
   }
 
   /**
-   * subscribers:所有的订阅者
-   * targetUserIdList：要发送的目标用户
-   * msg：发送的消息
-   **/
+    * subscribers:所有的订阅者
+    * targetUserIdList：要发送的目标用户
+    * msg：发送的消息
+    **/
   private def dispatchTo(subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]])(targetUserIdList: List[(Int, Boolean)], msg: WsMsgRm)(implicit sendBuffer: MiddleBufferInJvm): Unit = {
     log.debug(s"${subscribers}定向分发消息：$msg")
     targetUserIdList.foreach { k =>

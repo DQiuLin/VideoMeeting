@@ -7,8 +7,7 @@ import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.RmManager.HeartBeat
 import videomeeting.pcClient.scene.StartScene
-import videomeeting.pcClient.scene.StartScene.StartSceneListener
-import videomeeting.pcClient.scene.HostScene.AudienceListInfo
+import videomeeting.pcClient.scene.StartScene.{SpeakListInfo, StartSceneListener}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import org.slf4j.LoggerFactory
 import videomeeting.pcClient.utils.RMClient
@@ -33,7 +32,7 @@ class StartController(
   def showScene(): Unit = {
     Boot.addToPlatform(
       if (RmManager.userInfo.nonEmpty && RmManager.roomInfo.nonEmpty) {
-        context.switchScene(startScene.getScene, title = s"${RmManager.userInfo.get.userName}的直播间-${RmManager.roomInfo.get.roomName}")
+        context.switchScene(startScene.getScene, title = s"${RmManager.userInfo.get.userName}的直播间-${RmManager.roomInfo.get.meetingName}")
       } else {
         WarningDialog.initWarningDialog(s"无房间信息！")
       }
@@ -51,7 +50,7 @@ class StartController(
     }
 
     //只能一个人发言
-    override def audienceAcceptance(userId: Long, accept: Boolean, newRequest: AudienceListInfo): Unit = {
+    override def audienceAcceptance(userId: Long, accept: Boolean, newRequest: SpeakListInfo): Unit = {
       if (!isSaying) {
         rmManager ! RmManager.AudienceAcceptance(userId, accept)
         // startScene.audObservableList.remove(newRequest)
@@ -78,6 +77,15 @@ class StartController(
     override def ask4Loss(): Unit = {
       rmManager ! RmManager.GetPackageLoss
     }
+
+    override def inviteAudience(meetingId: String, email: String): Unit = {
+
+    }
+
+    override def modifyRoomInfo(name: Option[String], des: Option[String]): Unit = {
+      rmManager ! RmManager.ModifyRoom(name, des)
+    }
+
   }
   )
 
@@ -106,25 +114,25 @@ class StartController(
         }
 
 
-      case msg: AudienceJoinRsp =>
-        if (msg.errCode == 0) {
-          //显示连线观众信息
-          rmManager ! RmManager.JoinBegin(msg.joinInfo.get)
-
+//      case msg: AudienceJoinRsp =>
+//        if (msg.errCode == 0) {
+//          //显示连线观众信息
+//          rmManager ! RmManager.JoinBegin(msg.joinInfo.get)
+//
+////          Boot.addToPlatform {
+//          ////            if (!startScene.tb2.isSelected) {
+//          ////              startScene.tb2.setGraphic(startScene.connectionIcon1)
+//          ////            }
+//          ////            startScene.connectionStateText.setText(s"与${msg.joinInfo.get.userName}连线中")
+//          ////            startScene.connectStateBox.getChildren.add(startScene.shutConnectionBtn)
+//          ////            isConnecting = true
+//          ////          }
+//
+//        } else {
 //          Boot.addToPlatform {
-          ////            if (!startScene.tb2.isSelected) {
-          ////              startScene.tb2.setGraphic(startScene.connectionIcon1)
-          ////            }
-          ////            startScene.connectionStateText.setText(s"与${msg.joinInfo.get.userName}连线中")
-          ////            startScene.connectStateBox.getChildren.add(startScene.shutConnectionBtn)
-          ////            isConnecting = true
-          ////          }
-
-        } else {
-          Boot.addToPlatform {
-            WarningDialog.initWarningDialog(s"观众加入出错:${msg.msg}")
-          }
-        }
+//            WarningDialog.initWarningDialog(s"观众加入出错:${msg.msg}")
+//          }
+//        }
 
       case AudienceDisconnect(liveId) =>
         //观众断开，提醒主播，去除连线观众信息

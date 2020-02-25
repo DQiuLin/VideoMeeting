@@ -16,7 +16,7 @@ import videomeeting.player.sdk.MediaPlayer
 import videomeeting.rtpClient.Protocol._
 import videomeeting.rtpClient.{Protocol, PullStreamClient}
 import videomeeting.pcClient.core.player.VideoPlayer
-import videomeeting.pcClient.scene.{AudienceScene, HostScene}
+import videomeeting.pcClient.scene.{AudienceScene, StartScene}
 import videomeeting.pcClient.utils.NetUtil
 import org.slf4j.LoggerFactory
 
@@ -82,7 +82,7 @@ object StreamPuller {
     joinInfo: Option[JoinInfo],
     watchInfo: Option[WatchInfo],
     audienceScene: Option[AudienceScene],
-    hostScene: Option[HostScene]
+    hostScene: Option[StartScene]
   ): Behavior[PullCommand] =
     Behaviors.setup[PullCommand] { ctx =>
       log.info(s"StreamPuller-$liveId is starting.")
@@ -103,7 +103,7 @@ object StreamPuller {
     joinInfo: Option[JoinInfo],
     watchInfo: Option[WatchInfo],
     audienceScene: Option[AudienceScene],
-    hostScene: Option[HostScene],
+    hostScene: Option[StartScene],
     pullClient: Option[PullStreamClient]
   )(
     implicit timer: TimerScheduler[PullCommand],
@@ -230,7 +230,7 @@ object StreamPuller {
     mediaSink: Pipe.SinkChannel,
     mediaSource: Pipe.SourceChannel,
     audienceScene: Option[AudienceScene],
-    hostScene: Option[HostScene]
+    hostScene: Option[StartScene]
   )(
     implicit timer: TimerScheduler[PullCommand],
     stashBuffer: StashBuffer[PullCommand]
@@ -295,7 +295,7 @@ object StreamPuller {
           Boot.addToPlatform {
             WarningDialog.initWarningDialog("播放中的流已被关闭!")
             hostScene.foreach(_.listener.shutJoin())
-            audienceScene.foreach(a => a.listener.quitJoin(a.getRoomInfo.roomId))
+//            audienceScene.foreach(a => a.listener.quitJoin(a.getRoomInfo.meetingId))
           }
           Behaviors.stopped
 

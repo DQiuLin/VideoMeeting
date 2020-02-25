@@ -17,7 +17,7 @@ import videomeeting.pcClient.utils.RMClient
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.component.WarningDialog
 import videomeeting.protocol.ptcl.CommonInfo
-import videomeeting.protocol.ptcl.CommonInfo.{RoomInfo, UserInfo}
+import videomeeting.protocol.ptcl.CommonInfo.{MeetingInfo, UserInfo}
 import org.slf4j.LoggerFactory
 import videomeeting.pcClient.controller.EditController
 
@@ -269,7 +269,7 @@ class HomeController(
     } else {
       log.debug(s"login by cache.")
       var userInfo: Option[UserInfo] = None
-      var roomInfo: Option[RoomInfo] = None
+      var roomInfo: Option[MeetingInfo] = None
       var getTokenTime: Option[Long] = None
       val file = new File(Constants.loginInfoCachePath, fileName)
       if (file.canRead && file.exists()) {
@@ -286,15 +286,13 @@ class HomeController(
           bufferedReader.readLine().split(":").last.toLong,
 
         ))
-        roomInfo = Some(RoomInfo(
-          bufferedReader.readLine().split(":").last.toLong,
+        roomInfo = Some(MeetingInfo(
+          bufferedReader.readLine().split(":").last.toInt,
           bufferedReader.readLine().split(":").last,
           bufferedReader.readLine().split(":").last,
           userInfo.get.userId,
           userInfo.get.userName,
           userInfo.get.headImgUrl,
-          bufferedReader.readLine().split(":").last,
-          0,
           0
         ))
         getTokenTime = Some(bufferedReader.readLine().split(":").last.toLong)
@@ -322,6 +320,7 @@ class HomeController(
     }
   }
 
+
   /**
     * 更新缓存文件 token
     */
@@ -348,7 +347,7 @@ class HomeController(
         userName = Some(bufferedReader.readLine().split(":").last)
         bufferedReader.close()
       }
-      RMClient.signIn(userName.getOrElse(""), password.getOrElse("")).map{
+      RMClient.signIn(userName.getOrElse(""), password.getOrElse("")).map {
         case Right(rsp) =>
           if (rsp.errCode == 0) {
             rmManager ! RmManager.SignInSuccess(rsp.userInfo.get, rsp.roomInfo.get)
@@ -368,11 +367,8 @@ class HomeController(
       }
 
     }
-
-
-
   }
-//密码加密
+    //密码加密
 private val password = "gjh%^&(&  {}77"
   def jdkAESEncode(str:String):String= try {
     //生成key
@@ -427,7 +423,7 @@ private val password = "gjh%^&(&  {}77"
   /**
     * 创建theia登录临时文件
     */
-  def createLoginTemp(password: String, userInfo: UserInfo, roomInfo: RoomInfo): Unit = {
+  def createLoginTemp(password: String, userInfo: UserInfo, roomInfo: MeetingInfo): Unit = {
 
     val file = Constants.loginInfoCache
     val temp = File.createTempFile("theia", "cacheLogin", file) //为临时文件名称添加前缀和后缀
@@ -439,8 +435,8 @@ private val password = "gjh%^&(&  {}77"
       bufferedWriter.write(s"headImgUrl:${userInfo.headImgUrl}\n")
       bufferedWriter.write(s"token:${userInfo.token}\n")
       bufferedWriter.write(s"tokenExistTime:${userInfo.tokenExistTime}\n")
-      bufferedWriter.write(s"roomId:${roomInfo.roomId}\n")
-      bufferedWriter.write(s"roomName:${roomInfo.roomName}\n")
+      bufferedWriter.write(s"roomId:${roomInfo.meetingId}\n")
+      bufferedWriter.write(s"roomName:${roomInfo.meetingName}\n")
       bufferedWriter.write(s"roomDes:${roomInfo.roomDes}\n")
       bufferedWriter.write(s"coverImgUrl:${roomInfo.coverImgUrl}\n")
       bufferedWriter.write(s"getTokenTime:${System.currentTimeMillis()}\n")

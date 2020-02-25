@@ -14,10 +14,9 @@ import akka.util.Timeout
 import scala.util.{Failure, Success}
 import scala.language.postfixOps
 import videomeeting.meetingManager.common.AppSettings
-import videomeeting.meetingManager.core.{RegisterActor, MeetingManager, UserManager}
-import videomeeting.meetingManager.http.HttpService
+import videomeeting.meetingManager.core.{EmailActor, MeetingManager, RegisterActor, UserManager}
 import videomeeting.meetingManager.common.AppSettings
-import videomeeting.meetingManager.core.{RegisterActor, MeetingManager, UserManager}
+import videomeeting.meetingManager.core.{MeetingManager, RegisterActor, UserManager}
 import videomeeting.meetingManager.http.HttpService
 
 /**
@@ -46,6 +45,8 @@ object Boot extends HttpService {
   val meetingManager = system.spawn(MeetingManager.create(), "meetingManager")
 
   val registerActor = system.spawn(RegisterActor.create(), "registerActor")
+
+  val emailActor = system.spawn(EmailActor.behavior, "emailActor")
 
   def main(args: Array[String]): Unit = {
     val httpsBinding = Http().bindAndHandle(Routes, AppSettings.httpInterface, AppSettings.httpPort)

@@ -251,3 +251,96 @@ lazy val rtpServer = (project in file("rtpServer")).enablePlugins(PackPlugin)
   .settings(
     libraryDependencies ++= Dependencies.backendDependencies
   ).dependsOn(protocolJvm, shared, rtpClient)
+
+val processorMain = "videomeeting.processor.Boot"
+
+lazy val processor = (project in file("processor")).enablePlugins(PackPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    mainClass in reStart := Some(processorMain),
+    javaOptions in reStart += "-Xmx4g"
+  )
+  .settings(name := "processor")
+  .settings(
+    //pack
+    // If you need to specify main classes manually, use packSettings and packMain
+    //packSettings,
+    // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
+    packMain := Map("processor" -> processorMain),
+    packJvmOpts := Map("processor" -> Seq("-Xmx6g", "-Xms3g")),
+    packExtraClasspath := Map("processor" -> Seq("."))
+  )
+  .settings(
+    libraryDependencies ++= Dependencies.backendDependencies,
+    libraryDependencies ++= Dependencies.bytedecoLibs
+  ).dependsOn(protocolJvm, rtpClient)
+
+val distributorMain = "videomeeting.distributor.Boot"
+
+lazy val distributorPage = (project in file("distributorPage"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(name := "distributorPage")
+  .settings(commonSettings: _*)
+  .settings(
+    inConfig(Compile)(
+      Seq(
+        fullOptJS,
+        fastOptJS,
+        packageJSDependencies,
+        packageMinifiedJSDependencies
+      ).map(f => (crossTarget in f) ~= (_ / "sjsout"))
+    ))
+  .settings(skip in packageJSDependencies := false)
+  .settings(
+    scalaJSUseMainModuleInitializer := true,
+    //mainClass := Some("com.neo.sk.virgour.front.Main"),
+    libraryDependencies ++= Seq(
+      "io.circe" %%% "circe-core" % "0.8.0",
+      "io.circe" %%% "circe-generic" % "0.8.0",
+      "io.circe" %%% "circe-parser" % "0.8.0",
+      "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+      "com.lihaoyi" %%% "scalatags" % "0.6.7" withSources(),
+      "org.seekloud" %%% "byteobject" % "0.1.1",
+      "in.nvilla" %%% "monadic-html" % "0.4.0-RC1" withSources()
+    )
+  )
+  .dependsOn(protocolJs)
+
+lazy val distributor = (project in file("distributor")).enablePlugins(PackPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    mainClass in reStart := Some(distributorMain),
+    javaOptions in reStart += "-Xmx2g"
+  )
+  .settings(name := "distributor")
+  .settings(
+    packMain := Map("distributor" -> distributorMain),
+    packJvmOpts := Map("distributor" -> Seq("-Xmx2g", "-Xms1g")),
+    packExtraClasspath := Map("distributor" -> Seq("."))
+  )
+  .settings(
+    libraryDependencies ++= Dependencies.backendDependencies,
+    libraryDependencies ++= Dependencies.bytedecoLibs
+  )
+  .settings {
+    (resourceGenerators in Compile) += Def.task {
+      val fastJsOut = (fastOptJS in Compile in distributorPage).value.data
+      val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
+      Seq(
+        fastJsOut,
+        fastJsSourceMap
+      )
+    }.taskValue
+  }
+  .settings((resourceGenerators in Compile) += Def.task {
+    Seq(
+      (packageJSDependencies in Compile in distributorPage).value
+      //(packageMinifiedJSDependencies in Compile in frontend).value
+    )
+  }.taskValue)
+  .settings(
+    (resourceDirectories in Compile) += (crossTarget in distributorPage).value,
+    watchSources ++= (watchSources in distributorPage).value
+  )
+  .settings(scalaJSUseMainModuleInitializer := false)
+  .dependsOn(protocolJvm, rtpClient)

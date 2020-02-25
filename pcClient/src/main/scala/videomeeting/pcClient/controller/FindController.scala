@@ -13,7 +13,7 @@ import javafx.stage.{FileChooser, Stage}
 import videomeeting.pcClient.Boot
 import videomeeting.pcClient.common._
 import videomeeting.pcClient.core.RmManager
-import videomeeting.pcClient.scene.{FindScene}
+import videomeeting.pcClient.scene.FindScene
 import videomeeting.pcClient.utils.RMClient
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.component.WarningDialog
@@ -51,7 +51,7 @@ class FindController (
           Boot.addToPlatform {
             removeLoading()
             findScene.roomList = rst.meetingList.get
-            findScene.updateRoomList(roomList = findScene.roomList)
+//            findScene.updateRoomList(roomList = findScene.roomList)
           }
         } else {
           removeLoading()
@@ -75,6 +75,7 @@ class FindController (
         if (findScene.roomList.exists(_.meetingId == meetingId)) {
           rmManager ! GetRoomDetail(findScene.roomList.find(_.meetingId == meetingId).get.meetingId)
         } else {
+          WarningDialog.initWarningDialog("会议号不存在")
           removeLoading()
         }
       }
@@ -93,26 +94,26 @@ class FindController (
   def showScene(): Unit = {
     Boot.addToPlatform {
       updateRoomList()
-      context.switchScene(findScene.getScene, title = "直播间online")
+      context.switchScene(findScene.getScene, title = "会议室online")
     }
   }
 
   def showLoading(): Unit = {
-    Boot.addToPlatform {
-      if (!hasWaitingGif) {
-        findScene.group.getChildren.add(findScene.waitingGif)
-        hasWaitingGif = true
-      }
-    }
+//    Boot.addToPlatform {
+//      if (!hasWaitingGif) {
+//        findScene.group.getChildren.add(findScene.waitingGif)
+//        hasWaitingGif = true
+//      }
+//    }
   }
 
   def removeLoading(): Unit = {
-    Boot.addToPlatform {
-      if (hasWaitingGif) {
-        findScene.group.getChildren.remove(findScene.waitingGif)
-        hasWaitingGif = false
-      }
-    }
+//    Boot.addToPlatform {
+//      if (hasWaitingGif) {
+//        findScene.group.getChildren.remove(findScene.waitingGif)
+//        hasWaitingGif = false
+//      }
+//    }
   }
 
 }

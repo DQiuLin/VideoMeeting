@@ -169,6 +169,8 @@ class StartScene(stage: Stage) {
   roomNameField.setPrefWidth(width * 0.15)
   var roomDesArea = new TextArea(s"${RmManager.roomInfo.get.roomDes}")
   roomDesArea.setPrefSize(width * 0.15, height * 0.1)
+  var emailArea = new TextArea("")
+  emailArea.setPrefWidth(width * 0.15)
 
   val roomInfoIcon = new ImageView("img/roomInfo.png")
   roomInfoIcon.setFitWidth(20)
@@ -302,48 +304,6 @@ class StartScene(stage: Stage) {
 
   }
 
-  /*
-   *更新参会人员
-   *
-   */
-  def updateWatcherList(audienceId: Long, audienceName: String): Unit = {
-
-    val agreeBtn = new Button("", new ImageView("img/agreeBtn.png"))
-    val refuseBtn = new Button("", new ImageView("img/refuseBtn.png"))
-
-    agreeBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
-    refuseBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
-
-    val glow = new Glow()
-    agreeBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-      agreeBtn.setEffect(glow)
-    })
-    agreeBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-      agreeBtn.setEffect(null)
-    })
-    refuseBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-      refuseBtn.setEffect(glow)
-    })
-    refuseBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-      refuseBtn.setEffect(null)
-    })
-    val newRequest = SpeakListInfo(
-      new SimpleStringProperty(s"$audienceName($audienceId)"),
-      new SimpleObjectProperty[Button](agreeBtn),
-      new SimpleObjectProperty[Button](refuseBtn)
-    )
-    speakObservableList.add(newRequest)
-
-    agreeBtn.setOnAction {
-      _ =>
-        listener.audienceAcceptance(userId = audienceId, accept = true, newRequest)
-    }
-    refuseBtn.setOnAction {
-      _ =>
-        listener.audienceAcceptance(userId = audienceId, accept = false, newRequest)
-    }
-
-  }
 
   def getScene: Scene = this.scene
 
@@ -514,8 +474,24 @@ class StartScene(stage: Stage) {
       roomDes.getChildren.addAll(roomDesArea, roomDesBtn)
       roomDes.setSpacing(5)
 
+      val emailText = new Text("邀请他人（请输入邮箱）:")
+      emailText.getStyleClass.add("hostScene-leftArea-text")
+
+      val emailBtn = new Button("确认", confirmIcon2)
+      emailBtn.getStyleClass.add("hostScene-leftArea-confirmBtn")
+      emailBtn.setOnAction {
+        _ =>
+          //TODO
+      }
+      Common.addButtonEffect(emailBtn)
+
+      val findBox = new HBox()
+      findBox.setAlignment(Pos.CENTER_LEFT)
+      findBox.getChildren.addAll(emailArea, emailBtn)
+      findBox.setSpacing(5)
+
       val roomInfoBox = new VBox()
-      roomInfoBox.getChildren.addAll(roomId, userId, roomNameText, roomName, roomDesText, roomDes,liveToggleButton)
+      roomInfoBox.getChildren.addAll(roomId, userId, roomNameText, roomName, roomDesText, roomDes,liveToggleButton,emailText,findBox)
       roomInfoBox.setPadding(new Insets(5, 30, 0, 30))
       roomInfoBox.setSpacing(15)
       roomInfoBox

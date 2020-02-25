@@ -164,6 +164,9 @@ class StartController(
         }
         rmManager ! RmManager.BackToHome
 
+      case msg: HostSetSpeaker =>
+        rmManager ! RmManager.SpeakerChange(msg.userId)
+
       case x =>
         log.warn(s"host recv unknown msg from rm: $x")
     }

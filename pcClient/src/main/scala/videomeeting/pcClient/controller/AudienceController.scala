@@ -336,12 +336,29 @@ class AudienceController(
             audienceScene.BtnDis()
           })
 
+        case msg: HostCloseUser =>
+          Boot.addToPlatform({
+            if (msg.image.isDefined)
+              audienceScene.imageToggleBtn.setSelected(msg.image.get)
+            if (msg.audio.isDefined)
+              audienceScene.soundToggleBtn.setSelected(msg.audio.get)
+          })
+          rmManager ! RmManager.ChangeOption4Audience(audienceScene.imageToggleBtn.isSelected, audienceScene.soundToggleBtn.isSelected)
+
+        case msg: HostSetSpeaker =>
+          rmManager ! RmManager.SpeakerChange(msg.userId)
+
         case x =>
           log.warn(s"audience recv unknown msg from rm: $x")
 
 
       }
     }
+  }
+
+  def changeBtnStauts(image: Boolean, audio: Boolean): Unit = {
+    audienceScene.imageToggleBtn.setSelected(image)
+    audienceScene.soundToggleBtn.setSelected(audio)
   }
 
 

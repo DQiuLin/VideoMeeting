@@ -106,7 +106,7 @@ object AuthProtocol {
 
   /*连线控制*/
 
-  case class AudienceJoin(userId: Long, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
+  case class AudienceApply(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
 
   case class JoinAccept(roomId: Long, userId: Long, clientType: Int, accept: Boolean) extends WsMsgHost //审批某个用户连线请求
 
@@ -123,6 +123,10 @@ object AuthProtocol {
   case class AudienceDisconnect(hostLiveId: String) extends WsMsgRm2Host //观众断开连线通知（同时rm断开与观众ws）
 
   case class HostStopPushStream(roomId: Long) extends WsMsgHost //房主停止推流
+
+  case class CloseUserImageAndAudio(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends WsMsgHost // 屏蔽某人声音和画面
+
+  case class SetSpeaker(userId: Int) extends WsMsgHost // 指定发言人
 
 
   /**
@@ -155,6 +159,8 @@ object AuthProtocol {
                           errCode: Int = 0,
                           msg: String = "ok",
                         ) extends WsMsgRm2Audience
+
+  case class ApplyReq(userId: Int, meetingId: Int, clientType: Int) extends WsMsgAudience
   /*
   点赞
    */
@@ -193,6 +199,10 @@ object AuthProtocol {
 
 
   case object BanOnAnchor extends WsMsgRm2Host//禁播消息
+
+  case class HostCloseUser(image: Option[Boolean], audio: Option[Boolean]) extends WsMsgRm2Audience // 用户画面和声音被关闭
+
+  case class HostSetSpeaker(userId: Int) extends WsMsgRm
 
   /**
     * 所有用户

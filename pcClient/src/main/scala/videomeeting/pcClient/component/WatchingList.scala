@@ -43,13 +43,13 @@ object WatchingList{
 
     def setHostBtn(btn: Button): Unit = beHostBtn.set(btn)
 
-    def getSoundBtn: Button = soundBtn.get()
-
-    def setSoundBtn(btn: Button): Unit = soundBtn.set(btn)
-
     def getExitBtn: Button = soundBtn.get()
 
     def setExitBtn(btn: Button): Unit = soundBtn.set(btn)
+
+    def getSoundBtn: Button = soundBtn.get()
+
+    def setSoundBtn(btn: Button): Unit = soundBtn.set(btn)
 
     def getImageBtn: Button = imageBtn.get()
 
@@ -109,10 +109,10 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
         headerImg.setFitHeight(25)
         headerImg.setFitWidth(25)
 
-        val beHostBtn = new Button("", new ImageView("img/agreeBtn.png"))
-        val exitBtn = new Button("", new ImageView("img/refuseBtn.png"))
-        val imageBtn = new Button("", new ImageView("img/agreeBtn.png"))
-        val soundBtn = new Button("", new ImageView("img/refuseBtn.png"))
+        val beHostBtn = new Button("", new ImageView("img2/2host.png"))
+        val exitBtn = new Button("", new ImageView("img2/2quit.png"))
+        val imageBtn = new Button("", new ImageView("img2/2user.png"))
+        val soundBtn = new Button("", new ImageView("img2/2sound.png"))
 
         beHostBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
         exitBtn.getStyleClass.add("hostScene-middleArea-tableBtn")

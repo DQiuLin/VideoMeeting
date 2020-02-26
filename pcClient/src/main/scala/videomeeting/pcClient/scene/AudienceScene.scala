@@ -229,7 +229,7 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
 
 
     val viewIcon = Common.getImageView("img/view.png", 30, 30)
-    val viewLabel = new Label(room.attendanceNum.toString, viewIcon)
+    val viewLabel = new Label(room.attendanceNum.getOrElse(0).toString, viewIcon)
     viewLabel.setPadding(new Insets(0,0,0,6))
 
     val IDcard = new HBox(userInfo, viewLabel)

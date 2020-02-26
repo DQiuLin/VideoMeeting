@@ -234,7 +234,7 @@ object MeetingActor {
             case Failure(_) =>
 
           }
-          meetingInfo.attendanceNum = subscribe.size - 1
+          meetingInfo.attendanceNum = Some(subscribe.size - 1)
           idle(meetingInfo, liveInfoMap, subscribe, viewNum, startTime)
 
         case ActorProtocol.HostCloseRoom(roomId) =>

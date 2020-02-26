@@ -133,8 +133,8 @@ object MainPage extends PageSwitcher {
           //登陆之后获取到用户信息
           if (rsp.userInfo.isDefined) {
             dom.window.localStorage.setItem("userName", account)
-            dom.window.localStorage.setItem("userHeaderImgUrl", rsp.userInfo.get.avatar)
-            dom.window.localStorage.setItem("userId", rsp.userInfo.get.id.toString)
+            dom.window.localStorage.setItem("userHeaderImgUrl", rsp.userInfo.get.headImgUrl)
+            dom.window.localStorage.setItem("userId", rsp.userInfo.get.userId.toString)
             userShowName := dom.window.localStorage.getItem("userName")
             userShowImg := dom.window.localStorage.getItem("userHeaderImgUrl")
             menuShow := userShow

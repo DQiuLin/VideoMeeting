@@ -279,7 +279,7 @@ class HomeController(
 
 
         userInfo = Some(UserInfo(
-          bufferedReader.readLine().split(":").last.toLong,
+          bufferedReader.readLine().split(":").last.toInt,
           bufferedReader.readLine().split(":").last,
           bufferedReader.readLine().split(":").last,
           bufferedReader.readLine().split(":").last,
@@ -290,10 +290,11 @@ class HomeController(
           bufferedReader.readLine().split(":").last.toInt,
           bufferedReader.readLine().split(":").last,
           bufferedReader.readLine().split(":").last,
+          "",
           userInfo.get.userId,
           userInfo.get.userName,
           userInfo.get.headImgUrl,
-          0
+          Some(0)
         ))
         getTokenTime = Some(bufferedReader.readLine().split(":").last.toLong)
         bufferedReader.close()

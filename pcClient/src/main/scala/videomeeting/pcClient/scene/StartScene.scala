@@ -90,6 +90,10 @@ object StartScene {
                         email: String
                       )
 
+    def forceExit(userId: Int, userName: String)
+
+    def beHost()
+
     def closeImage(userId: Int)
 
     def closeSound(userId: Int)
@@ -132,7 +136,7 @@ class StartScene(stage: Stage) {
   var roomInfoMap = Map.empty[Long, List[String]]
   val speakObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
   val watchObservableList: ObservableList[WatchingListInfo] = FXCollections.observableArrayList()
- // val audObservableList: ObservableList[AudienceListInfo] = FXCollections.observableArrayList()
+  // val audObservableList: ObservableList[AudienceListInfo] = FXCollections.observableArrayList()
   var commentPrefix = "effectType0"
 
   var listener: StartSceneListener = _
@@ -149,7 +153,7 @@ class StartScene(stage: Stage) {
   connectStateBox.setSpacing(10)
 
   /**
-    *左侧导航栏
+    * 左侧导航栏
     *
     **/
   var roomNameField = new TextField(s"${RmManager.roomInfo.get.meetingName}")
@@ -169,7 +173,7 @@ class StartScene(stage: Stage) {
   val applyIcon = new ImageView("img2/2apply.png")
   applyIcon.setFitWidth(20)
   applyIcon.setFitHeight(20)
-//这个要找一张那种来电的图片来
+  //这个要找一张那种来电的图片来
   val applyIcon1 = new ImageView("img2/2apply1.png")
   applyIcon.setFitWidth(20)
   applyIcon.setFitHeight(20)
@@ -184,14 +188,14 @@ class StartScene(stage: Stage) {
   val liveToggleButton = new ToggleButton("开始会议")
   liveToggleButton.getStyleClass.add("hostScene-rightArea-liveBtn")
   liveToggleButton.setOnAction(_ => {
-    if(liveToggleButton.isSelected){
+    if (liveToggleButton.isSelected) {
       liveToggleButton.setText("结束会议")
       //TODO 开会
-    }else{
+    } else {
       liveToggleButton.setText("开始会议")
       //TODO 结束会议
-      }
     }
+  }
   )
 
 
@@ -307,7 +311,7 @@ class StartScene(stage: Stage) {
     tb3.setToggleGroup(group)
 
     val tbBox = new HBox()
-    tbBox.getChildren.addAll(tb3,tb1, tb2)
+    tbBox.getChildren.addAll(tb3, tb1, tb2)
 
     val left1Area = addLeftChild1Area()
     val left2Area = addLeftChild2Area()
@@ -485,7 +489,7 @@ class StartScene(stage: Stage) {
       findBox.setSpacing(5)
 
       val roomInfoBox = new VBox()
-      roomInfoBox.getChildren.addAll(roomId, userId, roomNameText, roomName, roomDesText, roomDes,liveToggleButton,emailText,findBox)
+      roomInfoBox.getChildren.addAll(roomId, userId, roomNameText, roomName, roomDesText, roomDes, liveToggleButton, emailText, findBox)
       roomInfoBox.setPadding(new Insets(5, 30, 0, 30))
       roomInfoBox.setSpacing(15)
       roomInfoBox
@@ -505,6 +509,7 @@ class StartScene(stage: Stage) {
 
       livePane
     }
+
     val vBox = new VBox(createLivePane)
     vBox.getStyleClass.add("hostScene-rightArea-wholeBox")
     vBox.setSpacing(10)
@@ -538,7 +543,7 @@ class StartScene(stage: Stage) {
     ctx.setFill(Color.WHITE)
     val loss: Double = if (info.values.headOption.nonEmpty) info.values.head.lossScale2 else 0
     val band: Double = if (bandInfo.values.headOption.nonEmpty) bandInfo.values.head.bandWidth2s else 0
-    val  CPUMemInfo= NetUsage.getCPUMemInfo
+    val CPUMemInfo = NetUsage.getCPUMemInfo
     //    info.values.headOption.foreach(
     //      i =>
     //        bandInfo.values.headOption.foreach(
@@ -550,7 +555,7 @@ class StartScene(stage: Stage) {
     ctx.clearRect(0, 0, ctx.getCanvas.getWidth, ctx.getCanvas.getHeight)
     CPUMemInfo.foreach { i =>
       val (memPer, memByte, proName) = (i.memPer, i.memByte, i.proName)
-      ctx.fillText(f"内存占比：$memPer%.2f" + " % " + f"内存：$memByte" , statisticsCanvas.getWidth - 210, 15)
+      ctx.fillText(f"内存占比：$memPer%.2f" + " % " + f"内存：$memByte", statisticsCanvas.getWidth - 210, 15)
     }
     ctx.fillText(f"丢包率：$loss%.3f" + " %  " + f"带宽：$band%.2f" + " bit/s", 0, 15)
     //    info.values.headOption.foreach(i => ctx.fillText(f"丢包率：${i.lossScale2}%.2f" + " %", Constants.DefaultPlayer.width / 5 * 4, 20))

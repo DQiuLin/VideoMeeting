@@ -137,15 +137,13 @@ object RmManager {
   final case object ShutJoin extends RmCommand //主动关闭和某观众的连线
 
   final case class ChangeCaptureMode(mediaSource: Int, cameraPosition: Int) extends RmCommand
-
   // 0->camera; 1->desktop; 2->both
   //0：左上  1：右上  2：右下  3：左下
 
   final case class InviteAudience(meetingId: String, email: String) extends RmCommand //主持人邀请参会人员
 
-  final case class ForceExit(userId4Audience: Int, userNa4Audience: String) extends RmCommand //主持人强制剔除某参会人员
-                                  // 0->camera; 1->desktop; 2->both
-                                  //0：左上  1：右上  2：右下  3：左下
+  final case class ForceExit(userId4Audience: Int, userNa4Audience: String) extends RmCommand //主持人强制踢出某参会人员
+
   final case class CloseUser(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends RmCommand
 
   final case class ChangeSpeaker(userId: Int) extends RmCommand
@@ -279,10 +277,10 @@ object RmManager {
             case Success(rst) =>
               rst match {
                 case Right(rsp) =>
-                  if(rsp.errCode == 0) {
+                  if (rsp.errCode == 0) {
                     ctx.self ! GoToWatch(rsp.meetingInfo.get)
                   }
-                  else if(rsp.errCode == 100008){
+                  else if (rsp.errCode == 100008) {
                     log.info(s"got roomInfo error: 无actor。")
                     Boot.addToPlatform {
                       roomController.get.removeLoading()
@@ -290,7 +288,7 @@ object RmManager {
                       roomController.foreach(_.refreshList)
                     }
                   }
-                  else if(rsp.errCode == 100009){
+                  else if (rsp.errCode == 100009) {
                     log.info(s"got roomInfo error: 主播停播，房间还在.")
                     Boot.addToPlatform {
                       roomController.get.removeLoading()
@@ -694,10 +692,10 @@ object RmManager {
         case msg: SpeakerChange =>
           if (userInfo.nonEmpty && userInfo.get.userId != msg.userId) {
             ctx.self ! ChangeOption(None, None, None, needImage = false, needSound = false)
-//            Boot.addToPlatform(audienceController.changeBtnStauts(false, false))
+            //            Boot.addToPlatform(audienceController.changeBtnStauts(false, false))
           } else {
             ctx.self ! ChangeOption(None, None, None)
-//            Boot.addToPlatform(audienceController.changeBtnStauts(true, true))
+            //            Boot.addToPlatform(audienceController.changeBtnStauts(true, true))
           }
           Behaviors.same
 

@@ -86,7 +86,7 @@ object RecorderActor {
   private val emptyAudio = ShortBuffer.allocate(1024 * 2)
   private val emptyAudio4one = ShortBuffer.allocate(1152)
 
-  def create(roomId: Long, host: String, client: List[String], layout: Int, output: OutputStream): Behavior[Command] = {
+  def create(roomId: Long, client: List[String], layout: Int, output: OutputStream): Behavior[Command] = {
     Behaviors.setup[Command] { ctx =>
       implicit val stashBuffer: StashBuffer[Command] = StashBuffer[Command](Int.MaxValue)
       Behaviors.withTimers[Command] {

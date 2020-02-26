@@ -22,7 +22,11 @@ object WatchingList{
 
   case class WatchingListInfo(
     header: ObjectProperty[ImageView],
-    userInfo: StringProperty
+    userInfo: StringProperty,
+    beHostBtn: ObjectProperty[Button],
+    exitBtn: ObjectProperty[Button],
+    soundBtn: ObjectProperty[Button],
+    imageBtn: ObjectProperty[Button],
   )
   {
     def getHeader: ImageView = header.get()
@@ -32,6 +36,22 @@ object WatchingList{
     def getUserInfo: String = userInfo.get()
 
     def setUserInfo(info: String): Unit = userInfo.set(info)
+
+    def getHostBtn: Button = beHostBtn.get()
+
+    def setHostBtn(btn: Button): Unit = beHostBtn.set(btn)
+
+    def getSoundBtn: Button = soundBtn.get()
+
+    def setSoundBtn(btn: Button): Unit = soundBtn.set(btn)
+
+    def getExitBtn: Button = soundBtn.get()
+
+    def setExitBtn(btn: Button): Unit = soundBtn.set(btn)
+
+    def getImageBtn: Button = imageBtn.get()
+
+    def setImageBtn(btn: Button): Unit = imageBtn.set(btn)
   }
 
 }
@@ -122,7 +142,11 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
 
         val newRequest = WatchingListInfo(
           new SimpleObjectProperty[ImageView](headerImg),
-          new SimpleStringProperty(s"${l.userName}(${l.userId})")
+          new SimpleStringProperty(s"${l.userName}(${l.userId})"),
+          new SimpleObjectProperty[Button](beHostBtn),
+          new SimpleObjectProperty[Button](exitBtn),
+          new SimpleObjectProperty[Button](soundBtn),
+          new SimpleObjectProperty[Button](imageBtn)
         )
         watchingList.add(0, newRequest)
       }

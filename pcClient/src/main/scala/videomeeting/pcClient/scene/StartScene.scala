@@ -35,8 +35,9 @@ import videomeeting.pcClient.Boot
 import videomeeting.pcClient.component.Common.getImageView
 import videomeeting.pcClient.component._
 import videomeeting.pcClient.core.stream.StreamPuller.{BandWidthInfo, PackageLossInfo}
-import videomeeting.pcClient.scene.StartScene.{StartSceneListener, WatchListInfo,SpeakListInfo}
+import videomeeting.pcClient.scene.StartScene.{StartSceneListener,SpeakListInfo}
 import videomeeting.pcClient.utils.{NetUsage, TimeUtil}
+import videomeeting.pcClient.component.WatchingList.WatchingListInfo
 
 import scala.collection.mutable
 /**
@@ -45,29 +46,6 @@ import scala.collection.mutable
   * Time: 23:23
   */
 object StartScene {
-
-  case class WatchListInfo(
-                            userInfo: StringProperty,
-                            toBeHostBtn: ObjectProperty[Button],
-                            soundCtrBtn: ObjectProperty[Button],
-                            imageCtrBtn: ObjectProperty[Button],
-                          ) {
-    def getUserInfo: String = userInfo.get()
-
-    def setUserInfo(info: String): Unit = userInfo.set(info)
-
-    def getHostBtn: Button = toBeHostBtn.get()
-
-    def setHostBtn(btn: Button): Unit = toBeHostBtn.set(btn)
-
-    def getSoundBtn: Button = soundCtrBtn.get()
-
-    def setSoundBtn(btn: Button): Unit = soundCtrBtn.set(btn)
-
-    def getImageBtn: Button = imageCtrBtn.get()
-
-    def setImageBtn(btn: Button): Unit = imageCtrBtn.set(btn)
-  }
 
   case class SpeakListInfo(
                             userInfo: StringProperty,
@@ -149,7 +127,7 @@ class StartScene(stage: Stage) {
   var isLive = false
   var roomInfoMap = Map.empty[Long, List[String]]
   val speakObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
-  val watchObservableList: ObservableList[WatchListInfo] = FXCollections.observableArrayList()
+  val watchObservableList: ObservableList[WatchingListInfo] = FXCollections.observableArrayList()
  // val audObservableList: ObservableList[AudienceListInfo] = FXCollections.observableArrayList()
   var commentPrefix = "effectType0"
 

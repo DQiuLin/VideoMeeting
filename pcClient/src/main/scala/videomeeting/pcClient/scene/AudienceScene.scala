@@ -2,6 +2,7 @@ package videomeeting.pcClient.scene
 
 import com.sun.glass.ui.View.EventHandler
 import javafx.animation.{Animation, KeyFrame, Timeline}
+import javafx.beans.property.StringProperty
 import javafx.collections.{FXCollections, ObservableList}
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.canvas.{Canvas, GraphicsContext}
@@ -23,7 +24,7 @@ import videomeeting.pcClient.component._
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.stream.StreamPuller.{BandWidthInfo, PackageLossInfo}
 import videomeeting.pcClient.utils.{NetUsage, TimeUtil}
-import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, MeetingInfo, UserDes}
+import videomeeting.protocol.ptcl.CommonInfo.{MeetingInfo, RecordInfo, UserDes}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol.Comment
 import org.slf4j.LoggerFactory
 
@@ -39,15 +40,23 @@ import scala.collection.mutable
 
 object AudienceScene {
 
+//  case class AudienceList(
+//                     audienceInfo: StringProperty
+//                       ) {
+//    def getUserInfo: String = audienceInfo.get()
+//
+//    def setUserInfo(info: String): Unit = audienceInfo.set(info)
+//  }
+
   trait AudienceSceneListener {
 
     def joinReq(roomId: Int)
 
-    def changeOption(needImage: Boolean = true, needSound: Boolean = true)
-
     def quitJoin(roomId: Int, userId:Int)
 
     def gotoHomeScene()
+
+    def changeOption(needImage: Boolean = true, needSound: Boolean = true)
 
     def ask4Loss()
 
@@ -71,19 +80,11 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
     timeline.setCycleCount(Animation.INDEFINITE)
     val keyFrame = new KeyFrame(Duration.millis(2000), { _ =>
       listener.ask4Loss()
-      //      ppp
     })
     timeline.getKeyFrames.add(keyFrame)
     timeline.play()
   }
 
-  //  def ppp = {
-  //    val  CPUMemInfo= NetUsage.getCPUMemInfo
-  //    CPUMemInfo.foreach { i =>
-  //      val (cpu, memPer, memByte, proName) = (i.CPU, i.memPer, i.memByte, i.proName)
-  ////      println(f"cpu：$cpu%.3f" + " %  " + f"mem percent：$memPer%.2f" + " %" + f"mem：$memByte")
-  //    }
-  //  }
   override def finalize(): Unit = {
     //    println("release")
     super.finalize()

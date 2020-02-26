@@ -1,8 +1,9 @@
 package videomeeting.meetingManager.utils
 
-//import org.seekloud.theia.protocol.ptcl.processer2Manager.ProcessorProtocol
-//import org.seekloud.theia.protocol.ptcl.processer2Manager.ProcessorProtocol.{RecordData, RecordInfoRsp, RecordList}
+
 import org.slf4j.LoggerFactory
+import videomeeting.protocol.ptcl.distributor2Manager.DistributorProtocol
+import videomeeting.protocol.ptcl.distributor2Manager.DistributorProtocol.{RecordInfoRsp, SeekRecord, StartPullRsp}
 
 import scala.concurrent.Future
 

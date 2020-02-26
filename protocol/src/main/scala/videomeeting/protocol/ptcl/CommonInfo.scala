@@ -49,8 +49,8 @@ object CommonInfo {
                           roomDes: String,
                           userId: Int,
                           username: String,
-                          coverImgUrl: String,
                           var attendanceNum: Int = 0,
+                          var mpd: Option[String] = None,
                           var rtmp: Option[String] = None
                         )
 

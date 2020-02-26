@@ -16,7 +16,7 @@ import videomeeting.meetingManager.core.MeetingManager.GetRtmpLiveInfo
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
 import videomeeting.meetingManager.protocol.ActorProtocol.BanOnAnchor
-import videomeeting.meetingManager.utils.{ProcessorClient, RtpClient}
+import videomeeting.meetingManager.utils.{DistributorClient, ProcessorClient, RtpClient}
 
 import scala.collection.mutable
 import scala.concurrent.duration.{FiniteDuration, _}
@@ -27,7 +27,6 @@ import videomeeting.meetingManager.common.Common.{Like, Role, Subscriber}
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
 import videomeeting.meetingManager.protocol.CommonInfoProtocol.WholeRoomInfo
-import videomeeting.meetingManager.utils.RtpClient
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol
 
 object MeetingActor {
@@ -107,11 +106,20 @@ object MeetingActor {
               case Right(rsp) =>
                 if (userTableOpt.nonEmpty) {
                   log.info(s"start meeting succeed")
-                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, 0, None)
-                  dispatchTo(subscribers)(List((userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
-                  val startTime = System.currentTimeMillis()
-                  ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, startTime))
+                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, 0, None)
+                  DistributorClient.startPull(meetingId, rsp.liveInfo.liveId).map {
+                    case Right(r) =>
+                      log.info(s"distributor startPull succeed, get live address: ${r.liveAdd}")
+                      dispatchTo(subscribers)(List((userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
+                      meetingInfo.mpd = Some(r.liveAdd)
+                      val startTime = r.startTime
+                      ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, startTime))
 
+                    case Left(e) =>
+                      log.error(s"distributor startPull error: $e")
+                      dispatchTo(subscribers)(List((userId, false)), StartLiveRefused4LiveInfoError)
+                      ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+                  }
                 } else {
                   log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
                   dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
@@ -130,7 +138,7 @@ object MeetingActor {
             replyTo ! meetingInfoOpt.get
           } else {
             log.debug("会议信息未更新")
-            replyTo ! MeetingInfo(-1, "", -1, "", -1, None)
+            replyTo ! MeetingInfo(-1, "", "", -1, "", -1, None)
           }
           Behaviors.same
 
@@ -213,6 +221,7 @@ object MeetingActor {
                     case Some(v) =>
                       if (v != liveInfoMap(Role.host)(meetingInfo.userId).liveId) {
                         liveInfoMap.remove(Role.attendance)
+                        ProcessorClient.closeRoom(meetingId)
                         ctx.self ! UpdateRTMP(liveInfoMap(Role.host)(meetingInfo.userId).liveId)
                         dispatch(subscribe)(AuthProtocol.AudienceDisconnect(liveInfoMap(Role.host)(meetingInfo.userId).liveId))
                         dispatch(subscribe)(RcvComment(-1l, "", s"the attendance has shut the join in meeting $meetingId"))
@@ -239,6 +248,20 @@ object MeetingActor {
 
         case ActorProtocol.HostCloseRoom(roomId) =>
           log.debug(s"${ctx.self.path} host close the room")
+          meetingInfo.rtmp match {
+            case Some(v) =>
+              if(v != liveInfoMap(Role.host)(meetingInfo.userId).liveId){
+                ProcessorClient.closeRoom(meetingInfo.meetingId)
+              }
+            case None =>
+          }
+          //          if (wholeRoomInfo.roomInfo.rtmp.get != liveInfoMap(Role.host)(wholeRoomInfo.roomInfo.userId).liveId)
+          //            ProcessorClient.closeRoom(wholeRoomInfo.roomInfo.roomId)
+          if (startTime != -1l) {
+            log.debug(s"${ctx.self.path} 主播向distributor发送finishPull请求")
+            DistributorClient.finishPull(liveInfoMap(Role.host)(meetingInfo.userId).liveId)
+            meetingManager ! MeetingManager.DelaySeekRecord(meetingInfo, viewNum, roomId, startTime, liveInfoMap(Role.host)(meetingInfo.userId).liveId)
+          }
           dispatchTo(subscribe)(subscribe.filter(r => r._1 != (meetingInfo.userId, false)).keys.toList, HostCloseRoom())
           Behaviors.stopped
 
@@ -252,19 +275,19 @@ object MeetingActor {
                 liveInfoMap.put(Role.host, mutable.HashMap(meetingInfo.userId -> rsp.liveInfo))
                 val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)
                 //timer.startSingleTimer(DelayUpdateRtmpKey + roomId.toString, UpdateRTMP(rsp.liveInfo.liveId), 4.seconds)
-//                DistributorClient.startPull(roomId, rsp.liveInfo.liveId).map {
-//                  case Right(r) =>
-//                    log.info("distributor startPull succeed")
-//                    val startTime = r.startTime
-//                    val newWholeRoomInfo = wholeRoomInfo.copy(roomInfo = wholeRoomInfo.roomInfo.copy(observerNum = 0, like = 0, mpd = Some(r.liveAdd), rtmp = Some(rsp.liveInfo.liveId)))
-//                    dispatchTo(subscribe)(List((wholeRoomInfo.roomInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
-//                    ctx.self ! SwitchBehavior("idle", idle(newWholeRoomInfo, liveInfoMap, subscribe, liker, startTime, 0, isJoinOpen))
-//                  case Left(e) =>
-//                    log.error(s"distributor startPull error: $e")
-//                    val newWholeRoomInfo = wholeRoomInfo.copy(roomInfo = wholeRoomInfo.roomInfo.copy(observerNum = 0, like = 0))
-//                    dispatchTo(subscribe)(List((wholeRoomInfo.roomInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
-//                    ctx.self ! SwitchBehavior("idle", idle(newWholeRoomInfo, liveInfoMap, subscribe, liker, startTime, 0, isJoinOpen))
-//                }
+                DistributorClient.startPull(roomId, rsp.liveInfo.liveId).map {
+                  case Right(r) =>
+                    log.info("distributor startPull succeed")
+                    val startTime = r.startTime
+                    val newMeetingInfo = meetingInfo.copy(attendanceNum = 0, mpd = Some(r.liveAdd), rtmp = Some(rsp.liveInfo.liveId))
+                    dispatchTo(subscribe)(List((meetingInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
+                    ctx.self ! SwitchBehavior("idle", idle(newMeetingInfo, liveInfoMap, subscribe, 0, startTime))
+                  case Left(e) =>
+                    log.error(s"distributor startPull error: $e")
+                    val newMeetingInfo = meetingInfo.copy(attendanceNum = 0)
+                    dispatchTo(subscribe)(List((meetingInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
+                    ctx.self ! SwitchBehavior("idle", idle(newMeetingInfo, liveInfoMap, subscribe, 0, startTime))
+                }
 
 
               case Left(str) =>
@@ -315,14 +338,14 @@ object MeetingActor {
     *
     **/
   private def handleWebSocketMsg(
-    wholeRoomInfo: WholeRoomInfo,
+    meetingInfo: MeetingInfo,
     subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //包括主持人在内的所有用户
     liveInfoMap: mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]], //除主持人外的所有用户的liveInfo
     startTime: Long,
     dispatch: WsMsgRm => Unit,
     dispatchTo: (List[(Int, Boolean)], WsMsgRm) => Unit
   )
-    (ctx: ActorContext[Command], userId: Int, roomId: Int, msg: WsMsgClient)
+    (ctx: ActorContext[Command], userId: Int, meetingId: Int, msg: WsMsgClient)
     (
       implicit stashBuffer: StashBuffer[Command],
       timer: TimerScheduler[Command],
@@ -353,40 +376,36 @@ object MeetingActor {
         Behaviors.same
 
 
-      case JoinReq(userId4Audience, `roomId`, clientType) =>
-        if (wholeRoomInfo.isJoinOpen) {
-          UserInfoDao.searchById(userId4Audience).map { r =>
-            if (r.nonEmpty) {
-              dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
-            } else {
-              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$roomId")
-              dispatchTo(List((userId4Audience, false)), JoinAccountError)
-            }
-          }.recover {
-            case e: Exception =>
-              log.debug(s"${ctx.self.path} 连线请求失败，内部错误error=$e")
-              dispatchTo(List((userId4Audience, false)), JoinInternalError)
-          }
-        } else {
-          dispatchTo(List((userId4Audience, false)), JoinInvalid)
-        }
-        Behaviors.same
+//      case JoinReq(userId4Audience, `meetingInfo`, clientType) =>
+//          UserInfoDao.searchById(userId4Audience).map { r =>
+//            if (r.nonEmpty) {
+//              dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
+//            } else {
+//              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$roomId")
+//              dispatchTo(List((userId4Audience, false)), JoinAccountError)
+//            }
+//          }.recover {
+//            case e: Exception =>
+//              log.debug(s"${ctx.self.path} 连线请求失败，内部错误error=$e")
+//              dispatchTo(List((userId4Audience, false)), JoinInternalError)
+//          }
+//        Behaviors.same
 
-      case AudienceShutJoin(`roomId`, `userId`) =>
+      case AudienceShutJoin(`meetingInfo`, `userId`) =>
         log.debug(s"${ctx.self.path} the audience connection has been shut")
         //TODO 目前是某个观众退出则关闭会议，应该修改为不关闭整个会议
         liveInfoMap.clear()
-        ctx.self ! UpdateRTMP(wholeRoomInfo.liveInfo.liveId)
+        ctx.self ! UpdateRTMP(meetingInfo.rtmp.get)
         //            val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)
         //            ProcessorClient.updateRoomInfo(wholeRoomInfo.roomInfo.roomId, liveList, wholeRoomInfo.layout, wholeRoomInfo.aiMode, 0l)
-        dispatch(AuthProtocol.AudienceDisconnect(wholeRoomInfo.liveInfo.liveId))
-        dispatch(RcvComment(-1l, "", s"the audience has shut the join in room $roomId"))
+        dispatch(AuthProtocol.AudienceDisconnect(meetingInfo.rtmp.get))
+        dispatch(RcvComment(-1l, "", s"the audience has shut the join in room $meetingId"))
         Behaviors.same
 
       case ForceExit(userId4Audience,userNa4Audience)=>
         if(liveInfoMap.contains(userId4Audience)){
           log.debug(s"host force user-$userId4Audience to exit")
-          ProcessorClient.forceExit(roomId, liveInfoMap(userId4Audience).liveId, System.currentTimeMillis())
+          ProcessorClient.forceExit(meetingId, liveInfoMap(Role.attendance)(userId4Audience).liveId, System.currentTimeMillis())
           liveInfoMap.remove(userId4Audience)
           dispatchTo(subscribers.filter(_._1._1 != userId).keys.toList,ForceExitRsp(userId4Audience, userNa4Audience))
         } else{

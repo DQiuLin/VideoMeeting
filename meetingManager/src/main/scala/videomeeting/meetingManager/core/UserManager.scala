@@ -54,9 +54,6 @@ object UserManager {
 
   final case class TemporaryUser(replyTo:ActorRef[GetTemporaryUserRsp]) extends Command
 
-  case class DeleteTemporaryUser(userId:Int) extends Command
-
-
   private val tokenExistTime = AppSettings.tokenExistTime * 1000L // seconds
   private val deleteTemporaryDelay = AppSettings.guestTokenExistTime.seconds
 
@@ -95,18 +92,6 @@ object UserManager {
       (implicit stashBuffer: StashBuffer[Command],timer:TimerScheduler[Command]):Behavior[Command] =
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
-
-        case TemporaryUser(replyTo) =>
-          val userId = userIdGenerator.getAndIncrement()
-          val userInfo = UserInfo(userId, s"Guest$userId", Common.DefaultImg.headImg)
-          replyTo ! GetTemporaryUserRsp(Some(userInfo))
-          temporaryUserMap.put(userId,(System.currentTimeMillis(),userInfo))
-          timer.startSingleTimer(s"DeleteTemporaryUser_$userId",DeleteTemporaryUser(userId),deleteTemporaryDelay)
-          Behaviors.same
-
-        case DeleteTemporaryUser(userId) =>
-          temporaryUserMap.remove(userId)
-          Behaviors.same
 
         case SetupWs(uid, meetingId,replyTo) =>
           log.debug(s"${ctx.self.path} ws start")

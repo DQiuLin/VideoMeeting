@@ -42,11 +42,11 @@ class HomeController(
 
   homeScene.setListener(new HomeSceneListener {
     override def liveCheck(): Unit = {
-//      if (RmManager.userInfo.nonEmpty && RmManager.roomInfo.nonEmpty) {
-//        rmManager ! RmManager.GoToLive
-//      } else {
-//        gotoLoginDialog(isToLive = true)
-//      }
+      //      if (RmManager.userInfo.nonEmpty && RmManager.roomInfo.nonEmpty) {
+      //        rmManager ! RmManager.GoToLive
+      //      } else {
+      //        gotoLoginDialog(isToLive = true)
+      //      }
       rmManager ! RmManager.GoToLive
     }
 
@@ -55,11 +55,11 @@ class HomeController(
     }
 
     override def gotoLoginDialog(
-      userName: Option[String] = None,
-      pwd: Option[String] = None,
-      isToLive: Boolean,
-      isToWatch: Boolean
-    ): Unit = {
+                                  userName: Option[String] = None,
+                                  pwd: Option[String] = None,
+                                  isToLive: Boolean,
+                                  isToWatch: Boolean
+                                ): Unit = {
       // 弹出登陆窗口
       val userInfo = loginController.loginDialog()
       if (userInfo.nonEmpty) {
@@ -216,8 +216,8 @@ class HomeController(
       case Right(rsp) =>
         if (rsp.errCode == 0) {
           rmManager ! RmManager.SignInSuccess(rsp.userInfo.get, rsp.roomInfo.get)
-//          RmManager.userInfo = rsp.userInfo
-//          RmManager.roomInfo = rsp.roomInfo
+          //          RmManager.userInfo = rsp.userInfo
+          //          RmManager.roomInfo = rsp.roomInfo
           if (isToLive) {
             rmManager ! RmManager.GoToLive
           } else {
@@ -275,11 +275,13 @@ class HomeController(
       if (file.canRead && file.exists()) {
         val bufferedReader = new BufferedReader(new FileReader(file))
         val password = bufferedReader.readLine().split(":").last
-        if (password.length> 128) {jdkAESDecode(password)}
+        if (password.length > 128) {
+          jdkAESDecode(password)
+        }
 
 
         userInfo = Some(UserInfo(
-          bufferedReader.readLine().split(":").last.toLong,
+          bufferedReader.readLine().split(":").last.toInt,
           bufferedReader.readLine().split(":").last,
           bufferedReader.readLine().split(":").last,
           bufferedReader.readLine().split(":").last,
@@ -293,13 +295,13 @@ class HomeController(
           userInfo.get.userId,
           userInfo.get.userName,
           userInfo.get.headImgUrl,
-          0
+          Some(0)
         ))
         getTokenTime = Some(bufferedReader.readLine().split(":").last.toLong)
         bufferedReader.close()
       }
 
-      if(System.currentTimeMillis() - getTokenTime.get > userInfo.get.tokenExistTime ){
+      if (System.currentTimeMillis() - getTokenTime.get > userInfo.get.tokenExistTime) {
         deleteLoginTemp()
         log.debug("deleteLoginTemp")
         removeLoading()
@@ -307,7 +309,7 @@ class HomeController(
           WarningDialog.initWarningDialog("登录信息过期，请重新登录账号密码")
         }
 
-      }else {
+      } else {
         log.debug(s"login.")
         rmManager ! RmManager.SignInSuccess(userInfo.get, roomInfo.get, getTokenTime)
         RmManager.userInfo = userInfo
@@ -368,11 +370,13 @@ class HomeController(
 
     }
   }
-    //密码加密
-private val password = "gjh%^&(&  {}77"
-  def jdkAESEncode(str:String):String= try {
+
+  //密码加密
+  private val password = "gjh%^&(&  {}77"
+
+  def jdkAESEncode(str: String): String = try {
     //生成key
-    val random=SecureRandom.getInstance("SHA1PRNG")
+    val random = SecureRandom.getInstance("SHA1PRNG")
     random.setSeed(password.getBytes)
     val keyGenerator = KeyGenerator.getInstance("AES")
     keyGenerator.init(128, random)
@@ -387,16 +391,16 @@ private val password = "gjh%^&(&  {}77"
     val result = cipher.doFinal(str.getBytes)
     val string = Base64.encode(result)
     string
-  } catch   {
+  } catch {
     case e: Exception =>
       e.printStackTrace()
       throw new Exception(e)
   }
 
   //密码解密
-  def jdkAESDecode (str:String):String= try {
+  def jdkAESDecode(str: String): String = try {
     //生成key
-    val random=SecureRandom.getInstance("SHA1PRNG")
+    val random = SecureRandom.getInstance("SHA1PRNG")
     random.setSeed(password.getBytes)
     val keyGenerator = KeyGenerator.getInstance("AES")
     keyGenerator.init(128, random)
@@ -419,7 +423,6 @@ private val password = "gjh%^&(&  {}77"
   }
 
 
-
   /**
     * 创建theia登录临时文件
     */
@@ -438,7 +441,7 @@ private val password = "gjh%^&(&  {}77"
       bufferedWriter.write(s"roomId:${roomInfo.meetingId}\n")
       bufferedWriter.write(s"roomName:${roomInfo.meetingName}\n")
       bufferedWriter.write(s"roomDes:${roomInfo.roomDes}\n")
-      bufferedWriter.write(s"coverImgUrl:${roomInfo.coverImgUrl}\n")
+      //      bufferedWriter.write(s"coverImgUrl:${roomInfo.coverImgUrl}\n")
       bufferedWriter.write(s"getTokenTime:${System.currentTimeMillis()}\n")
       bufferedWriter.close()
     }

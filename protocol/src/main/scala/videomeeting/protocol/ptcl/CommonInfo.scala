@@ -18,7 +18,6 @@ object CommonInfo {
   object ClientType {
     val PC = 0
     val WEB = 1
-
   }
 
   object CameraPosition {
@@ -44,14 +43,19 @@ object CommonInfo {
                      )
 
   case class MeetingInfo(
+                          //房间基本设置
                           meetingId: Int,
                           meetingName: String,
                           roomDes: String,
-                          userId: Int,
-                          username: String,
-                          coverImgUrl: String,
-                          var attendanceNum: Int = 0,
-                          var rtmp: Option[String] = None
+                          //房主（主持人）设置
+                          var userId: Int,
+                          var username: String,
+                          var headImgUrl: String,
+                          //观众数
+                          var attendanceNum: Option[Int] = None,
+                          //用于客户端显示的房间流信息
+                          var rtmp: Option[String] = None,
+                          var mpd: Option[String] = None
                         )
 
   case class RecordInfo(
@@ -64,8 +68,8 @@ object CommonInfo {
                          startTime: Long,
                          headImg: String,
                          coverImg: String,
-                         observeNum: Int, //浏览量
-                         likeNum: Int,
+//                         observeNum: Int, //浏览量
+//                         likeNum: Int,
                          duration: String = ""
                        )
 

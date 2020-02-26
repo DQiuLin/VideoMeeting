@@ -190,10 +190,12 @@ class StartScene(stage: Stage) {
   liveToggleButton.setOnAction(_ => {
     if (liveToggleButton.isSelected) {
       liveToggleButton.setText("结束会议")
-      //TODO 开会
+      //开会
+      listener.startLive()
     } else {
       liveToggleButton.setText("开始会议")
-      //TODO 结束会议
+      //结束会议
+      listener.stopLive()
     }
   }
   )

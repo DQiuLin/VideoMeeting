@@ -68,8 +68,8 @@ object CommonInfo {
                          startTime: Long,
                          headImg: String,
                          coverImg: String,
-                         observeNum: Int, //浏览量
-                         likeNum: Int,
+//                         observeNum: Int, //浏览量
+//                         likeNum: Int,
                          duration: String = ""
                        )
 

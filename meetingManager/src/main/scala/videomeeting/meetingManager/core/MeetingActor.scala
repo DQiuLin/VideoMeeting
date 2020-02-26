@@ -107,7 +107,7 @@ object MeetingActor {
               case Right(rsp) =>
                 if (userTableOpt.nonEmpty) {
                   log.info(s"start meeting succeed")
-                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, UserInfoDao.getHeadImg(userTableOpt.get.headImg), 0, None)
+                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, UserInfoDao.getHeadImg(userTableOpt.get.headImg), Some(0), None)
                   dispatchTo(subscribers)(List((userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
                   val startTime = System.currentTimeMillis()
                   ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, startTime))
@@ -130,7 +130,7 @@ object MeetingActor {
             replyTo ! meetingInfoOpt.get
           } else {
             log.debug("会议信息未更新")
-            replyTo ! MeetingInfo(-1, "", "", -1, "", "", -1, None)
+            replyTo ! MeetingInfo(-1, "", "", -1, "", "", Some(-1), None)
           }
           Behaviors.same
 
@@ -307,13 +307,13 @@ object MeetingActor {
 
   //websocket处理消息的函数
   /**
-   * userActor --> roomManager --> roomActor --> userActor
-   * roomActor
-   * subscribers:map(userId,userActor)
-   *
-   *
-   *
-   **/
+    * userActor --> roomManager --> roomActor --> userActor
+    * roomActor
+    * subscribers:map(userId,userActor)
+    *
+    *
+    *
+    **/
   private def handleWebSocketMsg(
                                   wholeRoomInfo: WholeRoomInfo,
                                   subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //包括主持人在内的所有用户
@@ -359,13 +359,13 @@ object MeetingActor {
         dispatch(RcvComment(-1l, "", s"the audience has shut the join in room $meetingId"))
         Behaviors.same
 
-      case ForceExit(userId4Audience,userNa4Audience)=>
-        if(liveInfoMap.contains(userId4Audience)){
+      case ForceExit(userId4Audience, userNa4Audience) =>
+        if (liveInfoMap.contains(userId4Audience)) {
           log.debug(s"host force user-$userId4Audience to exit")
           ProcessorClient.forceExit(meetingId, liveInfoMap(userId4Audience).liveId, System.currentTimeMillis())
           liveInfoMap.remove(userId4Audience)
-          dispatchTo(subscribers.filter(_._1._1 != userId).keys.toList,ForceExitRsp(userId4Audience, userNa4Audience))
-        } else{
+          dispatchTo(subscribers.filter(_._1._1 != userId).keys.toList, ForceExitRsp(userId4Audience, userNa4Audience))
+        } else {
           log.debug(s"host force user-$userId4Audience to leave, but there is no user!")
         }
         Behaviors.same
@@ -404,10 +404,10 @@ object MeetingActor {
   }
 
   /**
-   * subscribers:所有的订阅者
-   * targetUserIdList：要发送的目标用户
-   * msg：发送的消息
-   **/
+    * subscribers:所有的订阅者
+    * targetUserIdList：要发送的目标用户
+    * msg：发送的消息
+    **/
   private def dispatchTo(subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]])(targetUserIdList: List[(Int, Boolean)], msg: WsMsgRm)(implicit sendBuffer: MiddleBufferInJvm): Unit = {
     log.debug(s"${subscribers}定向分发消息：$msg")
     targetUserIdList.foreach { k =>

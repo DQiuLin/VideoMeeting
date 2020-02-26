@@ -18,7 +18,6 @@ object CommonInfo {
   object ClientType {
     val PC = 0
     val WEB = 1
-
   }
 
   object CameraPosition {
@@ -26,6 +25,11 @@ object CommonInfo {
     val right_top = 1
     val right_bottom = 2
     val left_bottom = 3
+  }
+
+  object ImgType {
+    val headImg = 0 //头像图片
+    val coverImg = 1 //封面图片
   }
 
   case class User(
@@ -43,12 +47,17 @@ object CommonInfo {
                        tokenExistTime: Long
                      )
 
+  case class UserDes(
+                      userId: Int,
+                      userName: String,
+                      headImgUrl: String
+                    )
+
   case class MeetingInfo(
                           //房间基本设置
                           meetingId: Int,
                           meetingName: String,
                           roomDes: String,
-                          coverImgUrl: String,
                           //房主（主持人）设置
                           var userId: Int,
                           var username: String,
@@ -68,17 +77,27 @@ object CommonInfo {
                          userName: String,
                          startTime: Long,
                          headImg: String,
-                         coverImg: String,
                          duration: String = ""
                        )
 
-  case class InviteMeetingInfo(
-                                id: Int,
-                                picture: Option[String] = None, //会议视频封面
-                                video: Option[String], //会议视频url
-                                meetInfo: MeetInfo
-                              )
 
+  case class LiveInfo(
+                       liveId: String,
+                       liveCode: String
+                     )
+
+  /*参会者信息*/
+  case class AttendenceInfo(
+                             userId: Int,
+                             userName: String,
+                             liveId: String
+                           )
+
+
+  /**
+    * webClient使用协议
+    *
+    */
   case class MeetInfo(
                        name: String, //会议名称
                        time: Long, //会议时间
@@ -116,42 +135,11 @@ object CommonInfo {
                                 meetInfo: MeetInfo
                               )
 
-  case class LiveInfo(
-                       liveId: String,
-                       liveCode: String
-                     )
-
-  /*参会者信息*/
-  case class AttendenceInfo(
-                             userId: Int,
-                             userName: String,
-                             liveId: String
-                           )
-
-  object ImgType {
-    val headImg = 0 //头像图片
-    val coverImg = 1 //封面图片
-  }
-
-  //  case class MeetingInfo(
-  //    roomId: Int,
-  //    roomName: String,
-  //    roomDes: String,
-  //    userId: Int,  //房主id
-  //    userName:String,
-  //    headImgUrl:String,
-  //    coverImgUrl:String,
-  //    var observerNum:Int,
-  //    var like:Int,
-  //    var mpd: Option[String] = None,
-  //    var rtmp: Option[String] = None
-  //    //var liveAdd: Option[String] = None
-  //  )
-
-  case class UserDes(
-                      userId: Int,
-                      userName: String,
-                      headImgUrl: String
-                    )
+  case class InviteMeetingInfo(
+                                id: Int,
+                                picture: Option[String] = None, //会议视频封面
+                                video: Option[String], //会议视频url
+                                meetInfo: MeetInfo
+                              )
 
 }

@@ -14,7 +14,6 @@ package object common {
                         roomId: Int,
                         roomName: String,
                         roomDes: String,
-                        coverImgUrl: String,
                         userId: Int,
                         userName: String,
                         headImgUrl: String,
@@ -25,12 +24,12 @@ package object common {
                         duration: String = ""
                       ) {
     def toRoomInfo =
-      MeetingInfo(roomId, roomName, roomDes, coverImgUrl,
+      MeetingInfo(roomId, roomName, roomDes,
         userId, userName, headImgUrl, audienceNum, streamId)
 
     def toRecordInfo =
       RecordInfo(recordId, roomId, roomName, roomDes, userId, userName,
-        timestamp, headImgUrl, coverImgUrl, duration)
+        timestamp, headImgUrl, duration)
   }
 
   implicit class RichRoomInfo(r: MeetingInfo) {
@@ -39,7 +38,6 @@ package object common {
         r.meetingId,
         r.meetingName,
         r.roomDes,
-        r.coverImgUrl,
         r.userId,
         r.username,
         r.headImgUrl,
@@ -54,7 +52,6 @@ package object common {
         r.roomId,
         r.recordName,
         r.recordDes,
-        r.coverImg,
         r.userId,
         r.userName,
         r.headImg,

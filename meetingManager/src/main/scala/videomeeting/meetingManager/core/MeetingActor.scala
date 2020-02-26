@@ -106,7 +106,7 @@ object MeetingActor {
               case Right(rsp) =>
                 if (userTableOpt.nonEmpty) {
                   log.info(s"start meeting succeed")
-                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, 0, None)
+                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
                   DistributorClient.startPull(meetingId, rsp.liveInfo.liveId).map {
                     case Right(r) =>
                       log.info(s"distributor startPull succeed, get live address: ${r.liveAdd}")
@@ -138,7 +138,7 @@ object MeetingActor {
             replyTo ! meetingInfoOpt.get
           } else {
             log.debug("会议信息未更新")
-            replyTo ! MeetingInfo(-1, "", "", -1, "", -1, None)
+            replyTo ! MeetingInfo(-1, "", "", -1, "", "")
           }
           Behaviors.same
 
@@ -243,7 +243,7 @@ object MeetingActor {
             case Failure(_) =>
 
           }
-          meetingInfo.attendanceNum = subscribe.size - 1
+          meetingInfo.attendanceNum = Some(subscribe.size - 1)
           idle(meetingInfo, liveInfoMap, subscribe, viewNum, startTime)
 
         case ActorProtocol.HostCloseRoom(roomId) =>
@@ -279,12 +279,12 @@ object MeetingActor {
                   case Right(r) =>
                     log.info("distributor startPull succeed")
                     val startTime = r.startTime
-                    val newMeetingInfo = meetingInfo.copy(attendanceNum = 0, mpd = Some(r.liveAdd), rtmp = Some(rsp.liveInfo.liveId))
+                    val newMeetingInfo = meetingInfo.copy(attendanceNum = Some(0), mpd = Some(r.liveAdd), rtmp = Some(rsp.liveInfo.liveId))
                     dispatchTo(subscribe)(List((meetingInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
                     ctx.self ! SwitchBehavior("idle", idle(newMeetingInfo, liveInfoMap, subscribe, 0, startTime))
                   case Left(e) =>
                     log.error(s"distributor startPull error: $e")
-                    val newMeetingInfo = meetingInfo.copy(attendanceNum = 0)
+                    val newMeetingInfo = meetingInfo.copy(attendanceNum = Some(0))
                     dispatchTo(subscribe)(List((meetingInfo.userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
                     ctx.self ! SwitchBehavior("idle", idle(newMeetingInfo, liveInfoMap, subscribe, 0, startTime))
                 }

@@ -54,7 +54,8 @@ object CommonInfo {
                           //观众数
                           var attendanceNum: Option[Int] = None,
                           //用于客户端显示的房间流信息
-                          var rtmp: Option[String] = None
+                          var rtmp: Option[String] = None,
+                          var mpd: Option[String] = None
                         )
 
   case class RecordInfo(

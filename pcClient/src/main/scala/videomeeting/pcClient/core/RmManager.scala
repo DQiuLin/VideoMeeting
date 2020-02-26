@@ -137,7 +137,6 @@ object RmManager {
   final case object ShutJoin extends RmCommand //主动关闭和某观众的连线
 
   final case class ChangeCaptureMode(mediaSource: Int, cameraPosition: Int) extends RmCommand
-<<<<<<<<< Temporary merge branch 1
 
   // 0->camera; 1->desktop; 2->both
   //0：左上  1：右上  2：右下  3：左下
@@ -145,13 +144,11 @@ object RmManager {
   final case class InviteAudience(meetingId: String, email: String) extends RmCommand //主持人邀请参会人员
 
   final case class ForceExit(userId4Audience: Int, userNa4Audience: String) extends RmCommand //主持人强制剔除某参会人员
-=========
                                   // 0->camera; 1->desktop; 2->both
                                   //0：左上  1：右上  2：右下  3：左下
   final case class CloseUser(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends RmCommand
 
   final case class ChangeSpeaker(userId: Int) extends RmCommand
->>>>>>>>> Temporary merge branch 2
 
   /*观众*/
   final case object GetPackageLoss extends RmCommand
@@ -283,7 +280,7 @@ object RmManager {
               rst match {
                 case Right(rsp) =>
                   if(rsp.errCode == 0) {
-                    ctx.self ! GoToWatch(rsp.roomInfo.get)
+                    ctx.self ! GoToWatch(rsp.meetingInfo.get)
                   }
                   else if(rsp.errCode == 100008){
                     log.info(s"got roomInfo error: 无actor。")
@@ -681,11 +678,11 @@ object RmManager {
           liveManager ! LiveManager.GetPackageLoss
           Behaviors.same
 
-<<<<<<<<< Temporary merge branch 1
         case ForceExit(userId4Audience, userNa4Audience) =>
           log.debug("send forceExit to meetingManager...")
           sender.foreach(_ ! AuthProtocol.ForceExit(userId4Audience, userNa4Audience))
-=========
+          Behaviors.same
+
         case msg: CloseUser =>
           sender.foreach(r => r ! CloseUserImageAndAudio(msg.userId, msg.image, msg.audio))
           Behaviors.same
@@ -702,7 +699,6 @@ object RmManager {
             ctx.self ! ChangeOption(None, None, None)
 //            Boot.addToPlatform(audienceController.changeBtnStauts(true, true))
           }
->>>>>>>>> Temporary merge branch 2
           Behaviors.same
 
         case x =>

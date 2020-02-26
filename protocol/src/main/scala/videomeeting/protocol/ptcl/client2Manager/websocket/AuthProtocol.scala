@@ -123,10 +123,6 @@ object AuthProtocol {
 
   case class HostStopPushStream(roomId: Long) extends WsMsgHost //房主停止推流
 
-  case class CloseUserImageAndAudio(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends WsMsgHost // 屏蔽某人声音和画面
-
-  case class SetSpeaker(userId: Int) extends WsMsgHost // 指定发言人
-
   /*邀请好友*/
   case class Invite(
                      email: String, //参会者邮箱

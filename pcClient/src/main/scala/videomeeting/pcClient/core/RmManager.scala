@@ -1,7 +1,5 @@
 package videomeeting.pcClient.core
 
-import java.io.File
-
 import akka.Done
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
@@ -10,10 +8,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
+import akka.stream.typed.scaladsl.ActorSource
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage, WebSocketRequest}
 import akka.util.{ByteString, ByteStringBuilder}
-import javafx.scene.control.Tooltip
 import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
 import videomeeting.pcClient.Boot
@@ -24,7 +21,6 @@ import videomeeting.pcClient.Boot.{executor, materializer, scheduler, system, ti
 import videomeeting.pcClient.common.Constants.{AudienceStatus, HostStatus}
 import videomeeting.pcClient.common._
 import videomeeting.pcClient.component.WarningDialog
-import videomeeting.pcClient.core.player.VideoPlayer
 import videomeeting.pcClient.core.stream.LiveManager.{JoinInfo, WatchInfo}
 import videomeeting.pcClient.core.stream.LiveManager
 import videomeeting.pcClient.scene.{AudienceScene, FindScene, HomeScene, StartScene}

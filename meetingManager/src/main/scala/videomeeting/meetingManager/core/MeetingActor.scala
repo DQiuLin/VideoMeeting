@@ -44,20 +44,20 @@ object MeetingActor {
   //private final case object DelayUpdateRtmpKey
 
   private final case class SwitchBehavior(
-    name: String,
-    behavior: Behavior[Command],
-    durationOpt: Option[FiniteDuration] = None,
-    timeOut: TimeOut = TimeOut("busy time error")
-  ) extends Command
+                                           name: String,
+                                           behavior: Behavior[Command],
+                                           durationOpt: Option[FiniteDuration] = None,
+                                           timeOut: TimeOut = TimeOut("busy time error")
+                                         ) extends Command
 
   private case class TimeOut(msg: String) extends Command
 
   private final case object BehaviorChangeKey
 
   private[this] def switchBehavior(ctx: ActorContext[Command],
-    behaviorName: String, behavior: Behavior[Command], durationOpt: Option[FiniteDuration] = None, timeOut: TimeOut = TimeOut("busy time error"))
-    (implicit stashBuffer: StashBuffer[Command],
-      timer: TimerScheduler[Command]) = {
+                                   behaviorName: String, behavior: Behavior[Command], durationOpt: Option[FiniteDuration] = None, timeOut: TimeOut = TimeOut("busy time error"))
+                                  (implicit stashBuffer: StashBuffer[Command],
+                                   timer: TimerScheduler[Command]) = {
     timer.cancel(BehaviorChangeKey)
     durationOpt.foreach(timer.startSingleTimer(BehaviorChangeKey, timeOut, _))
     stashBuffer.unstashAll(ctx, behavior)
@@ -84,15 +84,15 @@ object MeetingActor {
   }
 
   private def init(
-    meetingId: Int,
-    subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]],
-    meetingInfoOpt: Option[MeetingInfo] = None
-  )
-    (
-      implicit stashBuffer: StashBuffer[Command],
-      timer: TimerScheduler[Command],
-      sendBuffer: MiddleBufferInJvm
-    ): Behavior[Command] = {
+                    meetingId: Int,
+                    subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]],
+                    meetingInfoOpt: Option[MeetingInfo] = None
+                  )
+                  (
+                    implicit stashBuffer: StashBuffer[Command],
+                    timer: TimerScheduler[Command],
+                    sendBuffer: MiddleBufferInJvm
+                  ): Behavior[Command] = {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case ActorProtocol.StartMeeting4Host(userId, `meetingId`, actor) =>
@@ -307,11 +307,11 @@ object MeetingActor {
   }
 
   private def busy()
-    (
-      implicit stashBuffer: StashBuffer[Command],
-      timer: TimerScheduler[Command],
-      sendBuffer: MiddleBufferInJvm
-    ): Behavior[Command] =
+                  (
+                    implicit stashBuffer: StashBuffer[Command],
+                    timer: TimerScheduler[Command],
+                    sendBuffer: MiddleBufferInJvm
+                  ): Behavior[Command] =
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case SwitchBehavior(name, b, durationOpt, timeOut) =>
@@ -330,13 +330,13 @@ object MeetingActor {
 
   //websocket处理消息的函数
   /**
-    * userActor --> roomManager --> roomActor --> userActor
-    * roomActor
-    * subscribers:map(userId,userActor)
-    *
-    *
-    *
-    **/
+   * userActor --> roomManager --> roomActor --> userActor
+   * roomActor
+   * subscribers:map(userId,userActor)
+   *
+   *
+   *
+   **/
   private def handleWebSocketMsg(
     meetingInfo: MeetingInfo,
     subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //包括主持人在内的所有用户
@@ -424,10 +424,10 @@ object MeetingActor {
   }
 
   /**
-    * subscribers:所有的订阅者
-    * targetUserIdList：要发送的目标用户
-    * msg：发送的消息
-    **/
+   * subscribers:所有的订阅者
+   * targetUserIdList：要发送的目标用户
+   * msg：发送的消息
+   **/
   private def dispatchTo(subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]])(targetUserIdList: List[(Int, Boolean)], msg: WsMsgRm)(implicit sendBuffer: MiddleBufferInJvm): Unit = {
     log.debug(s"${subscribers}定向分发消息：$msg")
     targetUserIdList.foreach { k =>

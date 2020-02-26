@@ -1,6 +1,6 @@
 package videomeeting.pcClient
 
-import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, RoomInfo}
+import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, MeetingInfo}
 
 /**
   * User: TangYaruo
@@ -8,43 +8,40 @@ import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, RoomInfo}
   * Time: 20:08
   */
 package object common {
+
   /*room or record*/
   case class AlbumInfo(
-    roomId: Int,
-    roomName: String,
-    roomDes: String,
-    userId: Int,
-    userName: String,
-    headImgUrl: String,
-    coverImgUrl: String,
-    observerNum: Int,
-    like: Int,
-    streamId: Option[String] = None,
-    recordId: Int = 0,
-    timestamp: Long = 0l,
-    duration: String = ""
-  ) {
+                        roomId: Int,
+                        roomName: String,
+                        roomDes: String,
+                        userId: Int,
+                        userName: String,
+                        headImgUrl: String,
+                        audienceNum: Option[Int] = None,
+                        streamId: Option[String] = None,
+                        recordId: Int = 0,
+                        timestamp: Long = 0l,
+                        duration: String = ""
+                      ) {
     def toRoomInfo =
-      RoomInfo(roomId, roomName, roomDes, userId, userName,
-        headImgUrl, coverImgUrl, observerNum, like, None, streamId)
+      MeetingInfo(roomId, roomName, roomDes,
+        userId, userName, headImgUrl, audienceNum, streamId)
 
     def toRecordInfo =
       RecordInfo(recordId, roomId, roomName, roomDes, userId, userName,
-        timestamp, headImgUrl, coverImgUrl, observerNum, like, duration)
+        timestamp, headImgUrl, duration)
   }
 
-  implicit class RichRoomInfo(r: RoomInfo) {
+  implicit class RichRoomInfo(r: MeetingInfo) {
     def toAlbum: AlbumInfo =
       AlbumInfo(
-        r.roomId,
-        r.roomName,
+        r.meetingId,
+        r.meetingName,
         r.roomDes,
         r.userId,
-        r.userName,
+        r.username,
         r.headImgUrl,
-        r.coverImgUrl,
-        r.observerNum,
-        r.like,
+        r.attendanceNum,
         streamId = r.rtmp
       )
   }
@@ -58,12 +55,10 @@ package object common {
         r.userId,
         r.userName,
         r.headImg,
-        r.coverImg,
-        r.observeNum,
-        r.likeNum,
         recordId = r.recordId,
         timestamp = r.startTime,
         duration = r.duration
       )
   }
+
 }

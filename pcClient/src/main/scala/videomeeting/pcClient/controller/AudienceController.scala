@@ -53,7 +53,7 @@ class AudienceController(
 ) {
 
   private[this] val log = LoggerFactory.getLogger(this.getClass)
-//  var likeNum: Int = audienceScene.getRoomInfo.like
+  //  var likeNum: Int = audienceScene.getRoomInfo.like
   var updateRecCmt = true
 
   def showScene(): Unit = {
@@ -77,7 +77,7 @@ class AudienceController(
 
     }
 
-    override def quitJoin(meetingId: Int, userId:Int): Unit = {
+    override def quitJoin(meetingId: Int, userId: Int): Unit = {
       if (RmManager.userInfo.nonEmpty) {
         rmManager ! RmManager.ExitJoin(meetingId, userId)
       } else {
@@ -89,7 +89,6 @@ class AudienceController(
       updateRecCmt = false
       rmManager ! RmManager.BackToHome
     }
-
 
 
     override def changeOption(needImage: Boolean, needSound: Boolean): Unit = {
@@ -108,7 +107,7 @@ class AudienceController(
     Boot.addToPlatform {
       data match {
         case msg: HeatBeat =>
-//          log.debug(s"heartbeat: ${msg.ts}")
+          //          log.debug(s"heartbeat: ${msg.ts}")
           rmManager ! HeartBeat
 
 
@@ -124,10 +123,16 @@ class AudienceController(
             audienceScene.hasReqJoin = false
           }
 
-        case msg:Join4AllRsp=>
+        case msg: ForceExitRsp =>
+          WarningDialog.initWarningDialog(s"主持人强制用户${msg.userId}退出会议")
+          if (RmManager.userInfo.nonEmpty && msg.userId == RmManager.userInfo.get.userId) {
+            rmManager ! RmManager.StopJoinAndWatch
+          }
+
+        case msg: Join4AllRsp =>
           if (msg.errCode == 0) {
             rmManager ! RmManager.PullFromProcessor(msg.mixLiveId.get)
-          }else{
+          } else {
             WarningDialog.initWarningDialog("转接错误 test")
           }
 
@@ -135,8 +140,7 @@ class AudienceController(
           Boot.addToPlatform {
             WarningDialog.initWarningDialog("主播已断开连线~")
           }
-          rmManager ! RmManager.StopJoinAndWatch(liveId)
-
+          rmManager ! RmManager.StopJoinAndWatch
 
         case HostCloseRoom() =>
           Boot.addToPlatform {
@@ -144,17 +148,17 @@ class AudienceController(
           }
 
         case AudienceDisconnect(liveId) =>
-          if(audienceScene.audienceStatus == AudienceStatus.LIVE){
+          if (audienceScene.audienceStatus == AudienceStatus.LIVE) {
             Boot.addToPlatform {
               WarningDialog.initWarningDialog("连线者已断开连线~")
             }
-            rmManager ! RmManager.StopJoinAndWatch(liveId)
+            rmManager ! RmManager.StopJoinAndWatch
           }
 
         case msg: UpdateAudienceInfo =>
           //          log.info(s"update audienceList.")
           Boot.addToPlatform {
-            audienceScene.watchingList.updateWatchingList(msg.AudienceList)
+            //            audienceScene.watchingList.updateWatchingList(msg.AudienceList)
           }
 
         case msg: LikeRoomRsp =>

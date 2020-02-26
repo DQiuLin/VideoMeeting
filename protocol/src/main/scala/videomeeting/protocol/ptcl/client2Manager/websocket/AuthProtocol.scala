@@ -103,9 +103,11 @@ object AuthProtocol {
 
 
   /*会议控制*/
+  case class AudienceJoin(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请加入会议者信息
+
   case class AudienceApply(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
 
-  case class JoinAccept(roomId: Long, userId: Long, clientType: Int, accept: Boolean) extends WsMsgHost //审批某个用户连线请求
+  case class JoinAccept(roomId: Int, userId: Int, clientType: Int, accept: Boolean) extends WsMsgHost //主持人审批某个用户的加入会议请求
 
   case class AudienceJoinRsp(
                               joinInfo: Option[Int] = None, //参会者信息
@@ -137,6 +139,10 @@ object AuthProtocol {
 
   /*主持人权限*/
   case class ForceExit(userId4Audience: Int, userNa4Audience: String) extends WsMsgHost //强制某人退出
+
+  case class CloseUserImageAndAudio(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends WsMsgHost // 屏蔽某人声音和画面
+
+  case class SetSpeaker(userId: Int) extends WsMsgHost // 指定发言人
 
   /**
     *
@@ -210,6 +216,7 @@ object AuthProtocol {
                                   ) extends WsMsgRm2Audience
 
   case object HostStopPushStream2Client extends WsMsgRm2Audience
+
   case class ForceExitRsp(userId: Int, userName: String) extends WsMsgRm2Audience //参会者被主持人强制退出
 
 
@@ -237,4 +244,6 @@ object AuthProtocol {
                          color: String = "#FFFFFF",
                          extension: Option[String] = None
                        ) extends WsMsgRm
+
+
 }

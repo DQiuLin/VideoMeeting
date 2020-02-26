@@ -1,16 +1,17 @@
 package videomeeting.meetingManager.utils
 
 import org.slf4j.LoggerFactory
-import videomeeting.meetingManager.Boot.{executor, scheduler, system, timeout}
+import videomeeting.meetingManager.Boot.executor
 import videomeeting.protocol.ptcl.processer2Manager.Processor._
 import videomeeting.meetingManager.common.AppSettings
+import videomeeting.protocol.ptcl.processer2Manager.ProcessorProtocol.CloseRsp
 
 import scala.concurrent.Future
 
 /**
   * created by byf on 2019.7.17 13:09
   * */
-object ProcessorClient extends HttpUtil{
+object ProcessorClient extends HttpUtil {
 
   import io.circe.generic.auto._
   import io.circe.syntax._
@@ -18,15 +19,16 @@ object ProcessorClient extends HttpUtil{
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  val processorBaseUrl = s"http://${AppSettings.processorIp}:${AppSettings.processorPort}/VideoMeeting/processor"
+  val processorBaseUrl = s"http://${AppSettings.processorIp}:${AppSettings.processorPort}/theia/processor"
+  //val distributorBaseUrl = s"https://$distributorDomain/theia/distributor"
 
-  def newConnect(roomId:Long, liveId4host: String, liveId4Client: List[String], liveId4push: String, liveCode4push: String, startTIme: Long):Future[Either[String,NewConnectRsp]] = {
+  def newConnect(roomId: Long, liveId4host: String, liveId4Client: List[String], liveId4push: String, liveCode4push: String, startTIme: Long): Future[Either[String, NewConnectRsp]] = {
     val url = processorBaseUrl + "/newConnect"
     log.debug(s"new connect url $url")
     val jsonString = NewConnect(roomId, liveId4host, liveId4Client, liveId4push, liveCode4push, startTIme).asJson.noSpaces
-    postJsonRequestSend("newConnect",url,List(),jsonString,timeOut = 60 * 1000,needLogRsp = false).map{
+    postJsonRequestSend("newConnect", url, List(), jsonString, timeOut = 60 * 1000, needLogRsp = false).map {
       case Right(v) =>
-        decode[NewConnectRsp](v) match{
+        decode[NewConnectRsp](v) match {
           case Right(value) =>
             Right(value)
           case Left(e) =>
@@ -75,30 +77,13 @@ object ProcessorClient extends HttpUtil{
   //    }
   //  }
 
-  def closeRoom(roomId:Long):Future[Either[String,CloseRoomRsp]] = {
-    val url = processorBaseUrl + "/closeRoom"
-    val jsonString = CloseRoom(roomId).asJson.noSpaces
-    postJsonRequestSend("closeRoom",url,List(),jsonString,timeOut = 60 * 1000,needLogRsp = false).map{
-      case Right(v) =>
-        decode[CloseRoomRsp](v) match{
-          case Right(value) =>
-            Right(value)
-          case Left(e) =>
-            log.error(s"closeRoom decode error : $e")
-            Left("Error")
-        }
-      case Left(error) =>
-        log.error(s"closeRoom postJsonRequestSend error : $error")
-        Left("Error")
-    }
-  }
 
   def forceExit(roomId: Int, liveId: String, startTime: Long): Future[Either[String, ExitRsp]] = {
     val url = processorBaseUrl + "/forceExit"
     val jsonString = ForceExit(roomId, liveId, startTime).asJson.noSpaces
-    postJsonRequestSend("forceExit",url,List(),jsonString,timeOut = 60 * 1000,needLogRsp = false).map{
+    postJsonRequestSend("forceExit", url, List(), jsonString, timeOut = 60 * 1000, needLogRsp = false).map {
       case Right(v) =>
-        decode[ExitRsp](v) match{
+        decode[ExitRsp](v) match {
           case Right(value) =>
             Right(value)
           case Left(e) =>
@@ -110,4 +95,25 @@ object ProcessorClient extends HttpUtil{
         Left("Error")
     }
   }
+
+  def closeRoom(roomId: Long): Future[Either[String, CloseRsp]] = {
+    val url = processorBaseUrl + "/closeRoom"
+    val jsonString = CloseRoom(roomId).asJson.noSpaces
+    postJsonRequestSend("closeRoom", url, List(), jsonString, timeOut = 60 * 1000, needLogRsp = false).map {
+      case Right(v) =>
+        decode[CloseRsp](v) match {
+          case Right(value) =>
+            Right(value)
+          case Left(e) =>
+            log.error(s"closeRoom decode error : $e")
+            Left("Error")
+        }
+      case Left(error) =>
+        log.error(s"closeRoom postJsonRequestSend error : $error")
+        Left("Error")
+    }
+
+  }
+
+
 }

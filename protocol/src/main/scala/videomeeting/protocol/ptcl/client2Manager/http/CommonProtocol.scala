@@ -43,7 +43,8 @@ object CommonProtocol {
                       ) extends Response
 
   case class SignInRsp(
-                        userInfo: Option[User] = None,
+                        userInfo: Option[UserInfo] = None,
+                        roomInfo: Option[MeetingInfo] = None,
                         errCode: Int = 0,
                         msg: String = "ok"
                       ) extends Response //fixme url，userName

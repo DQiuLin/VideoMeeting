@@ -10,10 +10,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
+import akka.stream.typed.scaladsl.ActorSource
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage, WebSocketRequest}
 import akka.util.{ByteString, ByteStringBuilder}
-import javafx.scene.control.Tooltip
 import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
 import videomeeting.pcClient.Boot
@@ -24,7 +23,6 @@ import videomeeting.pcClient.Boot.{executor, materializer, scheduler, system, ti
 import videomeeting.pcClient.common.Constants.{AudienceStatus, HostStatus}
 import videomeeting.pcClient.common._
 import videomeeting.pcClient.component.WarningDialog
-import videomeeting.pcClient.core.player.VideoPlayer
 import videomeeting.pcClient.core.stream.LiveManager.{JoinInfo, WatchInfo}
 import videomeeting.pcClient.core.stream.LiveManager
 import videomeeting.pcClient.scene.{AudienceScene, FindScene, HomeScene, StartScene}
@@ -61,7 +59,8 @@ object RmManager {
   /*未登录观众建立ws临时使用信息*/
   var guestInfo: Option[UserInfo] = None
   var rtmpServer: Option[String] = Some("rtmp://txy.live-send.acg.tv/live-txy/?streamname=live_44829093_50571972&key=faf3125e8c84c88ad7f05e4fcc017149")
-//  var rtmpServer: Option[String] =None
+
+  //  var rtmpServer: Option[String] =None
   sealed trait RmCommand
 
   final case class GetHomeItems(homeScene: HomeScene, homeController: HomeController) extends RmCommand
@@ -138,11 +137,7 @@ object RmManager {
   final case object ShutJoin extends RmCommand //主动关闭和某观众的连线
 
   final case class ChangeCaptureMode(mediaSource: Int, cameraPosition: Int) extends RmCommand
-                                  // 0->camera; 1->desktop; 2->both
-                                  //0：左上  1：右上  2：右下  3：左下
-  final case class CloseUser(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends RmCommand
-
-  final case class ChangeSpeaker(userId: Int) extends RmCommand
+<<<<<<<<< Temporary merge branch 1
 
   // 0->camera; 1->desktop; 2->both
   //0：左上  1：右上  2：右下  3：左下
@@ -150,6 +145,13 @@ object RmManager {
   final case class InviteAudience(meetingId: String, email: String) extends RmCommand //主持人邀请参会人员
 
   final case class ForceExit(userId4Audience: Int, userNa4Audience: String) extends RmCommand //主持人强制剔除某参会人员
+=========
+                                  // 0->camera; 1->desktop; 2->both
+                                  //0：左上  1：右上  2：右下  3：左下
+  final case class CloseUser(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends RmCommand
+
+  final case class ChangeSpeaker(userId: Int) extends RmCommand
+>>>>>>>>> Temporary merge branch 2
 
   /*观众*/
   final case object GetPackageLoss extends RmCommand
@@ -172,7 +174,7 @@ object RmManager {
 
   //  final case class Devicesuccess(hostLiveId: String, audienceLiveInfo: LiveInfo) extends RmCommand
 
-  final case class StopJoinAndWatch(liveId: String) extends RmCommand //停止和主播连线
+  final case object StopJoinAndWatch extends RmCommand //停止和主播连线
 
   final case class ExitJoin(roomId: Int, userId: Int) extends RmCommand //主动关闭和主播的连线
 
@@ -184,15 +186,19 @@ object RmManager {
 
   final case class ContinuePlayRec(recordInfo: RecordInfo) extends RmCommand //继续播放录像
 
+  final case class SpeakerChange(userId: Int) extends RmCommand
+
+  final case class ApplySpeak(meetingId: Int) extends RmCommand
+
   private object ASK4STATE_RETRY_TIMER_KEY
 
   var roomInfoMap = mutable.HashMap[Long, MeetingInfo]()
 
 
   private[this] def switchBehavior(ctx: ActorContext[RmCommand],
-    behaviorName: String,
-    behavior: Behavior[RmCommand])
-    (implicit stashBuffer: StashBuffer[RmCommand]) = {
+                                   behaviorName: String,
+                                   behavior: Behavior[RmCommand])
+                                  (implicit stashBuffer: StashBuffer[RmCommand]) = {
     log.debug(s"${ctx.self.path} becomes $behaviorName behavior.")
     stashBuffer.unstashAll(ctx, behavior)
   }
@@ -212,15 +218,15 @@ object RmManager {
 
 
   private def idle(
-    stageCtx: StageContext,
-    liveManager: ActorRef[LiveManager.LiveCommand],
-    mediaPlayer: MediaPlayer,
-    homeController: Option[HomeController] = None,
-    roomController: Option[FindController] = None,
-  )(
-    implicit stashBuffer: StashBuffer[RmCommand],
-    timer: TimerScheduler[RmCommand]
-  ): Behavior[RmCommand] =
+                    stageCtx: StageContext,
+                    liveManager: ActorRef[LiveManager.LiveCommand],
+                    mediaPlayer: MediaPlayer,
+                    homeController: Option[HomeController] = None,
+                    roomController: Option[FindController] = None,
+                  )(
+                    implicit stashBuffer: StashBuffer[RmCommand],
+                    timer: TimerScheduler[RmCommand]
+                  ): Behavior[RmCommand] =
     Behaviors.receive[RmCommand] { (ctx, msg) =>
       msg match {
 
@@ -230,14 +236,14 @@ object RmManager {
         case msg: SignInSuccess =>
           userInfo = Some(msg.userInfo)
           roomInfo = Some(msg.roomInfo)
-          //token维护（缓存登录时）token先不要了
-//          if(msg.getTokenTime.nonEmpty){
-//            val getTokenTime = msg.getTokenTime.get
-//            val tokenExistTime = msg.userInfo.tokenExistTime
-//            if(System.currentTimeMillis() - getTokenTime > tokenExistTime  * 0.8 ){
-//              homeController.get.updateCache()
-//            }
-//          }
+          //          token维护（缓存登录时）
+          if (msg.getTokenTime.nonEmpty) {
+            val getTokenTime = msg.getTokenTime.get
+            val tokenExistTime = msg.userInfo.tokenExistTime
+            if (System.currentTimeMillis() - getTokenTime > tokenExistTime * 0.8) {
+              homeController.get.updateCache()
+            }
+          }
           Behaviors.same
 
         case GoToLive =>
@@ -291,11 +297,11 @@ object RmManager {
                     log.info(s"got roomInfo error: 主播停播，房间还在.")
                     Boot.addToPlatform {
                       roomController.get.removeLoading()
-                      WarningDialog.initWarningDialog("主播已关闭直播。")
+                      WarningDialog.initWarningDialog("主持人已关闭会议。")
                       roomController.foreach(_.refreshList)
                     }
                   }
-                  else{
+                  else {
                     log.info(s"got roomInfo error: ${rsp.msg}")
                     Boot.addToPlatform {
                       roomController.get.removeLoading()
@@ -319,39 +325,39 @@ object RmManager {
 
           Behaviors.same
 
-//        case msg: GetRecordDetail =>
-//          RMClient.searchRecord(msg.recordInfo.roomId, msg.recordInfo.startTime, userInfo.map(_.userId)).onComplete {
-//            case Success(rst) =>
-//              rst match {
-//                case Right(record) =>
-//                  if (record.errCode == 0) {
-//                    ctx.self ! GoToRecord(msg.recordInfo, record.url)
-//                  } else {
-//                    Boot.addToPlatform {
-//                      roomController.foreach(_.removeLoading())
-//                      WarningDialog.initWarningDialog(s"processor还没准备好哦~~~")
-//                    }
-//                  }
-//                case Left(error) =>
-//                  log.error(s"search record rsp error: $error")
-//                  Boot.addToPlatform {
-//                    roomController.foreach(_.removeLoading())
-//                  }
-//              }
-//            case Failure(ex) =>
-//              log.error(s"search record-${msg.recordInfo.roomId} future error: $ex")
-//              Boot.addToPlatform {
-//                roomController.foreach(_.removeLoading())
-//              }
-//          }
-//          Behaviors.same
+        //        case msg: GetRecordDetail =>
+        //          RMClient.searchRecord(msg.recordInfo.roomId, msg.recordInfo.startTime, userInfo.map(_.userId)).onComplete {
+        //            case Success(rst) =>
+        //              rst match {
+        //                case Right(record) =>
+        //                  if (record.errCode == 0) {
+        //                    ctx.self ! GoToRecord(msg.recordInfo, record.url)
+        //                  } else {
+        //                    Boot.addToPlatform {
+        //                      roomController.foreach(_.removeLoading())
+        //                      WarningDialog.initWarningDialog(s"processor还没准备好哦~~~")
+        //                    }
+        //                  }
+        //                case Left(error) =>
+        //                  log.error(s"search record rsp error: $error")
+        //                  Boot.addToPlatform {
+        //                    roomController.foreach(_.removeLoading())
+        //                  }
+        //              }
+        //            case Failure(ex) =>
+        //              log.error(s"search record-${msg.recordInfo.roomId} future error: $ex")
+        //              Boot.addToPlatform {
+        //                roomController.foreach(_.removeLoading())
+        //              }
+        //          }
+        //          Behaviors.same
 
         case msg: GoToWatch =>
-          val audienceScene = new AudienceScene(msg.roomInfo.toAlbum)
+          val audienceScene = new AudienceScene(msg.roomInfo)
           val audienceController = new AudienceController(stageCtx, audienceScene, ctx.self)
           if (msg.roomInfo.rtmp.nonEmpty) {
-             audienceScene.liveId = msg.roomInfo.rtmp
-            val info = WatchInfo(msg.roomInfo.roomId, audienceScene.gc)
+            audienceScene.liveId = msg.roomInfo.rtmp
+            val info = WatchInfo(msg.roomInfo.meetingId, audienceScene.gc)
             liveManager ! LiveManager.PullStream(msg.roomInfo.rtmp.get, watchInfo = Some(info), audienceScene = Some(audienceScene))
 
             ctx.self ! AudienceWsEstablish
@@ -372,29 +378,29 @@ object RmManager {
             Behaviors.same
           }
 
-//        case msg: GoToRecord =>
-//          val audienceScene = new AudienceScene(msg.recordInfo.toAlbum, isRecord = true, msg.url)
-//          val audienceController = new AudienceController(stageCtx, audienceScene, ctx.self)
-//          audienceScene.playRecord()
-//          /*media player播放*/
-//          //          val playId = Ids.getPlayId(AudienceStatus.RECORD, roomId = Some(msg.recordInfo.roomId), startTime = Some(msg.recordInfo.startTime))
-//          //          val videoPlayer = ctx.spawn(VideoPlayer.create(playId), s"videoPlayer$playId")
-//          //          mediaPlayer.start(playId, videoPlayer, Left(msg.url), Some(audienceScene.gc), None)
-//          Boot.addToPlatform {
-//            roomController.foreach(_.removeLoading())
-//            audienceController.showScene()
-//          }
-//          switchBehavior(ctx, "audienceBehavior", audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, audienceLiveInfo = None, audienceStatus = AudienceStatus.RECORD,anchorLiveId = None))
+        //        case msg: GoToRecord =>
+        //          val audienceScene = new AudienceScene(msg.recordInfo.toAlbum, isRecord = true, msg.url)
+        //          val audienceController = new AudienceController(stageCtx, audienceScene, ctx.self)
+        //          audienceScene.playRecord()
+        //          /*media player播放*/
+        //          //          val playId = Ids.getPlayId(AudienceStatus.RECORD, roomId = Some(msg.recordInfo.roomId), startTime = Some(msg.recordInfo.startTime))
+        //          //          val videoPlayer = ctx.spawn(VideoPlayer.create(playId), s"videoPlayer$playId")
+        //          //          mediaPlayer.start(playId, videoPlayer, Left(msg.url), Some(audienceScene.gc), None)
+        //          Boot.addToPlatform {
+        //            roomController.foreach(_.removeLoading())
+        //            audienceController.showScene()
+        //          }
+        //          switchBehavior(ctx, "audienceBehavior", audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, audienceLiveInfo = None, audienceStatus = AudienceStatus.RECORD,anchorLiveId = None))
 
         case msg: ChangeHeader =>
           this.userInfo = userInfo.map(_.copy(headImgUrl = msg.newHeaderUrl))
           homeController.foreach(_.showScene())
           Behaviors.same
 
-        case msg: ChangeCover =>
-          log.info("change cover.")
-          this.roomInfo = roomInfo.map(_.copy(coverImgUrl = msg.newCoverUrl))
-          Behaviors.same
+        //        case msg: ChangeCover =>
+        //          log.info("change cover.")
+        //          this.roomInfo = roomInfo.map(_.copy(coverImgUrl = msg.newCoverUrl))
+        //          Behaviors.same
 
         case msg: ChangeUserName =>
           log.info("change userName.")
@@ -424,14 +430,14 @@ object RmManager {
           homeController.get.showScene()
           Behaviors.same
 
-//        case msg: ModifyRoom =>
-//          if (msg.name.isDefined) {
-//            this.roomInfo = roomInfo.map(_.copy(roomName = msg.name.get))
-//          }
-//          if (msg.des.isDefined) {
-//            this.roomInfo = roomInfo.map(_.copy(roomDes = msg.des.get))
-//          }
-//          Behaviors.same
+        //        case msg: ModifyRoom =>
+        //          if (msg.name.isDefined) {
+        //            this.roomInfo = roomInfo.map(_.copy(roomName = msg.name.get))
+        //          }
+        //          if (msg.des.isDefined) {
+        //            this.roomInfo = roomInfo.map(_.copy(roomDes = msg.des.get))
+        //          }
+        //          Behaviors.same
 
         case x =>
 
@@ -443,21 +449,21 @@ object RmManager {
 
 
   private def startBehavior(
-    stageCtx: StageContext,
-    homeController: Option[HomeController] = None,
-    hostScene: StartScene,
-    hostController: StartController,
-    liveManager: ActorRef[LiveManager.LiveCommand],
-    mediaPlayer: MediaPlayer,
-    sender: Option[ActorRef[WsMsgFront]] = None,
-    hostStatus: Int = HostStatus.LIVE, //0-直播，1-连线
-    joinAudience: Option[AttendenceInfo] = None,
-    rtmpLive: Option[Boolean] = Some(false),
-    rtpLive: Option[Boolean] = Some(false)
-  )(
-    implicit stashBuffer: StashBuffer[RmCommand],
-    timer: TimerScheduler[RmCommand]
-  ): Behavior[RmCommand] =
+                             stageCtx: StageContext,
+                             homeController: Option[HomeController] = None,
+                             hostScene: StartScene,
+                             hostController: StartController,
+                             liveManager: ActorRef[LiveManager.LiveCommand],
+                             mediaPlayer: MediaPlayer,
+                             sender: Option[ActorRef[WsMsgFront]] = None,
+                             hostStatus: Int = HostStatus.LIVE, //0-直播，1-连线
+                             joinAudience: Option[AttendenceInfo] = None,
+                             rtmpLive: Option[Boolean] = Some(false),
+                             rtpLive: Option[Boolean] = Some(false)
+                           )(
+                             implicit stashBuffer: StashBuffer[RmCommand],
+                             timer: TimerScheduler[RmCommand]
+                           ): Behavior[RmCommand] =
     Behaviors.receive[RmCommand] { (ctx, msg) =>
       msg match {
         case HostWsEstablish =>
@@ -465,20 +471,20 @@ object RmManager {
           assert(userInfo.nonEmpty && roomInfo.nonEmpty)
 
           def successFunc(): Unit = {
-//            hostScene.allowConnect()
+            //            hostScene.allowConnect()
             //            Boot.addToPlatform {
             //              hostController.showScene()
             //            }
           }
 
           def failureFunc(): Unit = {
-//            liveManager ! LiveManager.DeviceOff
+            //            liveManager ! LiveManager.DeviceOff
             Boot.addToPlatform {
               WarningDialog.initWarningDialog("连接失败！")
             }
           }
 
-          val url = Routes.linkRoomManager(userInfo.get.userId, userInfo.get.token, roomInfo.map(_.roomId).get)
+          val url = Routes.linkRoomManager(userInfo.get.userId, userInfo.get.token, roomInfo.map(_.meetingId).get)
           //buildWebSocket(ctx, url, Right(hostController), successFunc(), failureFunc())
           Behaviors.same
 
@@ -511,9 +517,9 @@ object RmManager {
             //            playManager ! PlayManager.StopPlay(roomInfo.get.roomId, hostScene.resetBack, joinAudience.map(_.userId))
             val playId = joinAudience match {
               case Some(joinAud) =>
-                Ids.getPlayId(audienceStatus = AudienceStatus.CONNECT, roomId = Some(roomInfo.get.roomId),audienceId = Some(joinAud.userId))
+                Ids.getPlayId(audienceStatus = AudienceStatus.CONNECT, roomId = Some(roomInfo.get.meetingId), audienceId = Some(joinAud.userId))
               case None =>
-                Ids.getPlayId(audienceStatus = AudienceStatus.LIVE, roomId = Some(roomInfo.get.roomId))
+                Ids.getPlayId(audienceStatus = AudienceStatus.LIVE, roomId = Some(roomInfo.get.meetingId))
             }
             mediaPlayer.stop(playId, hostScene.resetBack)
             liveManager ! LiveManager.StopPull
@@ -531,15 +537,15 @@ object RmManager {
         case HostLiveReq =>
           log.debug(s"Host req live.")
           assert(userInfo.nonEmpty && roomInfo.nonEmpty)
-            sender.foreach(_ ! StartLiveReq(userInfo.get.userId, userInfo.get.token, ClientType.PC))
-         
+          sender.foreach(_ ! StartLiveReq(userInfo.get.userId, userInfo.get.token, ClientType.PC))
 
-         // log.debug(s"rtmpselected   ${msg.rtmpSelected}  ==== ${msg.rtmpServer}  ")
-//          if(msg.rtmpSelected && msg.rtmpServer.nonEmpty){
-//                liveManager ! LiveManager.PushRtmpStream(msg.rtmpServer.get)
-//                hostController.isLive = true
-//          }
-          startBehavior(stageCtx,homeController,hostScene,hostController,liveManager,mediaPlayer,sender,hostStatus,joinAudience,Some(false),Some(true))
+
+          // log.debug(s"rtmpselected   ${msg.rtmpSelected}  ==== ${msg.rtmpServer}  ")
+          //          if(msg.rtmpSelected && msg.rtmpServer.nonEmpty){
+          //                liveManager ! LiveManager.PushRtmpStream(msg.rtmpServer.get)
+          //                hostController.isLive = true
+          //          }
+          startBehavior(stageCtx, homeController, hostScene, hostController, liveManager, mediaPlayer, sender, hostStatus, joinAudience, Some(false), Some(true))
 
         case msg: StartLive =>
           log.info(s"${msg.liveId} start live.")
@@ -552,11 +558,11 @@ object RmManager {
 
         case StopLive =>
           log.info("stop live.")
-          if(rtpLive.nonEmpty && rtpLive.get){
+          if (rtpLive.nonEmpty && rtpLive.get) {
             liveManager ! LiveManager.StopPush
-            sender.foreach(_ ! HostStopPushStream(roomInfo.get.roomId))
+            sender.foreach(_ ! HostStopPushStream(roomInfo.get.meetingId))
           }
-          if(rtmpLive.nonEmpty && rtmpLive.get){
+          if (rtmpLive.nonEmpty && rtmpLive.get) {
             liveManager ! LiveManager.StopPushRtmp
           }
           hostController.isLive = false
@@ -576,9 +582,9 @@ object RmManager {
           sender.foreach(_ ! Invite(email, meetingId))
           Behaviors.same
 
-//        case msg: ModifyRoom =>
-//          sender.foreach(_ ! ModifyMeetingInfo(msg.name, msg.des))
-//          Behaviors.same
+        //        case msg: ModifyRoom =>
+        //          sender.foreach(_ ! ModifyMeetingInfo(msg.name, msg.des))
+        //          Behaviors.same
 
         case msg: ChangeMode =>
           sender.foreach(_ ! ChangeLiveMode(msg.isJoinOpen, msg.aiMode, msg.screenLayout))
@@ -599,9 +605,9 @@ object RmManager {
 
         //让某人成为主发言人，突出他的屏幕
         case msg: AudienceAcceptance =>
-//          log.debug(s"accept join user-${msg.userId} join.")
-//          assert(roomInfo.nonEmpty)
-//          sender.foreach(_ ! JoinAccept(roomInfo.get.roomId, msg.userId, ClientType.PC, msg.accept))
+          //          log.debug(s"accept join user-${msg.userId} join.")
+          //          assert(roomInfo.nonEmpty)
+          //          sender.foreach(_ ! JoinAccept(roomInfo.get.roomId, msg.userId, ClientType.PC, msg.accept))
           Behaviors.same
 
         case msg: JoinBegin =>
@@ -612,7 +618,7 @@ object RmManager {
           liveManager ! LiveManager.SwitchMediaMode(isJoin = true, reset = hostScene.resetBack)
 
           /*拉取观众的rtp流并播放*/
-          val joinInfo = JoinInfo(roomInfo.get.roomId, msg.audienceInfo.userId, hostScene.gc)
+          val joinInfo = JoinInfo(roomInfo.get.meetingId, msg.audienceInfo.userId, hostScene.gc)
           //liveManager ! LiveManager.PullStream(msg.audienceInfo.liveId, joinInfo = Some(joinInfo), hostScene = Some(hostScene))
 
           startBehavior(stageCtx, homeController, hostScene, hostController, liveManager, mediaPlayer, sender, hostStatus = HostStatus.CONNECT, Some(msg.audienceInfo))
@@ -626,7 +632,7 @@ object RmManager {
               //hostScene.connectStateBox.getChildren.remove(hostScene.shutConnectionBtn)
               hostController.isSaying = false
             }
-            sender.foreach(_ ! HostShutJoin(roomInfo.get.roomId))
+            sender.foreach(_ ! HostShutJoin(roomInfo.get.meetingId))
             ctx.self ! JoinStop
           }
           Behaviors.same
@@ -639,9 +645,9 @@ object RmManager {
           //          playManager ! PlayManager.StopPlay(roomInfo.get.roomId, hostScene.resetBack, joinAudience.map(_.userId))
           val playId = joinAudience match {
             case Some(joinAud) =>
-              Ids.getPlayId(audienceStatus = AudienceStatus.CONNECT, roomId = Some(roomInfo.get.roomId),audienceId = Some(joinAud.userId))
+              Ids.getPlayId(audienceStatus = AudienceStatus.CONNECT, roomId = Some(roomInfo.get.meetingId), audienceId = Some(joinAud.userId))
             case None =>
-              Ids.getPlayId(audienceStatus = AudienceStatus.LIVE, roomId = Some(roomInfo.get.roomId))
+              Ids.getPlayId(audienceStatus = AudienceStatus.LIVE, roomId = Some(roomInfo.get.meetingId))
 
           }
           mediaPlayer.stop(playId, hostScene.resetBack)
@@ -652,22 +658,22 @@ object RmManager {
           log.info(s"rmManager stopped in host.")
           Behaviors.stopped
 
-        case StopBilibili=>
+        case StopBilibili =>
           //改完图标之后重新开始直播不可，先放一放
-//          if(!hostScene.pcDes.isSelected){
-//            log.debug("now pc is not select")
-//            hostScene.liveBar.isLiving = false
-//            hostScene.liveBar.soundToggleButton.setDisable(false)
-//            hostScene.liveBar.imageToggleButton.setDisable(false)
-//            hostScene.liveBar.liveToggleButton.setSelected(false)
-//            hostScene.isLive = false
-//            //hostController.isLive = false
-//            Tooltip.install( hostScene.liveBar.liveToggleButton, new Tooltip("点击开始直播"))
-//          }
+          //          if(!hostScene.pcDes.isSelected){
+          //            log.debug("now pc is not select")
+          //            hostScene.liveBar.isLiving = false
+          //            hostScene.liveBar.soundToggleButton.setDisable(false)
+          //            hostScene.liveBar.imageToggleButton.setDisable(false)
+          //            hostScene.liveBar.liveToggleButton.setSelected(false)
+          //            hostScene.isLive = false
+          //            //hostController.isLive = false
+          //            Tooltip.install( hostScene.liveBar.liveToggleButton, new Tooltip("点击开始直播"))
+          //          }
           Behaviors.same
 
         case msg: SendComment =>
-//          log.debug(s"sending ${msg.comment}")
+          //          log.debug(s"sending ${msg.comment}")
           sender.foreach(_ ! msg.comment)
           Behaviors.same
 
@@ -675,11 +681,11 @@ object RmManager {
           liveManager ! LiveManager.GetPackageLoss
           Behaviors.same
 
+<<<<<<<<< Temporary merge branch 1
         case ForceExit(userId4Audience, userNa4Audience) =>
           log.debug("send forceExit to meetingManager...")
           sender.foreach(_ ! AuthProtocol.ForceExit(userId4Audience, userNa4Audience))
-          Behaviors.same
-
+=========
         case msg: CloseUser =>
           sender.foreach(r => r ! CloseUserImageAndAudio(msg.userId, msg.image, msg.audio))
           Behaviors.same
@@ -696,6 +702,7 @@ object RmManager {
             ctx.self ! ChangeOption(None, None, None)
 //            Boot.addToPlatform(audienceController.changeBtnStauts(true, true))
           }
+>>>>>>>>> Temporary merge branch 2
           Behaviors.same
 
         case x =>
@@ -705,23 +712,23 @@ object RmManager {
     }
 
   private def audienceBehavior(
-    stageCtx: StageContext,
-    homeController: Option[HomeController] = None,
-    roomController: Option[FindController] = None,
-    audienceScene: AudienceScene,
-    audienceController: AudienceController,
-    liveManager: ActorRef[LiveManager.LiveCommand],
-    mediaPlayer: MediaPlayer,
-    sender: Option[ActorRef[WsMsgFront]] = None,
-    isStop: Boolean = false,
-    audienceLiveInfo: Option[(LiveInfo, String)],
-    audienceStatus: Int = AudienceStatus.LIVE, //0-观看直播， 1-连线, 2-观看录像
-    anchorLiveId:Option[String]
+                                stageCtx: StageContext,
+                                homeController: Option[HomeController] = None,
+                                roomController: Option[FindController] = None,
+                                audienceScene: AudienceScene,
+                                audienceController: AudienceController,
+                                liveManager: ActorRef[LiveManager.LiveCommand],
+                                mediaPlayer: MediaPlayer,
+                                sender: Option[ActorRef[WsMsgFront]] = None,
+                                isStop: Boolean = false,
+                                audienceLiveInfo: Option[(LiveInfo, String)],
+                                audienceStatus: Int = AudienceStatus.LIVE, //0-观看直播， 1-连线, 2-观看录像
+                                anchorLiveId: Option[String]
 
-  )(
-    implicit stashBuffer: StashBuffer[RmCommand],
-    timer: TimerScheduler[RmCommand]
-  ): Behavior[RmCommand] =
+                              )(
+                                implicit stashBuffer: StashBuffer[RmCommand],
+                                timer: TimerScheduler[RmCommand]
+                              ): Behavior[RmCommand] =
     Behaviors.receive[RmCommand] { (ctx, msg) =>
       msg match {
         case AudienceWsEstablish =>
@@ -748,19 +755,19 @@ object RmManager {
               if (user._1 != -1L && user._2.nonEmpty) {
                 def successFunc(): Unit = {
                   if (userInfo.nonEmpty) {
-                    ctx.self ! SendJudgeLike(JudgeLike(userInfo.get.userId, audienceScene.getMeetingInfo.roomId))
+                    ctx.self ! SendJudgeLike(JudgeLike(userInfo.get.userId, audienceScene.getRoomInfo.meetingId))
                   }
                 }
 
                 def failureFunc(): Unit = {
-//                  val playId = s"room${audienceScene.getMeetingInfo.roomId}"
-//                  mediaPlayer.stop(playId, audienceScene.resetBack)
+                  //                  val playId = s"room${audienceScene.getRoomInfo.meetingId}"
+                  //                  mediaPlayer.stop(playId, audienceScene.resetBack)
                   Boot.addToPlatform {
                     WarningDialog.initWarningDialog("连接失败！")
                   }
                 }
 
-                val url = Routes.linkRoomManager(user._1, user._2, audienceScene.getMeetingInfo.roomId)
+                val url = Routes.linkRoomManager(user._1, user._2, audienceScene.getRoomInfo.meetingId)
                 buildWebSocket(ctx, url, Left(audienceController), successFunc(), failureFunc())
               } else {
                 log.warn(s"User-$user is invalid.")
@@ -772,7 +779,7 @@ object RmManager {
 
 
         case msg: GetSender =>
-          audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, Some(msg.sender), isStop, audienceLiveInfo, audienceStatus,anchorLiveId)
+          audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, Some(msg.sender), isStop, audienceLiveInfo, audienceStatus, anchorLiveId)
 
         case HeartBeat =>
           sender.foreach(_ ! PingPackage)
@@ -834,7 +841,7 @@ object RmManager {
           }
           Behaviors.same
 
-        case msg:PullConnectStream =>
+        case msg: PullConnectStream =>
           timer.cancel(PullDelay)
           liveManager ! LiveManager.StopPull
           val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
@@ -842,9 +849,9 @@ object RmManager {
           audienceScene.liveId = Some(msg.newId)
           val info = WatchInfo(audienceScene.getRoomInfo.meetingId, audienceScene.gc)
           audienceScene.autoReset()
-          liveManager ! LiveManager.PullStream(msg.newId,watchInfo = Some(info), audienceScene = Some(audienceScene))
+          liveManager ! LiveManager.PullStream(msg.newId, watchInfo = Some(info), audienceScene = Some(audienceScene))
           Behaviors.same
-//          switchBehavior(ctx, "audienceBehavior", audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, audienceLiveInfo = None, audienceStatus = AudienceStatus.LIVE))
+        //          switchBehavior(ctx, "audienceBehavior", audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, audienceLiveInfo = None, audienceStatus = AudienceStatus.LIVE))
 
 
         case msg: SendComment =>
@@ -878,9 +885,9 @@ object RmManager {
               val playId = audienceStatus match {
                 case AudienceStatus.LIVE => Ids.getPlayId(audienceStatus, roomId = Some(audienceScene.getRoomInfo.meetingId))
                 case AudienceStatus.CONNECT => Ids.getPlayId(audienceStatus, roomId = Some(audienceScene.getRoomInfo.meetingId), audienceId = Some(userId))
-                case AudienceStatus.RECORD => Ids.getPlayId(audienceStatus, roomId = Some(audienceScene.getRecordInfo.roomId), startTime = Some(audienceScene.getRecordInfo.startTime))
+                //                case AudienceStatus.RECORD => Ids.getPlayId(audienceStatus, roomId = Some(audienceScene.getRecordInfo.roomId), startTime = Some(audienceScene.getRecordInfo.startTime))
               }
-              if(isStart) {
+              if (isStart) {
                 log.info(s"player has started, now stop it")
                 mediaPlayer.stop(playId, audienceScene.autoReset)
               }
@@ -938,12 +945,12 @@ object RmManager {
           }
           Behaviors.same
 
-      case msg: StartJoin =>
-        //case StartJoin =>
+        case msg: StartJoin =>
+          //case StartJoin =>
           log.info(s"Start join.")
           //          assert(userInfo.nonEmpty)
 
-         // val userId = userInfo.get.userId
+          // val userId = userInfo.get.userId
 
           /*暂停第三方播放*/
           //          val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
@@ -996,47 +1003,47 @@ object RmManager {
           log.debug("disconnection with host.")
           if (audienceStatus == AudienceStatus.CONNECT) {
             sender.foreach(_ ! AudienceShutJoin(msg.roomId, msg.userId))
-            ctx.self ! StopJoinAndWatch("")
+            ctx.self ! StopJoinAndWatch
           }
           Behaviors.same
 
-        case StopJoinAndWatch(liveId) =>
+        case StopJoinAndWatch =>
           assert(userInfo.nonEmpty)
-          val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
-          if (liveId != "") audienceScene.liveId = Some(liveId)
-          if (audienceStatus == AudienceStatus.LIVE) {
-            mediaPlayer.stop(playId, audienceScene.autoReset)
-            liveManager ! LiveManager.StopPull
-            val info = WatchInfo(audienceScene.getRoomInfo.meetingId, audienceScene.gc)
-            liveManager ! LiveManager.PullStream(audienceScene.liveId.get, watchInfo = Some(info))
-          }
 
-          if (audienceStatus == AudienceStatus.CONNECT) {
-            audienceScene.audienceStatus = AudienceStatus.LIVE
-            mediaPlayer.setConnectState(playId, false, () => audienceScene.autoReset())
-            liveManager ! LiveManager.DeviceOff
-            liveManager ! LiveManager.StopPush
-          }
-
-          //          if (audienceStatus == AudienceStatus.CONNECT) {
-          //
-          //            audienceScene.audienceStatus = AudienceStatus.LIVE
-          //
-          //            /*停止播放主播rtp流*/
-          //            val userId = userInfo.get.userId
-          //            val playId = Ids.getPlayId(AudienceStatus.CONNECT, roomId = Some(audienceScene.getRoomInfo.meetingId), audienceId = Some(userId))
-          //            //            s"room${audienceScene.getRoomInfo.meetingId}-audience$userId"
+          //          val playId = Ids.getPlayId(AudienceStatus.LIVE, roomId = Some(audienceScene.getRoomInfo.meetingId))
+          //          if (liveId != "") audienceScene.liveId = Some(liveId)
+          //          if (audienceStatus == AudienceStatus.LIVE) {
           //            mediaPlayer.stop(playId, audienceScene.autoReset)
-          //
-          //            /*断开连线，停止推拉*/
           //            liveManager ! LiveManager.StopPull
-          //            liveManager ! LiveManager.StopPush
-          //            liveManager ! LiveManager.DeviceOff
-          //
-          //            /*恢复第三方播放*/
           //            val info = WatchInfo(audienceScene.getRoomInfo.meetingId, audienceScene.gc)
           //            liveManager ! LiveManager.PullStream(audienceScene.liveId.get, watchInfo = Some(info))
           //          }
+          //
+          //          if (audienceStatus == AudienceStatus.CONNECT) {
+          //            audienceScene.audienceStatus = AudienceStatus.LIVE
+          //            mediaPlayer.setConnectState(playId, false, () => audienceScene.autoReset())
+          //            liveManager ! LiveManager.DeviceOff
+          //            liveManager ! LiveManager.StopPush
+          //          }
+
+          if (audienceStatus == AudienceStatus.CONNECT) {
+
+            audienceScene.audienceStatus = AudienceStatus.LIVE
+
+            /*停止播放主播rtp流*/
+            val userId = userInfo.get.userId
+            val playId = Ids.getPlayId(AudienceStatus.CONNECT, roomId = Some(audienceScene.getRoomInfo.meetingId), audienceId = Some(userId))
+            mediaPlayer.stop(playId, audienceScene.autoReset)
+
+            /*断开连线，停止推拉*/
+            liveManager ! LiveManager.StopPull
+            liveManager ! LiveManager.StopPush
+            liveManager ! LiveManager.DeviceOff
+
+            /*恢复第三方播放*/
+            val info = WatchInfo(audienceScene.getRoomInfo.meetingId, audienceScene.gc)
+            liveManager ! LiveManager.PullStream(audienceScene.liveId.get, watchInfo = Some(info))
+          }
           audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, sender, isStop, audienceLiveInfo, audienceStatus = AudienceStatus.LIVE, anchorLiveId)
 
 

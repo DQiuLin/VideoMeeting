@@ -17,8 +17,7 @@ import videomeeting.pcClient.scene.FindScene
 import videomeeting.pcClient.utils.RMClient
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.component.WarningDialog
-import videomeeting.pcClient.core.RmManager.{GetRecordDetail, GetRoomDetail, GoToWatch}
-import videomeeting.protocol.ptcl.CommonInfo.{RecordInfo, MeetingInfo}
+import videomeeting.pcClient.core.RmManager.GetRoomDetail
 import org.slf4j.LoggerFactory
 
 /**

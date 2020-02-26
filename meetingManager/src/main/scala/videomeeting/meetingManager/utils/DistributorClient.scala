@@ -3,8 +3,14 @@ package videomeeting.meetingManager.utils
 
 import org.slf4j.LoggerFactory
 import videomeeting.protocol.ptcl.distributor2Manager.DistributorProtocol
-import videomeeting.protocol.ptcl.distributor2Manager.DistributorProtocol.{RecordInfoRsp, SeekRecord, StartPullRsp}
+import videomeeting.protocol.ptcl.distributor2Manager.DistributorProtocol.{CheckStreamRsp, RecordInfoRsp, SeekRecord, StartPullRsp}
+import videomeeting.meetingManager.common.AppSettings.distributorDomain
+import videomeeting.meetingManager.http.ServiceUtils.CommonRsp
+import videomeeting.meetingManager.utils.ProcessorClient.{log, postJsonRequestSend}
+import org.slf4j.LoggerFactory
+import videomeeting.meetingManager.Boot.{executor, scheduler, system, timeout}
 
+import scala.concurrent.Future
 import scala.concurrent.Future
 
 /**
@@ -13,6 +19,7 @@ import scala.concurrent.Future
 object DistributorClient {
 
   import io.circe.generic.auto._
+  import io.circe.syntax._
   import io.circe.parser.decode
 
   private val log = LoggerFactory.getLogger(this.getClass)

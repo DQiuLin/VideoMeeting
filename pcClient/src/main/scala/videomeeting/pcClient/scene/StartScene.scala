@@ -112,6 +112,10 @@ object StartScene {
                         email: String
                       )
 
+    def closeImage(userId: Int)
+
+    def closeSound(userId: Int)
+
   }
 
 }
@@ -252,7 +256,7 @@ class StartScene(stage: Stage) {
   }
 
   /*观看列表*/
-  val watchingList = new WatchingList(width * 0.05, width * 0.04, height * 0.8, Some(tb1))
+  val watchingList = new WatchingList(width * 0.05, width * 0.04, height * 0.8, Some(tb1), listener)
   val watchingState: Text = watchingList.watchingState
   val watchingTable: TableView[WatchingList.WatchingListInfo] = watchingList.watchingTable
 

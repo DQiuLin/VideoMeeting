@@ -4,12 +4,15 @@ import javafx.beans.property.{ObjectProperty, SimpleObjectProperty, SimpleString
 import javafx.collections.{FXCollections, ObservableList}
 import javafx.scene.control.cell.PropertyValueFactory
 import javafx.scene.control.{Button, TableColumn, TableView, ToggleButton}
+import javafx.scene.effect.Glow
 import javafx.scene.image.ImageView
+import javafx.scene.input.MouseEvent
 import javafx.scene.text.Text
 import videomeeting.pcClient.common.Pictures
 import videomeeting.protocol.ptcl.CommonInfo
 import videomeeting.protocol.ptcl.CommonInfo.{UserDes, UserInfo}
 import org.slf4j.LoggerFactory
+import videomeeting.pcClient.scene.StartScene.StartSceneListener
 
 
 /**
@@ -21,7 +24,11 @@ object WatchingList{
 
   case class WatchingListInfo(
     header: ObjectProperty[ImageView],
-    userInfo: StringProperty
+    userInfo: StringProperty,
+    toBeHostBtn: ObjectProperty[Button],
+    exitBtn: ObjectProperty[Button],
+    soundBtn: ObjectProperty[Button],
+    imageBtn: ObjectProperty[Button]
   )
   {
     def getHeader: ImageView = header.get()
@@ -34,7 +41,7 @@ object WatchingList{
   }
 
 }
-class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Double, tb: Option[ToggleButton]) {
+class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Double, tb: Option[ToggleButton], listener: StartSceneListener) {
   import WatchingList._
   private[this] val log = LoggerFactory.getLogger(this.getClass)
 
@@ -83,11 +90,54 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
         val headerImg = Pictures.getPic(imgUrl)
         headerImg.setFitHeight(25)
         headerImg.setFitWidth(25)
+        val toBeHostBtn = new Button("", new ImageView("img2/2host.png"))
+        val exitBtn = new Button("", new ImageView("img2/2quit.png"))
+        val soundBtn = new Button("", new ImageView("img2/2sound.png"))
+        val imageBtn = new Button("", new ImageView("img2/2user.png"))
+
+        toBeHostBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+        exitBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+        soundBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+        imageBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+        val glow = new Glow()
+        toBeHostBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+          toBeHostBtn.setEffect(glow)
+        })
+        toBeHostBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+          toBeHostBtn.setEffect(null)
+        })
+        exitBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+          exitBtn.setEffect(glow)
+        })
+        exitBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+          exitBtn.setEffect(null)
+        })
+        soundBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+          soundBtn.setEffect(glow)
+        })
+        soundBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+          soundBtn.setEffect(null)
+        })
+        imageBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+          imageBtn.setEffect(glow)
+        })
+        imageBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+          imageBtn.setEffect(null)
+        })
         val newRequest = WatchingListInfo(
           new SimpleObjectProperty[ImageView](headerImg),
-          new SimpleStringProperty(s"${l.userName}(${l.userId})")
+          new SimpleStringProperty(s"${l.userName}(${l.userId})"),
+          new SimpleObjectProperty[Button](toBeHostBtn),
+          new SimpleObjectProperty[Button](exitBtn),
+          new SimpleObjectProperty[Button](soundBtn),
+          new SimpleObjectProperty[Button](imageBtn)
         )
         watchingList.add(0, newRequest)
+
+        toBeHostBtn.setOnAction(_ => ())
+        exitBtn.setOnAction(_ => ())
+        soundBtn.setOnAction(_ => listener.closeSound(l.userId))
+        imageBtn.setOnAction(_ => listener.closeImage(l.userId))
       }
 
     }

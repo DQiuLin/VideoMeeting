@@ -86,6 +86,14 @@ class StartController(
       rmManager ! RmManager.ModifyRoom(name, des)
     }
 
+    override def closeImage(userId: Int): Unit = {
+      rmManager ! RmManager.CloseUser(userId, Some(false), None)
+    }
+
+    override def closeSound(userId: Int): Unit = {
+      rmManager ! RmManager.CloseUser(userId, None, Some(false))
+    }
+
   }
   )
 

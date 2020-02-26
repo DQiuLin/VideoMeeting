@@ -4,14 +4,16 @@ import javafx.beans.property.{ObjectProperty, SimpleObjectProperty, SimpleString
 import javafx.collections.{FXCollections, ObservableList}
 import javafx.scene.control.cell.PropertyValueFactory
 import javafx.scene.control.{Button, TableColumn, TableView, ToggleButton}
+import javafx.scene.effect.Glow
 import javafx.scene.image.ImageView
+import javafx.scene.input.MouseEvent
 import javafx.scene.text.Text
 import videomeeting.pcClient.common.Pictures
 import videomeeting.protocol.ptcl.CommonInfo
 import videomeeting.protocol.ptcl.CommonInfo.{UserDes, UserInfo}
 import org.slf4j.LoggerFactory
-import javafx.scene.effect.Glow
-import javafx.scene.input.MouseEvent
+import videomeeting.pcClient.scene.StartScene.StartSceneListener
+
 
 /**
   * Author: zwq
@@ -55,7 +57,7 @@ object WatchingList{
   }
 
 }
-class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Double, tb: Option[ToggleButton]) {
+class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Double, tb: Option[ToggleButton], listener: StartSceneListener) {
   import WatchingList._
   private[this] val log = LoggerFactory.getLogger(this.getClass)
 
@@ -149,6 +151,11 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
           new SimpleObjectProperty[Button](imageBtn)
         )
         watchingList.add(0, newRequest)
+
+        beHostBtn.setOnAction(_ => ())
+        exitBtn.setOnAction(_ => ())
+        soundBtn.setOnAction(_ => listener.closeSound(l.userId))
+        imageBtn.setOnAction(_ => listener.closeImage(l.userId))
       }
 
     }

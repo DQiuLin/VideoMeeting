@@ -112,22 +112,22 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
 
   val toBeHostCol = new TableColumn[WatchingList.WatchingListInfo, Button]("成为主持人")
  // toBeHostCol.setPrefWidth(width * 0.08)
-  userInfoCol.setPrefWidth(infoColWidth)
+  toBeHostCol.setPrefWidth(infoColWidth)
   toBeHostCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("beHost"))
 
   val exitCol = new TableColumn[WatchingList.WatchingListInfo, Button]("踢出")
 //  exitCol.setPrefWidth(width * 0.04)
-  userInfoCol.setPrefWidth(infoColWidth)
+  exitCol.setPrefWidth(infoColWidth)
   exitCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("exit"))
 
   val soundCol = new TableColumn[WatchingList.WatchingListInfo, Button]("声音")
  // soundCol.setPrefWidth(width * 0.04)
-  userInfoCol.setPrefWidth(infoColWidth)
+  soundCol.setPrefWidth(infoColWidth)
   soundCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("sound"))
 
   val imageCol = new TableColumn[WatchingList.WatchingListInfo, Button]("图像")
 //  imageCol.setPrefWidth(width * 0.04)
-  userInfoCol.setPrefWidth(infoColWidth)
+  imageCol.setPrefWidth(infoColWidth)
   imageCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo,Button]("image"))
 
   watchingTable.setItems(watchingList)

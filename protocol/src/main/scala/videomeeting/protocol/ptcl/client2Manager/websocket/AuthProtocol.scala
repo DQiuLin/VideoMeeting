@@ -105,6 +105,8 @@ object AuthProtocol {
   /*会议控制*/
   case class AudienceJoin(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请加入会议者信息
 
+  case class AudienceApply(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
+
   case class JoinAccept(roomId: Int, userId: Int, clientType: Int, accept: Boolean) extends WsMsgHost //主持人审批某个用户的加入会议请求
 
   case class AudienceJoinRsp(
@@ -133,6 +135,10 @@ object AuthProtocol {
 
   /*主持人权限*/
   case class ForceExit(userId4Audience: Int, userNa4Audience: String) extends WsMsgHost //强制某人退出
+
+  case class CloseUserImageAndAudio(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends WsMsgHost // 屏蔽某人声音和画面
+
+  case class SetSpeaker(userId: Int) extends WsMsgHost // 指定发言人
 
   /**
     *
@@ -165,6 +171,7 @@ object AuthProtocol {
                           msg: String = "ok",
                         ) extends WsMsgRm2Audience
 
+  case class ApplyReq(userId: Int, meetingId: Int, clientType: Int) extends WsMsgAudience
   /*
   点赞
    */
@@ -207,6 +214,10 @@ object AuthProtocol {
 
   case class ForceExitRsp(userId: Int, userName: String) extends WsMsgRm2Audience //参会者被主持人强制退出
 
+
+  case class HostCloseUser(image: Option[Boolean], audio: Option[Boolean]) extends WsMsgRm2Audience // 用户画面和声音被关闭
+
+  case class HostSetSpeaker(userId: Int) extends WsMsgRm
 
   /**
     * 所有用户

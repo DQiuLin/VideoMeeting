@@ -107,6 +107,10 @@ object RmManager {
 
   final case object StopBilibili extends RmCommand
 
+  final case object CloseImage extends RmCommand
+
+  final case object CloseAudio extends RmCommand
+
 
   /*主播*/
 
@@ -138,6 +142,10 @@ object RmManager {
 
   // 0->camera; 1->desktop; 2->both
   //0：左上  1：右上  2：右下  3：左下
+
+  final case class CloseUser(userId: Int, image: Option[Boolean], audio: Option[Boolean]) extends RmCommand
+
+  final case class ChangeSpeaker(userId: Int) extends RmCommand
 
   final case class InviteAudience(meetingId: String, email: String) extends RmCommand //主持人邀请参会人员
 
@@ -175,6 +183,10 @@ object RmManager {
   final case class PausePlayRec(recordInfo: RecordInfo) extends RmCommand //暂停播放录像
 
   final case class ContinuePlayRec(recordInfo: RecordInfo) extends RmCommand //继续播放录像
+
+  final case class SpeakerChange(userId: Int) extends RmCommand
+
+  final case class ApplySpeak(meetingId: Int) extends RmCommand
 
   private object ASK4STATE_RETRY_TIMER_KEY
 
@@ -672,6 +684,24 @@ object RmManager {
           sender.foreach(_ ! AuthProtocol.ForceExit(userId4Audience, userNa4Audience))
           Behaviors.same
 
+        case msg: CloseUser =>
+          sender.foreach(r => r ! CloseUserImageAndAudio(msg.userId, msg.image, msg.audio))
+          Behaviors.same
+
+        case msg: ChangeSpeaker =>
+          sender.foreach(r => r ! SetSpeaker(msg.userId))
+          Behaviors.same
+
+        case msg: SpeakerChange =>
+          if (userInfo.nonEmpty && userInfo.get.userId != msg.userId) {
+            ctx.self ! ChangeOption(None, None, None, needImage = false, needSound = false)
+            //            Boot.addToPlatform(audienceController.changeBtnStauts(false, false))
+          } else {
+            ctx.self ! ChangeOption(None, None, None)
+            //            Boot.addToPlatform(audienceController.changeBtnStauts(true, true))
+          }
+          Behaviors.same
+
         case x =>
           log.warn(s"unknown msg in host: $x")
           Behaviors.unhandled
@@ -1043,6 +1073,22 @@ object RmManager {
         case StopSelf =>
           log.info(s"rmManager stopped in audience.")
           Behaviors.stopped
+
+        case msg: SpeakerChange =>
+          if (userInfo.nonEmpty && userInfo.get.userId != msg.userId) {
+            ctx.self ! ChangeOption4Audience(needImage = false, needSound = false)
+            Boot.addToPlatform(audienceController.changeBtnStauts(false, false))
+          } else {
+            ctx.self ! ChangeOption4Audience()
+            Boot.addToPlatform(audienceController.changeBtnStauts(true, true))
+          }
+          Behaviors.same
+
+        case msg: ApplySpeak =>
+          assert(userInfo.nonEmpty)
+          val userId = userInfo.get.userId
+          sender.foreach(_ ! ApplyReq(userId, msg.meetingId, ClientType.PC))
+          Behaviors.same
 
         case x =>
           log.warn(s"unknown msg in audience: $x")

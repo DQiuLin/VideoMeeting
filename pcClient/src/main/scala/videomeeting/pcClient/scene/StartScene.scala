@@ -35,7 +35,7 @@ import videomeeting.pcClient.Boot
 import videomeeting.pcClient.component.Common.getImageView
 import videomeeting.pcClient.component._
 import videomeeting.pcClient.core.stream.StreamPuller.{BandWidthInfo, PackageLossInfo}
-import videomeeting.pcClient.scene.StartScene.{StartSceneListener,SpeakListInfo}
+import videomeeting.pcClient.scene.StartScene.{JoinListInfo, SpeakListInfo, StartSceneListener}
 import videomeeting.pcClient.utils.{NetUsage, TimeUtil}
 import videomeeting.pcClient.component.WatchingList.WatchingListInfo
 
@@ -52,6 +52,25 @@ object StartScene {
                             agreeBtn: ObjectProperty[Button],
                             refuseBtn: ObjectProperty[Button]
                           ) {
+    def getUserInfo: String = userInfo.get()
+
+    def setUserInfo(info: String): Unit = userInfo.set(info)
+
+    def getAgreeBtn: Button = agreeBtn.get()
+
+    def setAgreeBtn(btn: Button): Unit = agreeBtn.set(btn)
+
+    def getRefuseBtn: Button = refuseBtn.get()
+
+    def setRefuseBtn(btn: Button): Unit = refuseBtn.set(btn)
+
+  }
+
+  case class JoinListInfo(
+    userInfo: StringProperty,
+    agreeBtn: ObjectProperty[Button],
+    refuseBtn: ObjectProperty[Button]
+  ) {
     def getUserInfo: String = userInfo.get()
 
     def setUserInfo(info: String): Unit = userInfo.set(info)
@@ -98,7 +117,7 @@ object StartScene {
 
     def closeSound(userId: Int)
 
-    def joinAcceptance(userId: Int, accept: Boolean, newRequest: SpeakListInfo)
+    def joinAcceptance(userId:Int,accept: Boolean, newRequest: JoinListInfo)
 
   }
 
@@ -135,10 +154,11 @@ class StartScene(stage: Stage) {
 
   //一些参数
   var isLive = false
-  var roomInfoMap = Map.empty[Long, List[String]]
+  var roomInfoMap = Map.empty[Int, List[String]]
   val speakObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
   val watchObservableList: ObservableList[WatchingListInfo] = FXCollections.observableArrayList()
-   val audObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
+  val joinObservableList: ObservableList[JoinListInfo] = FXCollections.observableArrayList()
+  // val audObservableList: ObservableList[AudienceListInfo] = FXCollections.observableArrayList()
   var commentPrefix = "effectType0"
 
   var listener: StartSceneListener = _
@@ -177,8 +197,8 @@ class StartScene(stage: Stage) {
   applyIcon.setFitHeight(20)
   //这个要找一张那种来电的图片来
   val applyIcon1 = new ImageView("img2/2apply1.png")
-  applyIcon1.setFitWidth(20)
-  applyIcon1.setFitHeight(20)
+  applyIcon.setFitWidth(20)
+  applyIcon.setFitHeight(20)
 
   val tb1 = new ToggleButton("当前参会成员", userIcon)
   tb1.getStyleClass.add("hostScene-leftArea-toggleButton")
@@ -186,8 +206,8 @@ class StartScene(stage: Stage) {
   tb2.getStyleClass.add("hostScene-leftArea-toggleButton")
   val tb3 = new ToggleButton("房间 ", roomInfoIcon)
   tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
-  val tb4 = new ToggleButton("申请加入会议", applyIcon)
-  tb4.getStyleClass.add("hostScene-leftArea-toggleButton")
+  val tb4 = new ToggleButton("房间 ",  applyIcon)
+  tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
 
   val liveToggleButton = new ToggleButton("开始会议")
   liveToggleButton.getStyleClass.add("hostScene-rightArea-liveBtn")
@@ -301,7 +321,7 @@ class StartScene(stage: Stage) {
 
   }
 
-  def updateAudienceList4Join(audienceId: Int, audienceName: String): Unit = {
+  def updateJoinList(audienceId: Int, audienceName: String): Unit = {
     if (!tb4.isSelected) {
       tb4.setGraphic(applyIcon1)
     }
@@ -323,12 +343,12 @@ class StartScene(stage: Stage) {
     refuseBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
       refuseBtn.setEffect(null)
     })
-    val newRequest = SpeakListInfo(
+    val newRequest = JoinListInfo(
       new SimpleStringProperty(s"$audienceName($audienceId)"),
       new SimpleObjectProperty[Button](agreeBtn),
       new SimpleObjectProperty[Button](refuseBtn)
     )
-    audObservableList.add(newRequest)
+    joinObservableList.add(newRequest)
 
     agreeBtn.setOnAction {
       _ =>
@@ -340,7 +360,6 @@ class StartScene(stage: Stage) {
     }
 
   }
-
 
   def getScene: Scene = this.scene
 
@@ -562,23 +581,23 @@ class StartScene(stage: Stage) {
     vBox.setPadding(new Insets(20, 10, 5, 10))
     vBox.getStyleClass.add("hostScene-leftArea-wholeBox")
 
-    def createCntTbArea: TableView[SpeakListInfo] = {
-      val AudienceTable = new TableView[SpeakListInfo]()
+    def createCntTbArea: TableView[JoinListInfo] = {
+      val AudienceTable = new TableView[JoinListInfo]()
       AudienceTable.getStyleClass.add("table-view")
 
-      val userInfoCol = new TableColumn[SpeakListInfo, String]("申请用户")
+      val userInfoCol = new TableColumn[JoinListInfo, String]("申请用户")
       userInfoCol.setPrefWidth(width * 0.15)
-      userInfoCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, String]("userInfo"))
+      userInfoCol.setCellValueFactory(new PropertyValueFactory[JoinListInfo, String]("userInfo"))
 
-      val agreeBtnCol = new TableColumn[SpeakListInfo, Button]("同意")
-      agreeBtnCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, Button]("agreeBtn"))
+      val agreeBtnCol = new TableColumn[JoinListInfo, Button]("同意")
+      agreeBtnCol.setCellValueFactory(new PropertyValueFactory[JoinListInfo, Button]("agreeBtn"))
       agreeBtnCol.setPrefWidth(width * 0.08)
 
-      val refuseBtnCol = new TableColumn[SpeakListInfo, Button]("拒绝")
-      refuseBtnCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, Button]("refuseBtn"))
+      val refuseBtnCol = new TableColumn[JoinListInfo, Button]("拒绝")
+      refuseBtnCol.setCellValueFactory(new PropertyValueFactory[JoinListInfo, Button]("refuseBtn"))
       refuseBtnCol.setPrefWidth(width * 0.08)
 
-      AudienceTable.setItems(audObservableList)
+      AudienceTable.setItems(joinObservableList)
       AudienceTable.getColumns.addAll(userInfoCol, agreeBtnCol, refuseBtnCol)
       AudienceTable.setPrefHeight(height * 0.8)
       AudienceTable

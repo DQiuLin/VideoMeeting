@@ -427,7 +427,8 @@ object MeetingActor {
                         }
                         liveIdHost.foreach { HostLiveInfo =>
                           DistributorClient.startPull(meetingId, liveInfo4Mix.liveId)
-                          ProcessorClient.newConnect(meetingId, HostLiveInfo.liveId, liveInfo4Client.liveId, liveInfo4Mix.liveId, liveInfo4Mix.liveCode)
+                          val clientList = liveInfoMap(Role.attendance).flatMap(m => List(m._2.liveId)).toList
+                          ProcessorClient.newConnect(meetingId, HostLiveInfo.liveId, clientList, liveInfo4Mix.liveId, liveInfo4Mix.liveCode, 0L)
                           ctx.self ! UpdateRTMP(liveInfo4Mix.liveId)
                         }
                         //                        val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)

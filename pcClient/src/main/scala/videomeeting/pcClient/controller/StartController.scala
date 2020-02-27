@@ -7,7 +7,7 @@ import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.RmManager.HeartBeat
 import videomeeting.pcClient.scene.StartScene
-import videomeeting.pcClient.scene.StartScene.{SpeakListInfo, StartSceneListener}
+import videomeeting.pcClient.scene.StartScene.{JoinListInfo, SpeakListInfo, StartSceneListener}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import org.slf4j.LoggerFactory
 import videomeeting.pcClient.utils.RMClient
@@ -66,9 +66,9 @@ class StartController(
       }
     }
 
-    override def joinAcceptance(userId: Int, accept: Boolean, newRequest: SpeakListInfo): Unit = {
+    override def joinAcceptance(userId: Int, accept: Boolean, newRequest: JoinListInfo): Unit = {
       rmManager ! RmManager.JoinAcceptance(userId, accept)
-      startScene.audObservableList.remove(newRequest)
+      startScene.joinObservableList.remove(newRequest)
     }
 
     override def shutJoin(): Unit = {
@@ -132,7 +132,7 @@ class StartController(
         //将该条信息展示在host页面(TableView)
         log.debug(s"Audience-${msg.userName} send join req.")
         Boot.addToPlatform {
-          startScene.updateAudienceList4Join(msg.userId, msg.userName)
+          startScene.updateJoinList(msg.userId, msg.userName)
         }
 
       case msg: AudienceApply =>

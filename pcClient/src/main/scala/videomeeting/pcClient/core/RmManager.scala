@@ -130,6 +130,8 @@ object RmManager {
 
   final case class AudienceAcceptance(userId: Int, accept: Boolean) extends RmCommand
 
+  final case class JionAcceptance(userId: Int, accept: Boolean) extends RmCommand
+
   final case class JoinAcceptance(userId: Int, accept: Boolean) extends RmCommand
 
   final case class JoinBegin(audienceInfo: AttendenceInfo) extends RmCommand //开始和某观众连线
@@ -747,15 +749,15 @@ object RmManager {
                   val info = rst.userInfoOpt.get
                   this.guestInfo = Some(info)
                   (info.userId, info.token)
-                } else (-1L, "")
+                } else (-1, "")
 
-              case Left(_) => (-1L, "")
+              case Left(_) => (-1, "")
             }
           }
 
           userFuture.onComplete {
             case Success(user) =>
-              if (user._1 != -1L && user._2.nonEmpty) {
+              if (user._1 != -1 && user._2.nonEmpty) {
                 def successFunc(): Unit = {
                   if (userInfo.nonEmpty) {
                     ctx.self ! SendJudgeLike(JudgeLike(userInfo.get.userId, audienceScene.getRoomInfo.meetingId))

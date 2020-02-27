@@ -1,7 +1,6 @@
 package videomeeting.protocol.ptcl.client2Manager.websocket
 
 import videomeeting.protocol.ptcl.CommonInfo._
-import videomeeting.meetingManager.core.UserActor._
 
 /**
   * User: Arrow

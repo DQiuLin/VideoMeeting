@@ -1,7 +1,7 @@
 package videomeeting.pcClient.controller
 
 import akka.actor.typed.ActorRef
-import videomeeting.pcClient.Boot
+import videomeeting.pcClient.{Boot, component}
 import videomeeting.pcClient.common.{Constants, StageContext}
 import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.RmManager
@@ -79,11 +79,19 @@ class StartController(
     }
 
     override def inviteAudience(meetingId: String, email: String): Unit = {
-
+      rmManager ! RmManager.InviteAudience(meetingId, email)
     }
 
     override def modifyRoomInfo(name: Option[String], des: Option[String]): Unit = {
       rmManager ! RmManager.ModifyRoom(name, des)
+    }
+
+    override def forceExit(userId: Int, userName: String): Unit = {
+      rmManager ! RmManager.ForceExit(userId, userName)
+    }
+
+    override def beHost(): Unit = {
+
     }
 
     override def closeImage(userId: Int): Unit = {
@@ -95,6 +103,7 @@ class StartController(
     }
 
   }
+
   )
 
   def wsMessageHandle(data: WsMsgRm): Unit = {
@@ -118,7 +127,7 @@ class StartController(
         //将该条信息展示在host页面(TableView)
         log.debug(s"Audience-${msg.userName} send join req.")
         Boot.addToPlatform {
-//          startScene.updateAudienceList(msg.userId, msg.userName)
+          startScene.updateAudienceList(msg.userId, msg.userName)
         }
 
       case msg: AudienceApply =>
@@ -127,50 +136,50 @@ class StartController(
           startScene.updateAudienceList(msg.userId, msg.userName)
         }
 
-//      case msg: AudienceJoinRsp =>
-//        if (msg.errCode == 0) {
-//          //显示连线观众信息
-//          rmManager ! RmManager.JoinBegin(msg.joinInfo.get)
-//
-////          Boot.addToPlatform {
-//          ////            if (!startScene.tb2.isSelected) {
-//          ////              startScene.tb2.setGraphic(startScene.connectionIcon1)
-//          ////            }
-//          ////            startScene.connectionStateText.setText(s"与${msg.joinInfo.get.userName}连线中")
-//          ////            startScene.connectStateBox.getChildren.add(startScene.shutConnectionBtn)
-//          ////            isConnecting = true
-//          ////          }
-//
-//        } else {
-//          Boot.addToPlatform {
-//            WarningDialog.initWarningDialog(s"观众加入出错:${msg.msg}")
-//          }
-//        }
+      //      case msg: AudienceJoinRsp =>
+      //        if (msg.errCode == 0) {
+      //          //显示连线观众信息
+      //          rmManager ! RmManager.JoinBegin(msg.joinInfo.get)
+      //
+      ////          Boot.addToPlatform {
+      //          ////            if (!startScene.tb2.isSelected) {
+      //          ////              startScene.tb2.setGraphic(startScene.connectionIcon1)
+      //          ////            }
+      //          ////            startScene.connectionStateText.setText(s"与${msg.joinInfo.get.userName}连线中")
+      //          ////            startScene.connectStateBox.getChildren.add(startScene.shutConnectionBtn)
+      //          ////            isConnecting = true
+      //          ////          }
+      //
+      //        } else {
+      //          Boot.addToPlatform {
+      //            WarningDialog.initWarningDialog(s"观众加入出错:${msg.msg}")
+      //          }
+      //        }
 
       case AudienceDisconnect(liveId) =>
         //观众断开，提醒主播，去除连线观众信息
         rmManager ! RmManager.JoinStop
         Boot.addToPlatform {
-//          if (!startScene.tb3.isSelected) {
-//            startScene.tb3.setGraphic(startScene.connectionIcon1)
-//          }
-//          startScene.connectionStateText.setText(s"目前状态：无连接")
-//          startScene.connectStateBox.getChildren.remove(startScene.shutConnectionBtn)
-//          isConnecting = false
+          //          if (!startScene.tb3.isSelected) {
+          //            startScene.tb3.setGraphic(startScene.connectionIcon1)
+          //          }
+          //          startScene.connectionStateText.setText(s"目前状态：无连接")
+          //          startScene.connectStateBox.getChildren.remove(startScene.shutConnectionBtn)
+          //          isConnecting = false
         }
 
       case msg: RcvComment =>
         //判断userId是否为-1，是的话当广播处理
         //        log.info(s"receive comment msg: ${msg.userName}-${msg.comment}")
         Boot.addToPlatform {
-//          startScene.commentBoard.updateComment(msg)
-//          startScene.barrage.updateBarrage(msg)
+          //          startScene.commentBoard.updateComment(msg)
+          //          startScene.barrage.updateBarrage(msg)
         }
 
       case msg: UpdateAudienceInfo =>
         //        log.info(s"update audienceList.")
         Boot.addToPlatform {
-//          startScene.watchingList.updateWatchingList(msg.AudienceList)
+          //          startScene.watchingList.updateWatchingList(msg.AudienceList)
         }
 
 

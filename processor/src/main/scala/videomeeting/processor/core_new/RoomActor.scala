@@ -95,27 +95,27 @@ object RoomActor {
           val pushSource= pushPipe.getSource
           val pushOut = Channels.newOutputStream(pushSink)
 
-          val pullPipe4Host = new PipeStream
-          val pullSink4Host = pullPipe4Host.getSink
-          val pullSource4Host= pullPipe4Host.getSource
-          val pullInput4Host = Channels.newInputStream(pullSource4Host)
-          val pullOut4Host = Channels.newOutputStream(pullSink4Host)
+          val pullPipe4Aud = new PipeStream
+          val pullSink4Aud = pullPipe4Aud.getSink
+          val pullSource4Aud= pullPipe4Aud.getSource
+          val pullInput4Aud = Channels.newInputStream(pullSource4Aud)
+          val pullOut4Aud = Channels.newOutputStream(pullSink4Aud)
 
-          val pullPipe4Client = new PipeStream
-          val pullSink4Client = pullPipe4Client.getSink
-          val pullSource4Client= pullPipe4Client.getSource
-          val pullInput4Client= Channels.newInputStream(pullSource4Client)
-          val pullOut4Client = Channels.newOutputStream(pullSink4Client)
+//          val pullPipe4Client = new PipeStream
+//          val pullSink4Client = pullPipe4Client.getSink
+//          val pullSource4Client= pullPipe4Client.getSource
+//          val pullInput4Client= Channels.newInputStream(pullSource4Client)
+//          val pullOut4Client = Channels.newOutputStream(pullSink4Client)
 
-          pipeMap.put(msg.host, pullPipe4Host)
-          pipeMap.put(msg.client, pullPipe4Client)
+          pipeMap.put(msg.host, pullPipe4Aud)
+//          pipeMap.put(msg.client, pullPipe4Client)
           pipeMap.put(msg.pushLiveId, pushPipe)
 
           val recorderActor = getRecorderActor(ctx, msg.roomId, msg.host, msg.client ,msg.pushLiveId, msg.pushLiveCode, msg.layout, pushOut)
-          val grabber4host = getGrabberActor(ctx, msg.roomId, msg.host, pullInput4Host, recorderActor)
+          val grabber4host = getGrabberActor(ctx, msg.roomId, msg.host, pullInput4Aud, recorderActor)
           val grabber4client = getGrabberActor(ctx, msg.roomId, msg.client, pullInput4Client, recorderActor)
 
-          val pullPipe4host = getPullPipe(ctx, msg.roomId, msg.host, pullOut4Host)
+          val pullPipe4host = getPullPipe(ctx, msg.roomId, msg.host, pullOut4Aud)
           val pullPipe4client = getPullPipe(ctx, msg.roomId, msg.client, pullOut4Client)
           val pushPipe4recorder = getPushPipe(ctx, msg.roomId, msg.pushLiveId, msg.pushLiveCode, pushSource)
 

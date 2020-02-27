@@ -10,9 +10,9 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.text.Text
 import videomeeting.pcClient.common.Pictures
 import videomeeting.protocol.ptcl.CommonInfo
-import videomeeting.protocol.ptcl.CommonInfo.{UserDes, UserInfo}
-import org.slf4j.LoggerFactory
+import videomeeting.protocol.ptcl.CommonInfo.UserInfo
 import videomeeting.pcClient.scene.StartScene.StartSceneListener
+import org.slf4j.LoggerFactory
 
 
 /**
@@ -25,10 +25,10 @@ object WatchingList{
   case class WatchingListInfo(
     header: ObjectProperty[ImageView],
     userInfo: StringProperty,
-    toBeHostBtn: ObjectProperty[Button],
+    beHostBtn: ObjectProperty[Button],
     exitBtn: ObjectProperty[Button],
     soundBtn: ObjectProperty[Button],
-    imageBtn: ObjectProperty[Button]
+    imageBtn: ObjectProperty[Button],
   )
   {
     def getHeader: ImageView = header.get()
@@ -38,11 +38,29 @@ object WatchingList{
     def getUserInfo: String = userInfo.get()
 
     def setUserInfo(info: String): Unit = userInfo.set(info)
+
+    def getHostBtn: Button = beHostBtn.get()
+
+    def setHostBtn(btn: Button): Unit = beHostBtn.set(btn)
+
+    def getExitBtn: Button = soundBtn.get()
+
+    def setExitBtn(btn: Button): Unit = soundBtn.set(btn)
+
+    def getSoundBtn: Button = soundBtn.get()
+
+    def setSoundBtn(btn: Button): Unit = soundBtn.set(btn)
+
+    def getImageBtn: Button = imageBtn.get()
+
+    def setImageBtn(btn: Button): Unit = imageBtn.set(btn)
   }
 
 }
 class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Double, tb: Option[ToggleButton], listener: StartSceneListener) {
+
   import WatchingList._
+
   private[this] val log = LoggerFactory.getLogger(this.getClass)
 
   val audienceIcon1 = new ImageView("img/watching1.png")
@@ -57,7 +75,7 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
 
   /*update*/
   def updateWatchingList(list: List[UserInfo]): Unit = {
-    if(tb.nonEmpty){
+    if (tb.nonEmpty) {
       if (!tb.get.isSelected) {
         tb.get.setGraphic(audienceIcon1)
       }
@@ -84,27 +102,28 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
           addList = add :: addList
         }
       }
-//      log.debug(s"addList:$addList")
+      //      log.debug(s"addList:$addList")
       addList.foreach { l =>
         val imgUrl = if (l.headImgUrl.nonEmpty) l.headImgUrl else "img/header.png"
         val headerImg = Pictures.getPic(imgUrl)
         headerImg.setFitHeight(25)
         headerImg.setFitWidth(25)
-        val toBeHostBtn = new Button("", new ImageView("img2/2host.png"))
-        val exitBtn = new Button("", new ImageView("img2/2quit.png"))
-        val soundBtn = new Button("", new ImageView("img2/2sound.png"))
-        val imageBtn = new Button("", new ImageView("img2/2user.png"))
 
-        toBeHostBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+        val beHostBtn = new Button("", new ImageView("img2/2host.png"))
+        val exitBtn = new Button("", new ImageView("img2/2quit.png"))
+        val imageBtn = new Button("", new ImageView("img2/2user.png"))
+        val soundBtn = new Button("", new ImageView("img2/2sound.png"))
+
+        beHostBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
         exitBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
-        soundBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
         imageBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+        soundBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
         val glow = new Glow()
-        toBeHostBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-          toBeHostBtn.setEffect(glow)
+        beHostBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+          beHostBtn.setEffect(glow)
         })
-        toBeHostBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-          toBeHostBtn.setEffect(null)
+        beHostBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+          beHostBtn.setEffect(null)
         })
         exitBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
           exitBtn.setEffect(glow)
@@ -112,38 +131,52 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
         exitBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
           exitBtn.setEffect(null)
         })
-        soundBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-          soundBtn.setEffect(glow)
-        })
-        soundBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-          soundBtn.setEffect(null)
-        })
         imageBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
-          imageBtn.setEffect(glow)
+          beHostBtn.setEffect(glow)
         })
         imageBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
-          imageBtn.setEffect(null)
+          beHostBtn.setEffect(null)
         })
+        soundBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+          beHostBtn.setEffect(glow)
+        })
+        soundBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+          beHostBtn.setEffect(null)
+        })
+
         val newRequest = WatchingListInfo(
           new SimpleObjectProperty[ImageView](headerImg),
           new SimpleStringProperty(s"${l.userName}(${l.userId})"),
-          new SimpleObjectProperty[Button](toBeHostBtn),
+          new SimpleObjectProperty[Button](beHostBtn),
           new SimpleObjectProperty[Button](exitBtn),
           new SimpleObjectProperty[Button](soundBtn),
           new SimpleObjectProperty[Button](imageBtn)
         )
-        watchingList.add(0, newRequest)
 
-        toBeHostBtn.setOnAction(_ => ())
-        exitBtn.setOnAction(_ => ())
-        soundBtn.setOnAction(_ => listener.closeSound(l.userId))
-        imageBtn.setOnAction(_ => listener.closeImage(l.userId))
+        beHostBtn.setOnAction { _ =>
+
+        }
+
+        exitBtn.setOnAction { _ =>
+          listener.forceExit(l.userId, l.userName)
+          watchingList.remove(l)
+        }
+
+        soundBtn.setOnAction { _ =>
+          listener.closeSound(l.userId)
+        }
+
+        imageBtn.setOnAction { _ =>
+          listener.closeImage(l.userId)
+        }
+
+
+        watchingList.add(0, newRequest)
       }
 
     }
 
   }
-
 
   /*table*/
   val watchingTable = new TableView[WatchingListInfo]()
@@ -151,38 +184,38 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
 
   val headerCol = new TableColumn[WatchingListInfo, ImageView]("头像")
   headerCol.setCellValueFactory(new PropertyValueFactory[WatchingListInfo, ImageView]("header"))
-//  headerCol.setPrefWidth(width * 0.1)
+  //  headerCol.setPrefWidth(width * 0.1)
   headerCol.setPrefWidth(headerColWidth)
 
 
   val userInfoCol = new TableColumn[WatchingListInfo, String]("用户信息")
   userInfoCol.setCellValueFactory(new PropertyValueFactory[WatchingListInfo, String]("userInfo"))
-//  userInfoCol.setPrefWidth(width * 0.15)
+  //  userInfoCol.setPrefWidth(width * 0.15)
   userInfoCol.setPrefWidth(infoColWidth)
 
   val toBeHostCol = new TableColumn[WatchingList.WatchingListInfo, Button]("成为主持人")
- // toBeHostCol.setPrefWidth(width * 0.08)
-  userInfoCol.setPrefWidth(infoColWidth)
+  // toBeHostCol.setPrefWidth(width * 0.08)
+  toBeHostCol.setPrefWidth(infoColWidth)
   toBeHostCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("beHost"))
 
   val exitCol = new TableColumn[WatchingList.WatchingListInfo, Button]("踢出")
-//  exitCol.setPrefWidth(width * 0.04)
-  userInfoCol.setPrefWidth(infoColWidth)
+  //  exitCol.setPrefWidth(width * 0.04)
+  exitCol.setPrefWidth(infoColWidth)
   exitCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("exit"))
 
   val soundCol = new TableColumn[WatchingList.WatchingListInfo, Button]("声音")
- // soundCol.setPrefWidth(width * 0.04)
-  userInfoCol.setPrefWidth(infoColWidth)
+  // soundCol.setPrefWidth(width * 0.04)
+  soundCol.setPrefWidth(infoColWidth)
   soundCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("sound"))
 
   val imageCol = new TableColumn[WatchingList.WatchingListInfo, Button]("图像")
-//  imageCol.setPrefWidth(width * 0.04)
-  userInfoCol.setPrefWidth(infoColWidth)
-  imageCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo,Button]("image"))
+  //  imageCol.setPrefWidth(width * 0.04)
+  imageCol.setPrefWidth(infoColWidth)
+  imageCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("image"))
 
   watchingTable.setItems(watchingList)
-  watchingTable.getColumns.addAll(headerCol, userInfoCol,toBeHostCol,exitCol,soundCol,imageCol)
-//  watchingTable.setPrefHeight(height * 0.8)
+  watchingTable.getColumns.addAll(headerCol, userInfoCol, toBeHostCol, exitCol, soundCol, imageCol)
+  //  watchingTable.setPrefHeight(height * 0.8)
   watchingTable.setPrefHeight(tableHeight)
 
 

@@ -138,7 +138,7 @@ class AudienceController(
 
         case HostDisconnect(liveId) =>
           Boot.addToPlatform {
-            WarningDialog.initWarningDialog("主播已断开连线~")
+            WarningDialog.initWarningDialog("主持人已断开连线~")
           }
           rmManager ! RmManager.StopJoinAndWatch
 

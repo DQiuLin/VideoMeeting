@@ -1,24 +1,16 @@
 package videomeeting.pcClient.scene
 
-import akka.actor.FSM.Failure
-import com.sun.scenario.effect.light
 import javafx.geometry.{Insets, Pos}
 import javafx.scene.control.{Button, Label, Tooltip}
-import javafx.scene.effect._
-import javafx.scene.image.{Image, ImageView}
+import javafx.scene.image.ImageView
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.{BorderPane, HBox, StackPane, VBox}
-import javafx.scene.paint.Color
-import javafx.scene.text.{Font, Text}
+import javafx.scene.layout.{BorderPane, HBox, VBox}
+import javafx.scene.text.Text
 import javafx.scene.{Group, Scene}
 import videomeeting.pcClient.common.{Constants, Pictures}
+import videomeeting.pcClient.component.Common._
 import videomeeting.pcClient.core.RmManager
 import org.slf4j.LoggerFactory
-import javafx.scene.control.Tooltip
-import videomeeting.pcClient.component.Common._
-
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 /**
   * User: Arrow
@@ -70,7 +62,7 @@ class HomeScene {
   var topArea = addTopArea()
   val borderPane = new BorderPane()
   borderPane.setTop(topArea)
- // borderPane.setCenter(addMiddleArea())
+  // borderPane.setCenter(addMiddleArea())
   borderPane.setBottom(addBottomArea())
 
 
@@ -78,8 +70,8 @@ class HomeScene {
   val backIcon = new ImageView("img2/1.1.jpg")
   backIcon.setFitHeight(height)
   backIcon.setFitWidth(width)
-  group.getChildren.addAll(backIcon,borderPane)
- // group.getChildren.add(borderPane)
+  group.getChildren.addAll(backIcon, borderPane)
+  // group.getChildren.add(borderPane)
 
   private val scene = new Scene(group, width, height)
   scene.getStylesheets.add(
@@ -98,7 +90,7 @@ class HomeScene {
     this.listener = listener
   }
 
-//HBox是水平布局，意味着在top区域内是水平布局
+  //HBox是水平布局，意味着在top区域内是水平布局
   def addTopArea(): HBox = {
     val topHBox = new HBox()
     topHBox.setPadding(new Insets(30, 50, 20, 0))
@@ -106,7 +98,7 @@ class HomeScene {
     topHBox.setAlignment(Pos.CENTER_RIGHT)
 
     def createIDcard: HBox = {
-    //登陆后，确定userinfo不为空
+      //登陆后，确定userinfo不为空
       val header = Pictures.getPic(RmManager.userInfo.get.headImgUrl) //头像
 
       header.setFitHeight(35)
@@ -174,22 +166,22 @@ class HomeScene {
 
   //ps图片啥的可以再说
   //  def addMiddleArea(): StackPane = {
-//    //    val welcomeText = new Text("欢迎来到Theia在线直播系统")
-//    //    welcomeText.getStyleClass.add("homeScene-text")
-//
-//    val welcomeText = new ImageView("img/welcomeText.png")
-//    welcomeText.setFitHeight(61)
-//    welcomeText.setFitWidth(690)
-//
-//    val welcomeBg = new ImageView("img/welcomeBg3.png")
-//
-//    welcomeBg.setFitWidth(width)
-//    welcomeBg.setFitHeight(height * 0.4)
-//
-//    val stackPane = new StackPane() //居中且铺满的布局
-//    stackPane.getChildren.addAll(welcomeBg, welcomeText)
-//    stackPane
-//  }
+  //    //    val welcomeText = new Text("欢迎来到Theia在线直播系统")
+  //    //    welcomeText.getStyleClass.add("homeScene-text")
+  //
+  //    val welcomeText = new ImageView("img/welcomeText.png")
+  //    welcomeText.setFitHeight(61)
+  //    welcomeText.setFitWidth(690)
+  //
+  //    val welcomeBg = new ImageView("img/welcomeBg3.png")
+  //
+  //    welcomeBg.setFitWidth(width)
+  //    welcomeBg.setFitHeight(height * 0.4)
+  //
+  //    val stackPane = new StackPane() //居中且铺满的布局
+  //    stackPane.getChildren.addAll(welcomeBg, welcomeText)
+  //    stackPane
+  //  }
 
   def addBottomArea(): HBox = {
     val startIcon = new ImageView("img2/1start.png")
@@ -229,12 +221,11 @@ class HomeScene {
 
     val bottomHBox = new HBox()
     bottomHBox.setSpacing(600)
-    bottomHBox.getChildren.addAll(startVBox,joinVBox)
+    bottomHBox.getChildren.addAll(startVBox, joinVBox)
     bottomHBox.setAlignment(Pos.BOTTOM_CENTER)
     bottomHBox.setPadding(new Insets(100, 30, 50, 30))
     bottomHBox
   }
-
 
 
 }

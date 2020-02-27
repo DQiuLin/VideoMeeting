@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import org.seekloud.byteobject.MiddleBufferInJvm
 import org.slf4j.LoggerFactory
 import videomeeting.protocol.ptcl.CommonInfo._
-import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.GetMeetInfoRsp4RM
+import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.{GetLiveInfoRsp, GetMeetInfoRsp4RM}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol.{HostCloseRoom, _}
 import videomeeting.meetingManager.Boot.{executor, meetingManager}
 import videomeeting.meetingManager.common.AppSettings.{distributorIp, distributorPort}
@@ -400,6 +400,81 @@ object MeetingActor {
         //            ProcessorClient.updateRoomInfo(wholeRoomInfo.roomInfo.roomId, liveList, wholeRoomInfo.layout, wholeRoomInfo.aiMode, 0l)
         dispatch(AuthProtocol.AudienceDisconnect(meetingInfo.rtmp.get))
         dispatch(RcvComment(-1l, "", s"the audience has shut the join in room $meetingId"))
+        Behaviors.same
+
+      case JoinAccept(`meetingId`, userId4Audience, clientType, accept) =>
+        log.debug(s"${ctx.self.path} 接受加入请求，meetingId=$meetingId")
+        if (accept) {
+          for {
+            userInfoOpt <- UserInfoDao.searchById(userId4Audience)
+            clientLiveInfo <- RtpClient.getLiveInfoFunc()
+            mixLiveInfo <- RtpClient.getLiveInfoFunc()
+          } yield {
+            (clientLiveInfo, mixLiveInfo) match {
+              case (Right(GetLiveInfoRsp(liveInfo4Client, 0, _)), Right(GetLiveInfoRsp(liveInfo4Mix, 0, _))) =>
+                log.info("client" + liveInfo4Client + "; mix" + liveInfo4Mix)
+                if (userInfoOpt.nonEmpty) {
+                  liveInfoMap.get(Role.host) match {
+                    case Some(value) =>
+                      val liveIdHost = value.get(meetingInfo.userId)
+                      if (liveIdHost.nonEmpty) {
+                        liveInfoMap.get(Role.attendance) match {
+                          case Some(value4Audience) =>
+                            value4Audience.put(userId4Audience, liveInfo4Client)
+                            liveInfoMap.put(Role.attendance, value4Audience)
+                          case None =>
+                            liveInfoMap.put(Role.attendance, mutable.HashMap(userId4Audience -> liveInfo4Client))
+                        }
+                        liveIdHost.foreach { HostLiveInfo =>
+                          DistributorClient.startPull(meetingId, liveInfo4Mix.liveId)
+                          ProcessorClient.newConnect(meetingId, HostLiveInfo.liveId, liveInfo4Client.liveId, liveInfo4Mix.liveId, liveInfo4Mix.liveCode)
+                          ctx.self ! UpdateRTMP(liveInfo4Mix.liveId)
+                        }
+                        //                        val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)
+                        //                        log.debug(s"${ctx.self.path} 更新房间信息，连线者liveIds=${liveList}")
+                        //                        ProcessorClient.updateRoomInfo(wholeRoomInfo.roomInfo.roomId, liveList, wholeRoomInfo.layout, wholeRoomInfo.aiMode, 0l)
+
+                        val audienceInfo = AttendenceInfo(userId4Audience, userInfoOpt.get.username, liveInfo4Client.liveId)
+//                        dispatch(RcvComment(-1l, "", s"user:$userId join in room:$roomId")) //群发评论
+//                        dispatchTo(subscribers.keys.toList.filter(t => t._1 != meetingInfo.userId && t._1 != userId4Audience), Join4AllRsp(Some(liveInfo4Mix.liveId))) //除了host和连线者发送混流的liveId
+//                        dispatchTo(List((meetingInfo.userId, false)), AudienceJoinRsp(Some(audienceInfo)))
+                        dispatchTo(List((userId4Audience, false)), JoinRsp(Some(liveIdHost.get.liveId), Some(liveInfo4Client)))
+                      } else {
+                        log.debug(s"${ctx.self.path} 没有主播的liveId,roomId=$meetingId")
+                        dispatchTo(List((meetingInfo.userId, false)), AudienceJoinError)
+
+                      }
+                    case None =>
+                      log.debug(s"${ctx.self.path} 没有主播的liveId,roomId=$meetingId")
+                      dispatchTo(List((meetingInfo.userId, false)), AudienceJoinError)
+                  }
+                } else {
+                  log.debug(s"${ctx.self.path} 错误的主播userId,可能是数据库里没有用户,userId=$userId4Audience")
+                  dispatchTo(List((meetingInfo.userId, false)), AudienceJoinError)
+                }
+              case (Right(GetLiveInfoRsp(_, errCode, msg)), Right(GetLiveInfoRsp(_, errCode2, msg2))) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left error:$errCode msg: $msg")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left error:$errCode2 msg: $msg2")
+                dispatchTo(List((meetingInfo.userId, false)), AudienceJoinError)
+              case (Left(error1), Left(error2)) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left error:$error1")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left error:$error2")
+                dispatchTo(List((meetingInfo.userId, false)), AudienceJoinError)
+              case (_, Left(error2)) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left ok")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left error:$error2")
+                dispatchTo(List((meetingInfo.userId, false)), AudienceJoinError)
+              case (Left(error1), _) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left error:$error1")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left ok")
+                dispatchTo(List((meetingInfo.userId, false)), AudienceJoinError)
+            }
+          }
+        } else {
+          dispatchTo(List((meetingInfo.userId, false)), AudienceJoinRsp(None))
+          dispatchTo(List((userId4Audience, false)), JoinRefused)
+        }
+
         Behaviors.same
 
       case ForceExit(userId4Audience,userNa4Audience)=>

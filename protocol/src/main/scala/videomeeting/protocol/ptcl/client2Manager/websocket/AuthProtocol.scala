@@ -108,10 +108,10 @@ object AuthProtocol {
 
   case class AudienceApply(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
 
-  case class JoinAccept extends WsMsgHost //主持人审批某个用户的加入会议请求
+  case class JoinAccept(meetingId: Int, userId: Int, clientType: Int, accept: Boolean) extends WsMsgHost //主持人审批某个用户的加入会议请求
 
   case class AudienceJoinRsp(
-                              joinInfo: Option[Int] = None, //参会者信息
+                              joinInfo: Option[AttendenceInfo] = None, //参会者信息
                               errCode: Int = 0,
                               msg: String = "ok"
                             ) extends WsMsgRm2Host //拒绝成功不发joinInfo，仅发送默认状态信息

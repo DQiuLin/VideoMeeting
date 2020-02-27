@@ -66,9 +66,9 @@ class StartController(
       }
     }
 
-    override def joinAcceptance(userId: Int, accept: Boolean, newRequest: SpeakListInfo): Unit = {
+    override def joinAcceptance(userId: Int, accept: Boolean, newRequest: JoinListInfo): Unit = {
       rmManager ! RmManager.JoinAcceptance(userId, accept)
-      startScene.audObservableList.remove(newRequest)
+      startScene.joinObservableList.remove(newRequest)
     }
 
     override def shutJoin(): Unit = {
@@ -107,11 +107,6 @@ class StartController(
       rmManager ! RmManager.CloseUser(userId, None, Some(false))
     }
 
-    override def joinAcceptance(userId:Int,accept: Boolean, newRequest: JoinListInfo): Unit ={
-      rmManager ! RmManager.JionAcceptance(userId,accept)
-      startScene.speakObservableList.remove(newRequest)
-    }
-
   }
 
   )
@@ -137,7 +132,7 @@ class StartController(
         //将该条信息展示在host页面(TableView)
         log.debug(s"Audience-${msg.userName} send join req.")
         Boot.addToPlatform {
-          startScene.updateAudienceList4Join(msg.userId, msg.userName)
+          startScene.updateJoinList(msg.userId, msg.userName)
         }
 
       case msg: AudienceApply =>

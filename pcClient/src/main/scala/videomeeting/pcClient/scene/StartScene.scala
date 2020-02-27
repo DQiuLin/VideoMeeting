@@ -581,23 +581,23 @@ class StartScene(stage: Stage) {
     vBox.setPadding(new Insets(20, 10, 5, 10))
     vBox.getStyleClass.add("hostScene-leftArea-wholeBox")
 
-    def createCntTbArea: TableView[SpeakListInfo] = {
-      val AudienceTable = new TableView[SpeakListInfo]()
+    def createCntTbArea: TableView[JoinListInfo] = {
+      val AudienceTable = new TableView[JoinListInfo]()
       AudienceTable.getStyleClass.add("table-view")
 
-      val userInfoCol = new TableColumn[SpeakListInfo, String]("申请用户")
+      val userInfoCol = new TableColumn[JoinListInfo, String]("申请用户")
       userInfoCol.setPrefWidth(width * 0.15)
-      userInfoCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, String]("userInfo"))
+      userInfoCol.setCellValueFactory(new PropertyValueFactory[JoinListInfo, String]("userInfo"))
 
-      val agreeBtnCol = new TableColumn[SpeakListInfo, Button]("同意")
-      agreeBtnCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, Button]("agreeBtn"))
+      val agreeBtnCol = new TableColumn[JoinListInfo, Button]("同意")
+      agreeBtnCol.setCellValueFactory(new PropertyValueFactory[JoinListInfo, Button]("agreeBtn"))
       agreeBtnCol.setPrefWidth(width * 0.08)
 
-      val refuseBtnCol = new TableColumn[SpeakListInfo, Button]("拒绝")
-      refuseBtnCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, Button]("refuseBtn"))
+      val refuseBtnCol = new TableColumn[JoinListInfo, Button]("拒绝")
+      refuseBtnCol.setCellValueFactory(new PropertyValueFactory[JoinListInfo, Button]("refuseBtn"))
       refuseBtnCol.setPrefWidth(width * 0.08)
 
-      AudienceTable.setItems(audObservableList)
+      AudienceTable.setItems(joinObservableList)
       AudienceTable.getColumns.addAll(userInfoCol, agreeBtnCol, refuseBtnCol)
       AudienceTable.setPrefHeight(height * 0.8)
       AudienceTable

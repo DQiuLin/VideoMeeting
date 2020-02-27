@@ -132,6 +132,8 @@ object RmManager {
 
   final case class JionAcceptance(userId: Int, accept: Boolean) extends RmCommand
 
+  final case class JoinAcceptance(userId: Int, accept: Boolean) extends RmCommand
+
   final case class JoinBegin(audienceInfo: AttendenceInfo) extends RmCommand //开始和某观众连线
 
   final case object JoinStop extends RmCommand //停止和某观众连线
@@ -577,6 +579,12 @@ object RmManager {
 
         case InviteAudience(meetingId, email) =>
           sender.foreach(_ ! Invite(email, meetingId))
+          Behaviors.same
+
+        case msg: JoinAcceptance =>
+          log.debug(s"accept join user-${msg.userId} join.")
+          assert(roomInfo.nonEmpty)
+          sender.foreach(_ ! JoinAccept(roomInfo.get.meetingId, msg.userId, ClientType.PC, msg.accept))
           Behaviors.same
 
         //        case msg: ModifyRoom =>

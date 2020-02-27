@@ -7,7 +7,7 @@ import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.RmManager.HeartBeat
 import videomeeting.pcClient.scene.StartScene
-import videomeeting.pcClient.scene.StartScene.{SpeakListInfo, StartSceneListener}
+import videomeeting.pcClient.scene.StartScene.{JoinListInfo, SpeakListInfo, StartSceneListener}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol._
 import org.slf4j.LoggerFactory
 import videomeeting.pcClient.utils.RMClient
@@ -100,6 +100,11 @@ class StartController(
 
     override def closeSound(userId: Int): Unit = {
       rmManager ! RmManager.CloseUser(userId, None, Some(false))
+    }
+
+    override def joinAcceptance(userId:Int,accept: Boolean, newRequest: JoinListInfo): Unit ={
+      rmManager ! RmManager.JionAcceptance(userId,accept)
+      startScene.speakObservableList.remove(newRequest)
     }
 
   }

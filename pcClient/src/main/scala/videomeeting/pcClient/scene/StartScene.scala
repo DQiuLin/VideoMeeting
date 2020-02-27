@@ -35,7 +35,7 @@ import videomeeting.pcClient.Boot
 import videomeeting.pcClient.component.Common.getImageView
 import videomeeting.pcClient.component._
 import videomeeting.pcClient.core.stream.StreamPuller.{BandWidthInfo, PackageLossInfo}
-import videomeeting.pcClient.scene.StartScene.{StartSceneListener,SpeakListInfo}
+import videomeeting.pcClient.scene.StartScene.{JoinListInfo, SpeakListInfo, StartSceneListener}
 import videomeeting.pcClient.utils.{NetUsage, TimeUtil}
 import videomeeting.pcClient.component.WatchingList.WatchingListInfo
 
@@ -52,6 +52,25 @@ object StartScene {
                             agreeBtn: ObjectProperty[Button],
                             refuseBtn: ObjectProperty[Button]
                           ) {
+    def getUserInfo: String = userInfo.get()
+
+    def setUserInfo(info: String): Unit = userInfo.set(info)
+
+    def getAgreeBtn: Button = agreeBtn.get()
+
+    def setAgreeBtn(btn: Button): Unit = agreeBtn.set(btn)
+
+    def getRefuseBtn: Button = refuseBtn.get()
+
+    def setRefuseBtn(btn: Button): Unit = refuseBtn.set(btn)
+
+  }
+
+  case class JoinListInfo(
+    userInfo: StringProperty,
+    agreeBtn: ObjectProperty[Button],
+    refuseBtn: ObjectProperty[Button]
+  ) {
     def getUserInfo: String = userInfo.get()
 
     def setUserInfo(info: String): Unit = userInfo.set(info)
@@ -98,6 +117,8 @@ object StartScene {
 
     def closeSound(userId: Int)
 
+    def joinAcceptance(userId:Int,accept: Boolean, newRequest: JoinListInfo)
+
   }
 
 }
@@ -136,6 +157,7 @@ class StartScene(stage: Stage) {
   var roomInfoMap = Map.empty[Long, List[String]]
   val speakObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
   val watchObservableList: ObservableList[WatchingListInfo] = FXCollections.observableArrayList()
+  val joinObservableList: ObservableList[JoinListInfo] = FXCollections.observableArrayList()
   // val audObservableList: ObservableList[AudienceListInfo] = FXCollections.observableArrayList()
   var commentPrefix = "effectType0"
 
@@ -183,6 +205,8 @@ class StartScene(stage: Stage) {
   val tb2 = new ToggleButton("申请发言人", applyIcon)
   tb2.getStyleClass.add("hostScene-leftArea-toggleButton")
   val tb3 = new ToggleButton("房间 ", roomInfoIcon)
+  tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
+  val tb4 = new ToggleButton("房间 ",  applyIcon)
   tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
 
   val liveToggleButton = new ToggleButton("开始会议")
@@ -297,6 +321,45 @@ class StartScene(stage: Stage) {
 
   }
 
+  def updateJoinList(audienceId: Int, audienceName: String): Unit = {
+    if (!tb4.isSelected) {
+      tb4.setGraphic(applyIcon1)
+    }
+    val agreeBtn = new Button("", new ImageView("img/agreeBtn.png"))
+    val refuseBtn = new Button("", new ImageView("img/refuseBtn.png"))
+
+    agreeBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+    refuseBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+    val glow = new Glow()
+    agreeBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+      agreeBtn.setEffect(glow)
+    })
+    agreeBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+      agreeBtn.setEffect(null)
+    })
+    refuseBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+      refuseBtn.setEffect(glow)
+    })
+    refuseBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+      refuseBtn.setEffect(null)
+    })
+    val newRequest = JoinListInfo(
+      new SimpleStringProperty(s"$audienceName($audienceId)"),
+      new SimpleObjectProperty[Button](agreeBtn),
+      new SimpleObjectProperty[Button](refuseBtn)
+    )
+    joinObservableList.add(newRequest)
+
+    agreeBtn.setOnAction {
+      _ =>
+        listener.joinAcceptance(userId = audienceId, accept = true, newRequest)
+    }
+    refuseBtn.setOnAction {
+      _ =>
+        listener.joinAcceptance(userId = audienceId, accept = false, newRequest)
+    }
+
+  }
 
   def getScene: Scene = this.scene
 

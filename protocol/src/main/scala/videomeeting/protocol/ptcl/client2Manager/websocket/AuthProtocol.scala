@@ -1,6 +1,7 @@
 package videomeeting.protocol.ptcl.client2Manager.websocket
 
 import videomeeting.protocol.ptcl.CommonInfo._
+import videomeeting.meetingManager.core.UserActor._
 
 /**
   * User: Arrow
@@ -107,7 +108,7 @@ object AuthProtocol {
 
   case class AudienceApply(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请连线者信息
 
-  case class JoinAccept(roomId: Int, userId: Int, clientType: Int, accept: Boolean) extends WsMsgHost //主持人审批某个用户的加入会议请求
+  case class JoinAccept extends WsMsgHost //主持人审批某个用户的加入会议请求
 
   case class AudienceJoinRsp(
                               joinInfo: Option[Int] = None, //参会者信息

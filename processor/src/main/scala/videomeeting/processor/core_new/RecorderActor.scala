@@ -29,7 +29,7 @@ import scala.concurrent.duration._
   */
 object RecorderActor {
 
-  var audioChannels = 2 //todo 待议
+  var audioChannels = 4 //todo 待议
   val sampleFormat = 1 //todo 待议
   var frameRate = 30
 
@@ -108,12 +108,12 @@ object RecorderActor {
           }
           roomManager ! RoomManager.RecorderRef(roomId, ctx.self)
           ctx.self ! Init
-          single(roomId,  host, client, layout, recorder4ts, null, null, null,  null,null, mutable.Map[String, BufferedImage](), output, 30000, (0, 0))
+          single(roomId,client, layout, recorder4ts, null, null, null,  null,null, mutable.Map[String, BufferedImage](), output, 30000, (0, 0))
       }
     }
   }
 
-  def single(roomId: Long, host: String, client: List[String], layout: Int,
+  def single(roomId: Long, client: List[String], layout: Int,
              recorder4ts: FFmpegFrameRecorder,
              ffFilter: FFmpegFrameFilter,
              drawer: ActorRef[VideoCommand],
@@ -144,10 +144,10 @@ object RecorderActor {
           ffFilterN.setSampleFormat(sampleFormat)
           ffFilterN.setAudioInputs(client.size + 1)
           ffFilterN.start()
-          single(roomId,  host, client,layout, recorder4ts, ffFilterN, drawer, ts4Host, ts4Client, hostImage, clientImage, out, tsDiffer, canvasSize)
+          single(roomId,client,layout, recorder4ts, ffFilterN, drawer, ts4Host, ts4Client, hostImage, clientImage, out, tsDiffer, canvasSize)
 
         case UpdateRecorder(channel, sampleRate, f, width, height, liveId) =>
-          if(liveId == host) {
+
             log.info(s"$roomId updateRecorder channel:$channel, sampleRate:$sampleRate, frameRate:$f, width:$width, height:$height")
             recorder4ts.setFrameRate(f)
             recorder4ts.setAudioChannels(channel)
@@ -156,22 +156,16 @@ object RecorderActor {
             ffFilter.setSampleRate(sampleRate)
             recorder4ts.setImageWidth(width)
             recorder4ts.setImageHeight(height)
-            single(roomId,  host, client, layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client,hostImage, clientImage, out, tsDiffer,  (640,  480))
-          }else{
-            Behaviors.same
-          }
+            single(roomId, client, layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client,hostImage, clientImage, out, tsDiffer,  (640,  480))
+
 
         case NewFrame(liveId, frame) =>
-          if(liveId == host){
-            recorder4ts.record(frame)
-            Behaviors.same
-          }else{
             val canvas = new BufferedImage(640, 480, BufferedImage.TYPE_3BYTE_BGR)
             val drawer = ctx.spawn(draw(canvas, canvas.getGraphics, Ts4LastImage(), hostImage, clientImage, client, recorder4ts,
               new Java2DFrameConverter(), new Java2DFrameConverter, layout, "defaultImg.jpg", roomId, (640, 480)), s"drawer_$roomId")
             ctx.self ! NewFrame(liveId, frame)
-            work(roomId,host,client,layout,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
-          }
+            work(roomId,client,0,null,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
+
 
         case CloseRecorder =>
           try {
@@ -197,7 +191,8 @@ object RecorderActor {
     }
   }
 
-  def work(roomId: Long, host: String, client: mutable.Map[String,Int], num: Int,
+  def work(roomId: Long, client: List[String], num: Int = 0,
+           audioMap:Option[mutable.Map[String, Int]],
            recorder4ts: FFmpegFrameRecorder,
            ffFilter: FFmpegFrameFilter,
            drawer: ActorRef[VideoCommand],
@@ -211,23 +206,22 @@ object RecorderActor {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case NewFrame(liveId, frame) =>
+          var newNum = num
+          var newMap = audioMap.get
           if (frame.image != null) {
-            if (liveId == host) {
-              drawer ! Image4Host(frame)
-            } else if (client.contains(liveId)) {
-              drawer ! Image4Client(frame,liveId)
-            } else {
-              log.info(s"wrong, liveId, work got wrong img")
-            }
+             drawer ! Image4Client(frame,liveId)
           }
           if (frame.samples != null) {
             try {
-              if (liveId == host) {
-                ffFilter.pushSamples(0, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
-              } else if (client.contains(liveId)) {
-                ffFilter.pushSamples(1, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
-              } else {
-                log.info(s"wrong liveId, couple got wrong audio")
+              val a = audioMap.get
+              if(!audioMap.isEmpty){
+                if(audioMap.contains(liveId)){
+                  ffFilter.pushSamples(audioMap.get.get(liveId).get, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
+                }else{
+                  ffFilter.pushSamples(num, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
+                  newMap.put(liveId,num)
+                  newNum = num+1
+                }
               }
               val f = ffFilter.pullSamples().clone()
               if (f != null) {
@@ -238,15 +232,15 @@ object RecorderActor {
                 log.debug(s"$liveId record sample error system: $ex")
             }
           }
-          Behaviors.same
+          work(roomId, client, newNum,Some(newMap), recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
 
-        case msg: UpdateRoomInfo =>
-          log.info(s"$roomId got msg: $msg in work.")
-          if (msg.layout != num) {
-            drawer ! SetLayout(msg.layout)
-          }
-          ctx.self ! RestartRecord
-          work(roomId, host, client, msg.layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
+//        case msg: UpdateRoomInfo =>
+//          log.info(s"$roomId got msg: $msg in work.")
+//          if (msg.layout != num) {
+//            drawer ! SetLayout(msg.layout)
+//          }
+//          ctx.self ! RestartRecord
+//          work(roomId, client, msg.layout, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
 
         case m@RestartRecord =>
           log.info(s"couple state get $m")
@@ -276,8 +270,9 @@ object RecorderActor {
         case msg: ForceExit4Client =>
           log.info(s"${ctx.self} receive a msg $msg")
           val newClient = client.filter(c => c != msg.liveId)
+          audioMap.get.remove(msg.liveId)
           drawer ! ReStartDrawing(newClient, msg.liveId)
-          work(roomId, host, newClient, num, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
+          work(roomId, newClient, num,null, recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
 
         case x =>
           Behaviors.same

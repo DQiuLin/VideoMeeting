@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import org.seekloud.byteobject.MiddleBufferInJvm
 import org.slf4j.LoggerFactory
 import videomeeting.protocol.ptcl.CommonInfo._
-import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.GetMeetInfoRsp4RM
+import videomeeting.protocol.ptcl.client2Manager.http.CommonProtocol.{GetLiveInfoRsp, GetMeetInfoRsp4RM}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol.{HostCloseRoom, _}
 import videomeeting.meetingManager.Boot.{executor, meetingManager}
 import videomeeting.meetingManager.common.AppSettings.{distributorIp, distributorPort}
@@ -107,19 +107,19 @@ object MeetingActor {
                 if (userTableOpt.nonEmpty) {
                   log.info(s"start meeting succeed")
                   val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
-                  DistributorClient.startPull(meetingId, rsp.liveInfo.liveId).map {
-                    case Right(r) =>
+//                  DistributorClient.startPull(meetingId, rsp.liveInfo.liveId).map {
+//                    case Right(r) =>
                       log.info(s"distributor startPull succeed, get live address: ${r.liveAdd}")
                       dispatchTo(subscribers)(List((userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
                       meetingInfo.mpd = Some(r.liveAdd)
                       val startTime = r.startTime
                       ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, startTime))
 
-                    case Left(e) =>
-                      log.error(s"distributor startPull error: $e")
-                      dispatchTo(subscribers)(List((userId, false)), StartLiveRefused4LiveInfoError)
-                      ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
-                  }
+//                    case Left(e) =>
+//                      log.error(s"distributor startPull error: $e")
+//                      dispatchTo(subscribers)(List((userId, false)), StartLiveRefused4LiveInfoError)
+//                      ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+//                  }
                 } else {
                   log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
                   dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
@@ -340,7 +340,7 @@ object MeetingActor {
   private def handleWebSocketMsg(
     meetingInfo: MeetingInfo,
     subscribers: mutable.HashMap[(Int, Boolean), ActorRef[UserActor.Command]], //包括主持人在内的所有用户
-    liveInfoMap: mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]], //除主持人外的所有用户的liveInfo
+    liveInfoMap: mutable.HashMap[Int, LiveInfo], //除主持人外的所有用户的liveInfo
     startTime: Long,
     dispatch: WsMsgRm => Unit,
     dispatchTo: (List[(Int, Boolean)], WsMsgRm) => Unit
@@ -375,7 +375,75 @@ object MeetingActor {
         }
         Behaviors.same
 
+      case msg:JoinAccept =>
+        /*先开房间*/
+        val meetingId = 1
+        val aid = 1
+        val a = liveInfoMap.keys.foreach(_=>UserInfoDao.searchById(_))
+        /*混流*/
+        log.debug(s"${ctx.self.path} 开始会议，roomId=$meetingId")
+          for {
+            userInfoOpt <- UserInfoDao.searchById(aid)
+            clientLiveInfo <- RtpClient.getLiveInfoFunc()
+            mixLiveInfo <- RtpClient.getLiveInfoFunc()
+          } yield {
+            (clientLiveInfo, mixLiveInfo) match {
+              case (Right(GetLiveInfoRsp(liveInfo4Client, 0, _)), Right(GetLiveInfoRsp(liveInfo4Mix, 0, _))) =>
+                log.info("client" + liveInfo4Client + "; mix" + liveInfo4Mix)
+                if (userInfoOpt.nonEmpty) {
+                  liveInfoMap.get(Role.host) match {
+                    case Some(value) =>
+                        liveInfoMap.get(Role.audience) match {
+                          case Some(value4Audience) =>
+                            value4Audience.put(userId4Audience, liveInfo4Client)
+                            liveInfoMap.put(Role.audience, value4Audience)
+                          case None =>
+                            liveInfoMap.put(Role.audience, mutable.HashMap(userId4Audience -> liveInfo4Client))
+                        }
+                        liveIdHost.foreach { HostLiveInfo =>
+                          DistributorClient.startPull(roomId, liveInfo4Mix.liveId)
+                          ProcessorClient.newConnect(roomId, HostLiveInfo.liveId, liveInfo4Client.liveId, liveInfo4Mix.liveId, liveInfo4Mix.liveCode, wholeRoomInfo.layout)
+                          ctx.self ! UpdateRTMP(liveInfo4Mix.liveId)
+                        }
+                        //                        val liveList = liveInfoMap.toList.sortBy(_._1).flatMap(r => r._2).map(_._2.liveId)
+                        //                        log.debug(s"${ctx.self.path} 更新房间信息，连线者liveIds=${liveList}")
+                        //                        ProcessorClient.updateRoomInfo(wholeRoomInfo.roomInfo.roomId, liveList, wholeRoomInfo.layout, wholeRoomInfo.aiMode, 0l)
 
+                        val audienceInfo = AudienceInfo(userId4Audience, userInfoOpt.get.userName, liveInfo4Client.liveId)
+                        dispatch(RcvComment(-1l, "", s"user:$userId join in room:$roomId")) //群发评论
+                        dispatchTo(subscribers.keys.toList.filter(t => t._1 != wholeRoomInfo.roomInfo.userId && t._1 != userId4Audience), Join4AllRsp(Some(liveInfo4Mix.liveId))) //除了host和连线者发送混流的liveId
+                        dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoinRsp(Some(audienceInfo)))
+                        dispatchTo(List((userId4Audience, false)), JoinRsp(Some(liveIdHost.get.liveId), Some(liveInfo4Client)))
+
+                    case None =>
+                      log.debug(s"${ctx.self.path} 没有主播的liveId,roomId=$roomId")
+                      dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoinError)
+                  }
+                } else {
+                  log.debug(s"${ctx.self.path} 错误的主播userId,可能是数据库里没有用户,userId=$userId4Audience")
+                  dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoinError)
+                }
+              case (Right(GetLiveInfoRsp(_, errCode, msg)), Right(GetLiveInfoRsp(_, errCode2, msg2))) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left error:$errCode msg: $msg")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left error:$errCode2 msg: $msg2")
+                dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoinError)
+              case (Left(error1), Left(error2)) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left error:$error1")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left error:$error2")
+                dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoinError)
+              case (_, Left(error2)) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left ok")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left error:$error2")
+                dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoinError)
+              case (Left(error1), _) =>
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Client left error:$error1")
+                log.debug(s"${ctx.self.path.name} join accept get liveInfo4Mix left ok")
+                dispatchTo(List((wholeRoomInfo.roomInfo.userId, false)), AudienceJoinError)
+            }
+          }
+
+
+        Behaviors.same
 //      case JoinReq(userId4Audience, `meetingInfo`, clientType) =>
 //          UserInfoDao.searchById(userId4Audience).map { r =>
 //            if (r.nonEmpty) {

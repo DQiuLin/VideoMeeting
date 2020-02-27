@@ -103,22 +103,23 @@ object RoomActor {
             val pullOut4Client = Channels.newOutputStream(pullSink4Client)
 
             pipeMap.put(_, pullPipe4Client)
-          }
 
+            val recorderActor = getRecorderActor(ctx, msg.roomId, msg.client ,msg.pushLiveId, msg.pushLiveCode, msg.layout, pushOut)
+            val grabber4client = getGrabberActor(ctx, msg.roomId,client, pullInput4Client, recorderActor)
+
+            val pullPipe4client = getPullPipe(ctx, msg.roomId, client, pullOut4Client)
+            val pushPipe4recorder = getPushPipe(ctx, msg.roomId, msg.pushLiveId, msg.pushLiveCode, pushSource)
+
+            pullPipeMap.put(client, pullPipe4client)
+            pushPipeMap.put(msg.pushLiveId, pushPipe4recorder)
+
+            grabberMap.put(msg.roomId, List(grabber4client))
+            recorderMap.put(msg.roomId, recorderActor)
+            roomLiveMap.put(msg.roomId,List(client, msg.pushLiveId))
+          }
 
           pipeMap.put(msg.pushLiveId, pushPipe)
 
-          val recorderActor = getRecorderActor(ctx, msg.roomId, msg.client ,msg.pushLiveId, msg.pushLiveCode, msg.layout, pushOut)
-          val grabber4client = getGrabberActor(ctx, msg.roomId,client, pullInput4Client, recorderActor)
-
-          val pullPipe4client = getPullPipe(ctx, msg.roomId, msg.client, pullOut4Client)
-          val pushPipe4recorder = getPushPipe(ctx, msg.roomId, msg.pushLiveId, msg.pushLiveCode, pushSource)
-          pullPipeMap.put(msg.client, pullPipe4client)
-          pushPipeMap.put(msg.pushLiveId, pushPipe4recorder)
-
-          grabberMap.put(msg.roomId, List(grabber4host, grabber4client))
-          recorderMap.put(msg.roomId, recorderActor)
-          roomLiveMap.put(msg.roomId,List(msg.host,msg.client, msg.pushLiveId))
           streamPushActor ! StreamPushActor.NewLive(msg.pushLiveId, msg.pushLiveCode)
           Behaviors.same
 

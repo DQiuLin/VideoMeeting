@@ -366,12 +366,12 @@ object MeetingActor {
             dispatchTo(List((meetingInfo.userId, false)), AudienceApply(userId4Audience, r.get.username, clientType))
           } else {
             log.debug(s"${ctx.self.path} 发言请求失败，用户id错误id=$userId4Audience in meetingId=$meetingId")
-            dispatchTo(List((userId4Audience, false)), JoinAccountError)
+            dispatchTo(List((userId4Audience, false)), ApplyAccountError)
           }
         }.recover {
           case e: Exception =>
             log.debug(s"${ctx.self.path} 发言请求失败，内部错误error=$e")
-            dispatchTo(List((userId4Audience, false)), JoinInternalError)
+            dispatchTo(List((userId4Audience, false)), ApplyInternalError)
         }
         Behaviors.same
 

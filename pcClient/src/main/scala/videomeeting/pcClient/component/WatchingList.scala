@@ -10,7 +10,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.text.Text
 import videomeeting.pcClient.common.Pictures
 import videomeeting.protocol.ptcl.CommonInfo
-import videomeeting.protocol.ptcl.CommonInfo.UserInfo
+import videomeeting.protocol.ptcl.CommonInfo.{UserDes, UserInfo}
 import videomeeting.pcClient.scene.StartScene.StartSceneListener
 import org.slf4j.LoggerFactory
 
@@ -74,7 +74,7 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
   watchingState.getStyleClass.add("hostScene-leftArea-text")
 
   /*update*/
-  def updateWatchingList(list: List[UserInfo]): Unit = {
+  def updateWatchingList(list: List[UserDes]): Unit = {
     if (tb.nonEmpty) {
       if (!tb.get.isSelected) {
         tb.get.setGraphic(audienceIcon1)

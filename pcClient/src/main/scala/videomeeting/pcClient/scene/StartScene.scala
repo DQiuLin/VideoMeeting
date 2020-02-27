@@ -154,7 +154,7 @@ class StartScene(stage: Stage) {
 
   //一些参数
   var isLive = false
-  var roomInfoMap = Map.empty[Long, List[String]]
+  var roomInfoMap = Map.empty[Int, List[String]]
   val speakObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
   val watchObservableList: ObservableList[WatchingListInfo] = FXCollections.observableArrayList()
   val joinObservableList: ObservableList[JoinListInfo] = FXCollections.observableArrayList()

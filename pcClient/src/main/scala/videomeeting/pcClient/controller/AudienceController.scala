@@ -99,6 +99,9 @@ class AudienceController(
       rmManager ! RmManager.GetPackageLoss
     }
 
+    override def applySpeak(meetingId: Int): Unit = {
+      rmManager ! RmManager.ApplySpeak(meetingId)
+    }
 
   })
 

@@ -60,6 +60,8 @@ object AudienceScene {
 
     def ask4Loss()
 
+    def applySpeak(meetingId: Int)
+
   }
 
 
@@ -296,12 +298,7 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
       val linkBtn = new Button("申请发言", new ImageView("img/link.png"))
       linkBtn.getStyleClass.add("audienceScene-leftArea-linkBtn")
       linkBtn.setOnAction{ _ =>
-//        if(!hasReqJoin) {
-//          listener.joinReq(room.meetingId)
-//          hasReqJoin = true
-//        }
-//        else WarningDialog.initWarningDialog("已经发送过申请啦~")
-        //TODo 申请发言
+        listener.applySpeak(room.meetingId)
       }
       Common.addButtonEffect(linkBtn)
 

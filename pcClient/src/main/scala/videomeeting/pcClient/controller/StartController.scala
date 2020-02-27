@@ -66,6 +66,10 @@ class StartController(
       }
     }
 
+    override def joinAcceptance(userId: Int, accept: Boolean, newRequest: SpeakListInfo): Unit = {
+
+    }
+
     override def shutJoin(): Unit = {
       rmManager ! RmManager.ShutJoin
     }

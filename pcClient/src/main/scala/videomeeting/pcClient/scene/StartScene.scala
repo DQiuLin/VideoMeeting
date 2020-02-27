@@ -98,6 +98,8 @@ object StartScene {
 
     def closeSound(userId: Int)
 
+    def joinAcceptance(userId: Int, accept: Boolean, newRequest: SpeakListInfo)
+
   }
 
 }
@@ -136,7 +138,7 @@ class StartScene(stage: Stage) {
   var roomInfoMap = Map.empty[Long, List[String]]
   val speakObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
   val watchObservableList: ObservableList[WatchingListInfo] = FXCollections.observableArrayList()
-  // val audObservableList: ObservableList[AudienceListInfo] = FXCollections.observableArrayList()
+   val audObservableList: ObservableList[SpeakListInfo] = FXCollections.observableArrayList()
   var commentPrefix = "effectType0"
 
   var listener: StartSceneListener = _
@@ -175,8 +177,8 @@ class StartScene(stage: Stage) {
   applyIcon.setFitHeight(20)
   //这个要找一张那种来电的图片来
   val applyIcon1 = new ImageView("img2/2apply1.png")
-  applyIcon.setFitWidth(20)
-  applyIcon.setFitHeight(20)
+  applyIcon1.setFitWidth(20)
+  applyIcon1.setFitHeight(20)
 
   val tb1 = new ToggleButton("当前参会成员", userIcon)
   tb1.getStyleClass.add("hostScene-leftArea-toggleButton")
@@ -184,6 +186,8 @@ class StartScene(stage: Stage) {
   tb2.getStyleClass.add("hostScene-leftArea-toggleButton")
   val tb3 = new ToggleButton("房间 ", roomInfoIcon)
   tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
+  val tb4 = new ToggleButton("申请加入会议", applyIcon)
+  tb4.getStyleClass.add("hostScene-leftArea-toggleButton")
 
   val liveToggleButton = new ToggleButton("开始会议")
   liveToggleButton.getStyleClass.add("hostScene-rightArea-liveBtn")
@@ -297,6 +301,46 @@ class StartScene(stage: Stage) {
 
   }
 
+  def updateAudienceList4Join(audienceId: Int, audienceName: String): Unit = {
+    if (!tb4.isSelected) {
+      tb4.setGraphic(applyIcon1)
+    }
+    val agreeBtn = new Button("", new ImageView("img/agreeBtn.png"))
+    val refuseBtn = new Button("", new ImageView("img/refuseBtn.png"))
+
+    agreeBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+    refuseBtn.getStyleClass.add("hostScene-middleArea-tableBtn")
+    val glow = new Glow()
+    agreeBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+      agreeBtn.setEffect(glow)
+    })
+    agreeBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+      agreeBtn.setEffect(null)
+    })
+    refuseBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (_: MouseEvent) => {
+      refuseBtn.setEffect(glow)
+    })
+    refuseBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (_: MouseEvent) => {
+      refuseBtn.setEffect(null)
+    })
+    val newRequest = SpeakListInfo(
+      new SimpleStringProperty(s"$audienceName($audienceId)"),
+      new SimpleObjectProperty[Button](agreeBtn),
+      new SimpleObjectProperty[Button](refuseBtn)
+    )
+    audObservableList.add(newRequest)
+
+    agreeBtn.setOnAction {
+      _ =>
+        listener.joinAcceptance(userId = audienceId, accept = true, newRequest)
+    }
+    refuseBtn.setOnAction {
+      _ =>
+        listener.joinAcceptance(userId = audienceId, accept = false, newRequest)
+    }
+
+  }
+
 
   def getScene: Scene = this.scene
 
@@ -311,6 +355,7 @@ class StartScene(stage: Stage) {
     tb1.setToggleGroup(group)
     tb2.setToggleGroup(group)
     tb3.setToggleGroup(group)
+    tb4.setToggleGroup(group)
 
     val tbBox = new HBox()
     tbBox.getChildren.addAll(tb3, tb1, tb2)
@@ -318,6 +363,7 @@ class StartScene(stage: Stage) {
     val left1Area = addLeftChild1Area()
     val left2Area = addLeftChild2Area()
     val left3Area = addLeftChild3Area()
+    val left4Area = addLeftChild4Area()
 
     content.getChildren.add(left1Area)
     content.setPrefSize(width * 0.32, height)
@@ -336,11 +382,17 @@ class StartScene(stage: Stage) {
     )
 
     tb3.setOnAction(_ => {
-      tb2.setGraphic(roomInfoIcon)
+      tb3.setGraphic(roomInfoIcon)
       content.getChildren.clear()
       content.getChildren.add(left3Area)
     }
     )
+
+    tb4.setOnAction(_ => {
+      tb4.setGraphic(applyIcon)
+      content.getChildren.clear()
+      content.getChildren.add(left4Area)
+    })
 
     val leftArea = new VBox()
     leftArea.getChildren.addAll(tbBox, content)
@@ -499,6 +551,40 @@ class StartScene(stage: Stage) {
 
 
     leftAreaBox
+
+  }
+
+  def addLeftChild4Area(): VBox = {
+    val vBox = new VBox()
+    vBox.getChildren.addAll(connectStateBox, createCntTbArea)
+    vBox.setSpacing(20)
+    vBox.setPrefHeight(height)
+    vBox.setPadding(new Insets(20, 10, 5, 10))
+    vBox.getStyleClass.add("hostScene-leftArea-wholeBox")
+
+    def createCntTbArea: TableView[SpeakListInfo] = {
+      val AudienceTable = new TableView[SpeakListInfo]()
+      AudienceTable.getStyleClass.add("table-view")
+
+      val userInfoCol = new TableColumn[SpeakListInfo, String]("申请用户")
+      userInfoCol.setPrefWidth(width * 0.15)
+      userInfoCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, String]("userInfo"))
+
+      val agreeBtnCol = new TableColumn[SpeakListInfo, Button]("同意")
+      agreeBtnCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, Button]("agreeBtn"))
+      agreeBtnCol.setPrefWidth(width * 0.08)
+
+      val refuseBtnCol = new TableColumn[SpeakListInfo, Button]("拒绝")
+      refuseBtnCol.setCellValueFactory(new PropertyValueFactory[SpeakListInfo, Button]("refuseBtn"))
+      refuseBtnCol.setPrefWidth(width * 0.08)
+
+      AudienceTable.setItems(audObservableList)
+      AudienceTable.getColumns.addAll(userInfoCol, agreeBtnCol, refuseBtnCol)
+      AudienceTable.setPrefHeight(height * 0.8)
+      AudienceTable
+    }
+
+    vBox
 
   }
 

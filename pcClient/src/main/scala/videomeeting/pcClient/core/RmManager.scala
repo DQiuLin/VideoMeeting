@@ -995,9 +995,9 @@ object RmManager {
         //          liveManager ! LiveManager.PushStream(msg.audienceLiveInfo.liveId, msg.audienceLiveInfo.liveCode)
 
                   /*开始拉取并播放主播rtp流*/
-                  val JoinInfo = JoinInfo(
-                    audienceScene.getMeetingInfo.roomId, //观看房间id
-                    userId, //观众id
+                  val joinInfo = JoinInfo(
+                    audienceScene.getRoomInfo.meetingId, //观看房间id
+                    userInfo.get.userId, //观众id
                     audienceScene.gc //观众页画布gc
                   )
 

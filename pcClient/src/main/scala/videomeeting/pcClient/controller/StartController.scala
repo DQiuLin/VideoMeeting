@@ -127,7 +127,7 @@ class StartController(
         //将该条信息展示在host页面(TableView)
         log.debug(s"Audience-${msg.userName} send join req.")
         Boot.addToPlatform {
-          //          startScene.updateAudienceList(msg.userId, msg.userName)
+          startScene.updateAudienceList(msg.userId, msg.userName)
         }
 
 

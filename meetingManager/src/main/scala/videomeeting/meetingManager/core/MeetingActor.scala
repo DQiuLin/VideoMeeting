@@ -381,7 +381,7 @@ object MeetingActor {
             if (r.nonEmpty) {
               dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
             } else {
-              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$roomId")
+              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$meetingId")
               dispatchTo(List((userId4Audience, false)), JoinAccountError)
             }
           }.recover {

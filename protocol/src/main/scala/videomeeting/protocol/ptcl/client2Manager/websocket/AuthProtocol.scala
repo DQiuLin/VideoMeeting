@@ -173,6 +173,10 @@ object AuthProtocol {
 
   case class ApplyReq(userId: Int, meetingId: Int, clientType: Int) extends WsMsgAudience
 
+  case class ApplyRsp(errCode: Int = 0, msg: String = "ok")
+  val ApplyAccountError = ApplyRsp(300101, "userId error")
+  val ApplyInternalError = ApplyRsp(300101, "internal error")
+
   /*
   点赞
    */

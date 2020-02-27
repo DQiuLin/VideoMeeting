@@ -50,14 +50,14 @@ class StartController(
     }
 
     //只能一个人发言
-    override def audienceAcceptance(userId: Long, accept: Boolean, newRequest: SpeakListInfo): Unit = {
+    override def audienceAcceptance(userId: Int, accept: Boolean, newRequest: SpeakListInfo): Unit = {
       if (!isSaying) {
         rmManager ! RmManager.AudienceAcceptance(userId, accept)
-        // startScene.audObservableList.remove(newRequest)
+        startScene.speakObservableList.remove(newRequest)
       } else {
         if (isSaying && !accept) {
-          rmManager ! RmManager.AudienceAcceptance(userId, accept)
-          //  startScene.audObservableList.remove(newRequest)
+//          rmManager ! RmManager.AudienceAcceptance(userId, accept)
+          startScene.speakObservableList.remove(newRequest)
         } else {
           Boot.addToPlatform {
             WarningDialog.initWarningDialog(s"无法让多人同时发言")
@@ -121,6 +121,11 @@ class StartController(
 //          startScene.updateAudienceList(msg.userId, msg.userName)
         }
 
+      case msg: AudienceApply =>
+        log.debug(s"Attendance-${msg.userName} send apply req.")
+        Boot.addToPlatform {
+          startScene.updateAudienceList(msg.userId, msg.userName)
+        }
 
 //      case msg: AudienceJoinRsp =>
 //        if (msg.errCode == 0) {

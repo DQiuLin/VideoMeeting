@@ -366,30 +366,30 @@ object MeetingActor {
             dispatchTo(List((meetingInfo.userId, false)), AudienceApply(userId4Audience, r.get.username, clientType))
           } else {
             log.debug(s"${ctx.self.path} 发言请求失败，用户id错误id=$userId4Audience in meetingId=$meetingId")
-            dispatchTo(List((userId4Audience, false)), JoinAccountError)
+            dispatchTo(List((userId4Audience, false)), ApplyAccountError)
           }
         }.recover {
           case e: Exception =>
             log.debug(s"${ctx.self.path} 发言请求失败，内部错误error=$e")
-            dispatchTo(List((userId4Audience, false)), JoinInternalError)
+            dispatchTo(List((userId4Audience, false)), ApplyInternalError)
         }
         Behaviors.same
 
 
-//      case JoinReq(userId4Audience, `meetingInfo`, clientType) =>
-//          UserInfoDao.searchById(userId4Audience).map { r =>
-//            if (r.nonEmpty) {
-//              dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
-//            } else {
-//              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$roomId")
-//              dispatchTo(List((userId4Audience, false)), JoinAccountError)
-//            }
-//          }.recover {
-//            case e: Exception =>
-//              log.debug(s"${ctx.self.path} 连线请求失败，内部错误error=$e")
-//              dispatchTo(List((userId4Audience, false)), JoinInternalError)
-//          }
-//        Behaviors.same
+      case JoinReq(userId4Audience, `meetingInfo`, clientType) =>
+          UserInfoDao.searchById(userId4Audience).map { r =>
+            if (r.nonEmpty) {
+              dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
+            } else {
+              log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$meetingId")
+              dispatchTo(List((userId4Audience, false)), JoinAccountError)
+            }
+          }.recover {
+            case e: Exception =>
+              log.debug(s"${ctx.self.path} 连线请求失败，内部错误error=$e")
+              dispatchTo(List((userId4Audience, false)), JoinInternalError)
+          }
+        Behaviors.same
 
       case AudienceShutJoin(`meetingInfo`, `userId`) =>
         log.debug(s"${ctx.self.path} the audience connection has been shut")

@@ -94,7 +94,7 @@ object StartScene {
 
     def stopLive()
 
-    def audienceAcceptance(userId: Long, accept: Boolean, newRequest: SpeakListInfo)
+    def audienceAcceptance(userId: Int, accept: Boolean, newRequest: SpeakListInfo)
 
     def shutJoin()
 
@@ -273,7 +273,7 @@ class StartScene(stage: Stage) {
     * 更新连线请求
     *
     **/
-  def updateAudienceList(audienceId: Long, audienceName: String): Unit = {
+  def updateAudienceList(audienceId: Int, audienceName: String): Unit = {
     if (!tb2.isSelected) {
       tb2.setGraphic(applyIcon1)
     }

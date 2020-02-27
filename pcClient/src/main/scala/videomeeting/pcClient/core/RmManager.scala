@@ -128,7 +128,7 @@ object RmManager {
 
   final case class ChangeOption(bit: Option[Int], re: Option[String], frameRate: Option[Int], needImage: Boolean = true, needSound: Boolean = true, recordOrNot: Boolean = false) extends RmCommand
 
-  final case class AudienceAcceptance(userId: Long, accept: Boolean) extends RmCommand
+  final case class AudienceAcceptance(userId: Int, accept: Boolean) extends RmCommand
 
   final case class JoinBegin(audienceInfo: AttendenceInfo) extends RmCommand //开始和某观众连线
 
@@ -605,6 +605,7 @@ object RmManager {
           //          log.debug(s"accept join user-${msg.userId} join.")
           //          assert(roomInfo.nonEmpty)
           //          sender.foreach(_ ! JoinAccept(roomInfo.get.roomId, msg.userId, ClientType.PC, msg.accept))
+          ctx.self ! ChangeSpeaker(msg.userId)
           Behaviors.same
 
         case msg: JoinBegin =>

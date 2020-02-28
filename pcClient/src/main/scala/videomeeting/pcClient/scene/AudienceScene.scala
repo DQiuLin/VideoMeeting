@@ -23,7 +23,6 @@ import videomeeting.pcClient.common.Constants.AudienceStatus
 import videomeeting.pcClient.component._
 import videomeeting.pcClient.core.RmManager
 import videomeeting.pcClient.core.stream.StreamPuller.{BandWidthInfo, PackageLossInfo}
-import videomeeting.pcClient.utils.{NetUsage, TimeUtil}
 import videomeeting.protocol.ptcl.CommonInfo.{MeetingInfo, RecordInfo, UserDes}
 import videomeeting.protocol.ptcl.client2Manager.websocket.AuthProtocol.Comment
 import org.slf4j.LoggerFactory
@@ -440,23 +439,23 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
     group.getChildren.add(fullScreenImage)
   }
 
-  def drawPackageLoss(info: mutable.Map[String, PackageLossInfo], bandInfo: Map[String, BandWidthInfo]): Unit = {
-    ctx.save()
-    //    println(s"draw loss, ${ctx.getCanvas.getWidth}, ${ctx.getCanvas.getHeight}")
-    ctx.setFont(new Font("Comic Sans Ms", 20))
-    ctx.setFill(Color.WHITE)
-    val loss: Double = if (info.values.headOption.nonEmpty) info.values.head.lossScale2 else 0
-    val band: Double = if (bandInfo.values.headOption.nonEmpty) bandInfo.values.head.bandWidth2s else 0
-    val  CPUMemInfo= NetUsage.getCPUMemInfo
-    ctx.clearRect(0, 0, ctx.getCanvas.getWidth, ctx.getCanvas.getHeight)
-    CPUMemInfo.foreach { i =>
-      val (memPer, memByte, proName) = (i.memPer, i.memByte, i.proName)
-      ctx.fillText(f"内存占比：$memPer%.2f" + " % " + f"内存：$memByte" , statisticsCanvas.getWidth - 210, 15)
-    }
-    ctx.fillText(f"丢包率：$loss%.3f" + " %  " + f"带宽：$band%.2f" + " bit/s", 0, 15)
-    //    info.values.headOption.foreach(i => ctx.fillText(f"丢包率：${i.lossScale2}%.2f" + " %", Constants.DefaultPlayer.width / 5 * 4, 20))
-    ctx.restore()
-  }
+//  def drawPackageLoss(info: mutable.Map[String, PackageLossInfo], bandInfo: Map[String, BandWidthInfo]): Unit = {
+//    ctx.save()
+//    //    println(s"draw loss, ${ctx.getCanvas.getWidth}, ${ctx.getCanvas.getHeight}")
+//    ctx.setFont(new Font("Comic Sans Ms", 20))
+//    ctx.setFill(Color.WHITE)
+//    val loss: Double = if (info.values.headOption.nonEmpty) info.values.head.lossScale2 else 0
+//    val band: Double = if (bandInfo.values.headOption.nonEmpty) bandInfo.values.head.bandWidth2s else 0
+//    val  CPUMemInfo= NetUsage.getCPUMemInfo
+//    ctx.clearRect(0, 0, ctx.getCanvas.getWidth, ctx.getCanvas.getHeight)
+//    CPUMemInfo.foreach { i =>
+//      val (memPer, memByte, proName) = (i.memPer, i.memByte, i.proName)
+//      ctx.fillText(f"内存占比：$memPer%.2f" + " % " + f"内存：$memByte" , statisticsCanvas.getWidth - 210, 15)
+//    }
+//    ctx.fillText(f"丢包率：$loss%.3f" + " %  " + f"带宽：$band%.2f" + " bit/s", 0, 15)
+//    //    info.values.headOption.foreach(i => ctx.fillText(f"丢包率：${i.lossScale2}%.2f" + " %", Constants.DefaultPlayer.width / 5 * 4, 20))
+//    ctx.restore()
+//  }
 
 
 

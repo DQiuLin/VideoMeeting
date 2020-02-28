@@ -304,9 +304,11 @@
 
 .web-first-item button {
     display: block;
-    border-radius: 8px;
+    width: 150px;
+    height: 80px;
+    border-radius: 10px;
     border: 1px solid #99cccc;
-    background: linear-gradient(180deg, #ccffcc -100%, #ffffcc 100%);
+    background: linear-gradient(180deg, #ccffcc -50%, #ffffcc 100%);
     cursor: pointer;
 
     font-size: 28px;

@@ -35,7 +35,7 @@ object Dependencies4PcClient {
   val asynchttpclient = "org.asynchttpclient" % "async-http-client" % "2.0.32"
   val byteobject = "org.seekloud" %% "byteobject" % "0.1.1"
   //  val sigar =  "org.fusesource" % "sigar" % "1.6.4"
-  val oshi = "com.github.oshi" % "oshi-core" % "4.0.0"
+//  val oshi = "com.github.oshi" % "oshi-core" % "4.0.0"
 
 
   val pcClientDependencies: Seq[ModuleID] =
@@ -45,7 +45,7 @@ object Dependencies4PcClient {
       asynchttpclient,
       byteobject,
       //      sigar,
-      oshi
+//      oshi
     )
 
 

@@ -376,7 +376,7 @@ object MeetingActor {
         Behaviors.same
 
 
-      case JoinReq(userId4Audience, `meetingInfo`.meetingId, clientType) =>
+      case JoinReq(userId4Audience, `meetingId`, clientType) =>
           UserInfoDao.searchById(userId4Audience).map { r =>
             if (r.nonEmpty) {
               dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
@@ -391,7 +391,7 @@ object MeetingActor {
           }
         Behaviors.same
 
-      case AudienceShutJoin(`meetingInfo`.meetingId, `userId`) =>
+      case AudienceShutJoin(`meetingId`, `userId`) =>
         log.debug(s"${ctx.self.path} the audience connection has been shut")
         //TODO 目前是某个观众退出则关闭会议，应该修改为不关闭整个会议
         liveInfoMap.clear()

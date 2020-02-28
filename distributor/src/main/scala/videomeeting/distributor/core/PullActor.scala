@@ -102,7 +102,7 @@ object PullActor {
             pullChannel.socket().bind(new InetSocketAddress("0.0.0.0", 41660))
             work()
           }else {
-            val pullStreamDst = new InetSocketAddress(rtpToHost, 61041)
+            val pullStreamDst = new InetSocketAddress(rtpToHost, 42021)
             val host = "0.0.0.0"
             val port = getRandomPort
             val client = new PullStreamClient(host, port, pullStreamDst, ctx.self, rtpServerDst)

@@ -58,7 +58,7 @@ object RoomManager {
         case msg:NewConnection =>
           log.info(s"${ctx.self} receive a msg${msg}")
           val roomActor = getRoomActor(ctx, msg.roomId, msg.host, msg.client, msg.pushLiveId, msg.pushLiveCode, msg.startTime) //fixme 参数更改
-          roomActor ! RoomActor.NewRoom(msg.roomId, msg.host, msg.client, msg.pushLiveId, msg.pushLiveCode, msg.startTime)
+          roomActor ! RoomActor.NewRoom(msg.roomId, msg.client, msg.pushLiveId, msg.pushLiveCode, 0)
           roomInfoMap.put(msg.roomId, roomActor)
           Behaviors.same
 
@@ -102,7 +102,7 @@ object RoomManager {
   def getRoomActor(ctx: ActorContext[Command], roomId:Long, host: String, client: List[String], pushLiveId: String,pushLiveCode: String,  startTIme:Long) = {
     val childName = s"roomActor_${roomId}_${host}"
     ctx.child(childName).getOrElse{
-      val actor = ctx.spawn(RoomActor.create(roomId, host, client, pushLiveId, pushLiveCode, startTIme), childName)
+      val actor = ctx.spawn(RoomActor.create(roomId, client, pushLiveId, pushLiveCode, startTIme), childName)
       ctx.watchWith(actor, ChildDead(roomId, childName, actor))
       actor
     }.unsafeUpcast[RoomActor.Command]

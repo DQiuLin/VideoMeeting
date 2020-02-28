@@ -66,13 +66,12 @@ trait UserService extends ServiceUtils {
         dealFutureResult {
           UserInfoDao.searchByName(data.userName).map {
             case Some(rst) =>
-              if (rst.password != SecureUtil.getSecurePassword(data.password, rst.created)) {
+              if (rst.password != SecureUtil.getSecurePassword(data.password, rst.createTime)) {
                 log.error(s"login error: wrong pw")
                 complete(WrongPwError)
               }
               else {
-                val token = SecureUtil.nonceStr(40)
-                val userInfo = UserInfo(rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, token, tokenExistTime)
+                val userInfo = UserInfo(rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, "", 0L)
                 val session = UserSession(rst.id.toString, rst.username, System.currentTimeMillis().toString).toSessionMap
                 addSession(session) {
                   log.info(s"${rst.id} login success")

@@ -14,7 +14,7 @@ object StreamUtil {
   val ffmpeg = Loader.load(classOf[org.bytedeco.ffmpeg.ffmpeg])
   val ffprobe = Loader.load(classOf[org.bytedeco.ffmpeg.ffprobe])
   val fileLocation = "/Users/angel/Downloads/test.mp4"
-  val streamLocation = "udp://127.0.0.1:41100"
+  val streamLocation = "udp://127.0.0.1:42022"
 
   val flag :AtomicBoolean = new AtomicBoolean(false)
   val logInfo = new StringBuilder()

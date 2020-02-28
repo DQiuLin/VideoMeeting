@@ -179,7 +179,7 @@ object MeetingManager {
 
         //延时请求获取录像
         case OnSeekRecord(meetingId, path) =>
-          MeetingDao.addRecord(meetingId, path, None)
+          MeetingDao.addRecord(meetingId, path)
           Behaviors.same
 
         case ChildDead(name,childRef) =>

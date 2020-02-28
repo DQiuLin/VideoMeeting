@@ -3,9 +3,9 @@ create table user_info (
   username          varchar(100)  not null,
   password          varchar(100)  not null,
   token             varchar(63)   not null default '',
-  token_create_time int        not null,
+  token_create_time bigint        not null,
   head_img          varchar(256) not null default '',
-  create_time       int        not null,
+  create_time       bigint        not null,
   rtmp_token        varchar(256) not null default ''
 );
 
@@ -13,7 +13,7 @@ create table meeting_info
 (
 	id serial primary key,
 	name varchar(63) not null,
-	time long not null,
+	time bigint not null,
 	info varchar(1023) not null,
 	creator int not null,
 	constraint meeting_info_fkey
@@ -47,7 +47,7 @@ create table meeting_comment
     mid int not null,
     author int not null,
     comment varchar(1023) not null,
-    comment_time long not null,
+    comment_time bigint not null,
     constraint meeting_comment
         foreign key (mid) references meeting_info(id) on update cascade on delete cascade,
         foreign key (author) references user_info(id) on update cascade on delete cascade

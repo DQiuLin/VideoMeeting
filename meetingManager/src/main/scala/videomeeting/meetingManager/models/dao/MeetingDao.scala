@@ -49,8 +49,8 @@ object MeetingDao {
     db.run(tUserMeeting += rUserMeeting(1, mid, uid, audience))
   }
 
-  def addRecord(mid: Int, videoPath: String, recordPath: Option[String]) = {
-    db.run(tMeetingRecord += rMeetingRecord(1, mid, videoPath, recordPath))
+  def addRecord(mid: Int, videoPath: String) = {
+    db.run(tMeetingRecord += rMeetingRecord(1, mid, videoPath))
   }
 
   def addComment(mid: Int, author: Int, comment: String, time: Long) = {

@@ -1,4 +1,4 @@
-package videomeeting.processor.utils
+package videomeeting.distributor.utils
 
 import com.zaxxer.hikari.HikariDataSource
 import videomeeting.distributor.common.AppSettings._
@@ -17,7 +17,7 @@ object DBUtil {
 
   private def createDataSource() = {
 
-    val dataSource = new org.h2.jdbcx.JdbcDataSource()
+    val dataSource = new org.postgresql.ds.PGSimpleDataSource()
     dataSource.setUrl(slickUrl)
     dataSource.setUser(slickUser)
     dataSource.setPassword(slickPassword)

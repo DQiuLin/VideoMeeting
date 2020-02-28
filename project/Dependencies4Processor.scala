@@ -50,7 +50,7 @@ object Dependencies4Processor {
   val ehcache = "net.sf.ehcache" % "ehcache" % "2.10.6"
   val byteobject = "org.seekloud" %% "byteobject" % "0.1.1"
   val mail = "com.sun.mail" % "javax.mail" % "1.5.3"
-  val oshi = "com.github.oshi" % "oshi-core" % "4.0.0"
+//  val oshi = "com.github.oshi" % "oshi-core" % "4.0.0"
 
   val backendDependencies =
     Dependencies4Processor.akkaSeq ++
@@ -77,7 +77,7 @@ object Dependencies4Processor {
 
   // Platform classifier for native library dependencies
   //val platform = org.bytedeco.javacpp.Loader.getPlatform
-  private val platforms = IndexedSeq("windows-x86_64", "linux-x86_64", "macosx-x86_64")
+  private val platforms = IndexedSeq("windows-x86_64", "macosx-x86_64")
 
   // Libraries with native dependencies
   private val bytedecoPresetLibs = Seq(

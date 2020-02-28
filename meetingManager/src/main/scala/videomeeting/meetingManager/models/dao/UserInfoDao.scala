@@ -41,7 +41,7 @@ object UserInfoDao {
   def getUserInfo(users: List[Int]) = {
     Future.sequence(users.map{uid =>
       db.run(tUserInfo.filter(t => t.id === uid).result)}).map(_.flatten).map{user =>
-        user.map(r => UserInfo(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg)).toList
+        user.map(r => UserInfo(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg,"",-1L)).toList
     }
   }
 

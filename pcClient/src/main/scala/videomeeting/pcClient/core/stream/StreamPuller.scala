@@ -184,8 +184,8 @@ object StreamPuller {
             }
 
             val bandInfo = p.getBandWidth().map(i => i._1 -> BandWidthInfo(i._2.bandWidth60s, i._2.bandWidth10s, i._2.bandWidth2s))
-            audienceScene.foreach(_.drawPackageLoss(info, bandInfo))
-            hostScene.foreach(_.drawPackageLoss(info, bandInfo))
+//            audienceScene.foreach(_.drawPackageLoss(info, bandInfo))
+//            hostScene.foreach(_.drawPackageLoss(info, bandInfo))
           }
           Behaviors.same
 
@@ -264,8 +264,8 @@ object StreamPuller {
         case GetLossAndBand =>
           val info = pullClient.getPackageLoss().map(i => i._1 -> PackageLossInfo(i._2.lossScale60, i._2.lossScale10, i._2.lossScale2))
           val bandInfo = pullClient.getBandWidth().map(i => i._1 -> BandWidthInfo(i._2.bandWidth60s, i._2.bandWidth10s, i._2.bandWidth2s))
-          audienceScene.foreach(_.drawPackageLoss(info, bandInfo))
-          hostScene.foreach(_.drawPackageLoss(info, bandInfo))
+//          audienceScene.foreach(_.drawPackageLoss(info, bandInfo))
+//          hostScene.foreach(_.drawPackageLoss(info, bandInfo))
           Behaviors.same
 
         case StopPull =>

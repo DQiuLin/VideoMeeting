@@ -39,9 +39,10 @@ object UserInfoDao {
   }
 
   def getUserInfo(users: List[Int]) = {
+    val tokenExistTime = AppSettings.tokenExistTime * 1000L
     Future.sequence(users.map{uid =>
       db.run(tUserInfo.filter(t => t.id === uid).result)}).map(_.flatten).map{user =>
-        user.map(r => UserInfo(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg, "", 0L)).toList
+        user.map(r => UserInfo(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg, r.token, tokenExistTime)).toList
     }
   }
 

@@ -279,6 +279,13 @@
 }
 
 /*----------homePage----------*/
+.web-bg {
+    background: url("/videomeeting/meetingManager/static/img/webHomeBg.jpg");
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+}
+
 .web-first {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -297,8 +304,12 @@
 
 .web-first-item button {
     display: block;
-    border: transparent;
-    background: transparent;
+    border-radius: 8px;
+    border: 1px solid #99cccc;
+    background: linear-gradient(180deg, #ccffcc -100%, #ffffcc 100%);
     cursor: pointer;
+
     font-size: 28px;
+    font-family: PingFangSC-Regular, PingFang SC;
+    color: #006699;
 }

@@ -57,7 +57,7 @@
 }
 .pop-input:focus{
     outline: none;
-    box-shadow: 0 0 5px #e17d25;
+    box-shadow: 0 0 5px rgba(78, 125, 252, 1);
 }
 .pop-tip{
     font-size: 15px;
@@ -76,7 +76,7 @@
     padding: 5px 5px;
     text-align:center;
     color: #eaeaea;
-    background-color: #ff7700;
+    background-color: rgba(78, 125, 252, 1);
     border: 0px solid gray;
     border-radius: 10px;
     cursor: pointer;
@@ -119,7 +119,7 @@
     z-index: -1;
     display: flex;
     justify-content: space-around;
-    background: linear-gradient(rgba(239,125,65,.45), #f2f3f5);
+    background: linear-gradient(rgba(26,92,239,.45), #f2f3f5);
 }
 
 /*礼物栏样式*/
@@ -132,7 +132,7 @@
     align-items: center;
 }
 .bottom-like{
-    background-image: url("/theia/static/img/gifts/no-like.png");
+    background-image: url("/videomeeting/static/img/gifts/no-like.png");
     background-size: 36px 36px;
     background-repeat: no-repeat;
     background-position: center;
@@ -142,7 +142,7 @@
     transition: transform 1s;
 }
 #bottom-like-button:checked + .bottom-like{
-    background-image: url("/theia/static/img/gifts/like.png");
+    background-image: url("/videomeeting/static/img/gifts/like.png");
     transform: scale(1.2);
 }
 .bottom-gifts{
@@ -245,19 +245,19 @@
     border-radius: 6px;
 }
 .number1:checked + .gift-number-check{
-    border: 1px solid #ff921a;
-    color: #ff921a;
-    background-color: rgba(256,92,26,0.1);
+    border: 1px solid rgba(78, 125, 252, 1);
+    color: rgba(78, 125, 252, 1);
+    background-color: rgba(26,92,239,0.1);
 }
 .number10:checked + .gift-number-check{
-    border: 1px solid #ff921a;
-    color: #ff921a;
-    background-color: rgba(256,92,26,0.1);
+    border: 1px solid rgba(78, 125, 252, 1);
+    color: rgba(78, 125, 252, 1);
+    background-color: rgba(26,92,239,0.1);
 }
 .number100:checked + .gift-number-check{
-    border: 1px solid #ff921a;
-    color: #ff921a;
-    background-color: rgba(256,92,26,0.1);
+    border: 1px solid rgba(78, 125, 252, 1);
+    color: rgba(78, 125, 252, 1);
+    background-color: rgba(26,92,239,0.1);
 }
 .gift-number-input{
     width: 40px;
@@ -267,7 +267,7 @@
     padding: 8px 15px;
     text-align:center;
     color: #eaeaea;
-    background-color: #ff7700;
+    background-color: rgba(78, 125, 252, 1);
     border: 0px solid gray;
     border-radius: 8px;
     cursor: pointer;
@@ -289,14 +289,14 @@
 .attention-button-close{
     width: 25px;
     height: 25px;
-    background-image: url("/theia/roomManager/static/img/gifts/no-like.png");
+    background-image: url("/videomeeting/meetingManager/static/img/gifts/no-like.png");
     background-size: cover;
     cursor: pointer;
 }
 .attention-button-open{
     width: 25px;
     height: 25px;
-    background-image: url("/theia/roomManager/static/img/gifts/like.png");
+    background-image: url("/videomeeting/meetingManager/static/img/gifts/like.png");
     background-size: cover;
     cursor: pointer;
 }

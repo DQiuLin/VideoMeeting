@@ -125,7 +125,7 @@ body{
 
 .anchor{
     margin-right: 20px;
-    background: #f29a38;
+    background: rgba(78, 125, 252, 1);
     color: white;
     text-align: center;
     padding: 5px 10px;
@@ -141,11 +141,11 @@ body{
 }
 .closeAnchor{
     margin-left: 20px;
-    color: #f29a38;
+    color: rgba(78, 125, 252, 1);
     background: white;
     text-align: center;
     margin-right: 20px;
-    border: solid 1px #f29a38;
+    border: solid 1px rgba(78, 125, 252, 1);
     font-size: 16px;
     padding: 5px 10px;
     border-radius: 3px;
@@ -242,7 +242,7 @@ body{
 }
 .chatsend .s-commment{
     flex-grow: 1;
-    border: 1px solid #ff921a;
+    border: 1px solid rgba(78, 125, 252, 1);
     background:#fff;
     font-size:12px;
     padding:5px 13px;
@@ -261,7 +261,7 @@ body{
     font-size:14px;
     text-align:center;
     cursor:pointer;
-    background: #f70;
+    background: rgba(78, 125, 252, 1);
 }
 
 .chatToolBar .ctb-vip{
@@ -407,7 +407,7 @@ body{
     margin-left: 10px;
 }
 .noallowC{
-    background: #ef7d41;
+    background: rgba(78, 125, 252, 1);
     border-radius: 5px;
     color: white;
     padding: 5px 10px;
@@ -927,7 +927,7 @@ ul,li{
     height: 40px;
     line-height: 40px;
     color: white;
-    background: linear-gradient(to right, #ff8402 , #ffb62e);
+    background: linear-gradient(to right, rgba(78, 125, 252, 1) , rgba(78, 100, 252, 1));
     border-radius: 18px;
     margin-right: 20px;
     margin-left: 40px;
@@ -998,7 +998,7 @@ ul,li{
 }
 .header-login{
     width: 60px;
-    background: #ef7d41;
+    background: rgba(78, 125, 252, 1);
     height: 65px;
     color: white;
     text-align: center;
@@ -1492,7 +1492,7 @@ ul#bp-3-element {
 }
 .header-adminLogin{
     width: 100px;
-    border:1px solid #ef7d41;
+    border:1px solid rgba(78, 125, 252, 1);
     height: 65px;
     color: rgba(0,0,0,.5);
     text-align: center;

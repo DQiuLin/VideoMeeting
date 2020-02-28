@@ -20,9 +20,9 @@ object UserInfoDao {
     if(headImg == "")DefaultImg.headImg else headImg
   }
 
-  def addUser(name:String, pw:String, timeStamp:Long) = {
+  def addUser(name:String, pw:String, token:String, timeStamp:Long, rtmpToken:String) = {
     val password = SecureUtil.getSecurePassword(pw, timeStamp)
-    db.run(tUserInfo += rUserInfo(1, name, password, timeStamp, Common.DefaultImg.headImg))
+    db.run(tUserInfo += rUserInfo(1, name, password, token, timeStamp, Common.DefaultImg.headImg, timeStamp, rtmpToken))
   }
 
   def modifyImg4User(userId: Int, fileName: String) = {
@@ -41,7 +41,7 @@ object UserInfoDao {
   def getUserInfo(users: List[Int]) = {
     Future.sequence(users.map{uid =>
       db.run(tUserInfo.filter(t => t.id === uid).result)}).map(_.flatten).map{user =>
-        user.map(r => UserInfo(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg)).toList
+        user.map(r => UserInfo(r.id, r.username,if(r.headImg == "") Common.DefaultImg.headImg else r.headImg, "", 0L)).toList
     }
   }
 

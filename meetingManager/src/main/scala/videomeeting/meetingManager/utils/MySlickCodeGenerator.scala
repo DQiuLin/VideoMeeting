@@ -15,13 +15,13 @@ object MySlickCodeGenerator {
 
   import concurrent.ExecutionContext.Implicits.global
 
-  val slickProfile = "slick.jdbc.H2Profile"
-  val jdbcDriver = "org.h2.Driver"
-  val url = "jdbc:h2:file:./meetingManager/src/main/resources/meeting"
+  val slickProfile = "slick.jdbc.PostgresProfile"
+  val jdbcDriver = "org.postgresql.Driver"
+  val url = "jdbc:postgresql://47.92.170.2:5432/teamdzz"
   val outputFolder = "target/gencode/genTablesPsql"
   val pkg = "videomeeting.models"
-  val user = "sa"
-  val password = "sa"
+  val user = "teamdzz"
+  val password = "duanzhangzhang123!@#"
 
 
   //val dbDriver = MySQLDriver

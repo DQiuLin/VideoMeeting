@@ -16,7 +16,7 @@ import videomeeting.protocol.ptcl.{CommonRsp, Response}
 import videomeeting.meetingManager.core.RegisterActor.RegisterReq
 import videomeeting.meetingManager.core.MeetingManager
 import videomeeting.meetingManager.models.dao.{MeetingDao, UserInfoDao}
-import videomeeting.protocol.ptcl.CommonInfo.{MeetInfo, PeopleInfo, User}
+import videomeeting.protocol.ptcl.CommonInfo.{MeetInfo, PeopleInfo, User, UserInfo}
 import videomeeting.meetingManager.common.{AppSettings, Common}
 import videomeeting.meetingManager.core.MeetingManager.{GetMeetingList, UserInfoChange}
 import videomeeting.meetingManager.http.SessionBase.UserSession
@@ -66,12 +66,12 @@ trait UserService extends ServiceUtils {
         dealFutureResult {
           UserInfoDao.searchByName(data.userName).map {
             case Some(rst) =>
-              if (rst.password != SecureUtil.getSecurePassword(data.password, rst.created)) {
+              if (rst.password != SecureUtil.getSecurePassword(data.password, rst.createTime)) {
                 log.error(s"login error: wrong pw")
                 complete(WrongPwError)
               }
               else {
-                val userInfo = User(rst.id, rst.username, rst.password, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg)
+                val userInfo = UserInfo(rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, "", 0L)
                 val session = UserSession(rst.id.toString, rst.username, System.currentTimeMillis().toString).toSessionMap
                 addSession(session) {
                   log.info(s"${rst.id} login success")
@@ -84,7 +84,7 @@ trait UserService extends ServiceUtils {
           }
         }
       case Left(error) =>
-        complete(SignInRsp(None, 200002, s"error :${error}"))
+        complete(SignInRsp(None, None, 200002, s"error :${error}"))
     }
   }
 

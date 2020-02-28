@@ -3,7 +3,7 @@ create table user_info (
   username          varchar(100)  not null,
   password          varchar(100)  not null,
   token             varchar(63)   not null default '',
-  token_create_time int        not null,
+  token_create_time bigint        not null,
   head_img          varchar(256) not null default '',
   create_time       bigint        not null,
   rtmp_token        varchar(256) not null default ''

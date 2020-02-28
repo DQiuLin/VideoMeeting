@@ -68,7 +68,8 @@ object RegisterActor {
       msg match {
         case m: RegisterReq =>
           val timestamp = System.currentTimeMillis()
-          UserInfoDao.addUser(m.userName, m.password, timestamp).onComplete {
+          val token = SecureUtil.nonceStr(40)
+          UserInfoDao.addUser(m.userName, m.password, token, timestamp, SecureUtil.nonceStr(40)).onComplete {
             case Success(id) =>
               println("add user success")
               m.replyTo ! SignUpRsp()

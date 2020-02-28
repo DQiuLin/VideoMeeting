@@ -39,7 +39,7 @@ class FindController (
   def refreshList = {
     Boot.addToPlatform {
       showLoading()
-      updateRoomList()
+//      updateRoomList()
     }
   }
 
@@ -92,7 +92,7 @@ class FindController (
 
   def showScene(): Unit = {
     Boot.addToPlatform {
-      updateRoomList()
+//      updateRoomList()
       context.switchScene(findScene.getScene, title = "会议室online")
     }
   }

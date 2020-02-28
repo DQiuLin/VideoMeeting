@@ -215,7 +215,7 @@ class HomeController(
     r.map {
       case Right(rsp) =>
         if (rsp.errCode == 0) {
-          rmManager ! RmManager.SignInSuccess(rsp.userInfo.get, rsp.roomInfo.get)
+          rmManager ! RmManager.SignInSuccess(rsp.userInfo, rsp.roomInfo)
           //          RmManager.userInfo = rsp.userInfo
           //          RmManager.roomInfo = rsp.roomInfo
           if (isToLive) {
@@ -231,7 +231,7 @@ class HomeController(
             }
           }
           deleteLoginTemp()
-          createLoginTemp(userInfo.get._2, rsp.userInfo.get, rsp.roomInfo.get)
+          createLoginTemp(userInfo.get._2, rsp.userInfo.get, rsp.roomInfo)
         } else {
           log.error(s"sign in error: ${rsp.msg}")
           Boot.addToPlatform {
@@ -256,7 +256,7 @@ class HomeController(
     showLoading()
     val dir = Constants.loginInfoCache
     val files = dir.list.toList
-    val prefix = "theia".r
+    val prefix = "videomeeeting".r
     val suffix = "cacheLogin".r
     var fileName = ""
     files.foreach { r =>
@@ -264,7 +264,7 @@ class HomeController(
     }
 
     if (fileName == "") {
-      log.debug(s"no theia login temp")
+      log.debug(s"no videomeeting login temp")
       removeLoading()
     } else {
       log.debug(s"login by cache.")
@@ -311,7 +311,7 @@ class HomeController(
 
       } else {
         log.debug(s"login.")
-        rmManager ! RmManager.SignInSuccess(userInfo.get, roomInfo.get, getTokenTime)
+        rmManager ! RmManager.SignInSuccess(userInfo, roomInfo, getTokenTime)
         RmManager.userInfo = userInfo
         RmManager.roomInfo = roomInfo
         removeLoading()
@@ -352,9 +352,9 @@ class HomeController(
       RMClient.signIn(userName.getOrElse(""), password.getOrElse("")).map {
         case Right(rsp) =>
           if (rsp.errCode == 0) {
-            rmManager ! RmManager.SignInSuccess(rsp.userInfo.get, rsp.roomInfo.get)
+            rmManager ! RmManager.SignInSuccess(rsp.userInfo, rsp.roomInfo)
             deleteLoginTemp()
-            createLoginTemp(password.getOrElse(""), rsp.userInfo.get, rsp.roomInfo.get)
+            createLoginTemp(password.getOrElse(""), rsp.userInfo.get, rsp.roomInfo)
           } else {
             log.error(s"sign in error: ${rsp.msg}")
             Boot.addToPlatform {
@@ -426,10 +426,10 @@ class HomeController(
   /**
     * 创建theia登录临时文件
     */
-  def createLoginTemp(password: String, userInfo: UserInfo, roomInfo: MeetingInfo): Unit = {
+  def createLoginTemp(password: String, userInfo: UserInfo, roomInfo: Option[MeetingInfo]): Unit = {
 
     val file = Constants.loginInfoCache
-    val temp = File.createTempFile("theia", "cacheLogin", file) //为临时文件名称添加前缀和后缀
+    val temp = File.createTempFile("videomeeting", "cacheLogin", file) //为临时文件名称添加前缀和后缀
     if (temp.exists() && temp.canWrite) {
       val bufferedWriter = new BufferedWriter(new FileWriter(temp))
       bufferedWriter.write(s"passWord:${jdkAESEncode(password)}\n")
@@ -438,14 +438,14 @@ class HomeController(
       bufferedWriter.write(s"headImgUrl:${userInfo.headImgUrl}\n")
       bufferedWriter.write(s"token:${userInfo.token}\n")
       bufferedWriter.write(s"tokenExistTime:${userInfo.tokenExistTime}\n")
-      bufferedWriter.write(s"roomId:${roomInfo.meetingId}\n")
-      bufferedWriter.write(s"roomName:${roomInfo.meetingName}\n")
-      bufferedWriter.write(s"roomDes:${roomInfo.roomDes}\n")
+//      bufferedWriter.write(s"roomId:${roomInfo.meetingId}\n")
+//      bufferedWriter.write(s"roomName:${roomInfo.meetingName}\n")
+//      bufferedWriter.write(s"roomDes:${roomInfo.roomDes}\n")
       //      bufferedWriter.write(s"coverImgUrl:${roomInfo.coverImgUrl}\n")
       bufferedWriter.write(s"getTokenTime:${System.currentTimeMillis()}\n")
       bufferedWriter.close()
     }
-    log.debug(s"create theia temp: $temp")
+    log.debug(s"create videomeeting temp: $temp")
   }
 
   /**

@@ -76,9 +76,9 @@ lazy val webClient = (project in file("webClient"))
       ).map(f => (crossTarget in f) ~= (_ / "sjsout"))
     ))
   .settings(skip in packageJSDependencies := false)
-  .settings(
-    packJvmOpts := Map("webClient" -> Seq("-Xmx64m", "-Xms32m")),
-  )
+//  .settings(
+//    packJvmOpts := Map("webClient" -> Seq("-Xmx64m", "-Xms32m")),
+//  )
   .settings(
     scalaJSUseMainModuleInitializer := true,
     //mainClass := Some("com.neo.sk.virgour.front.Main"),
@@ -137,48 +137,48 @@ lazy val meetingManager = (project in file("meetingManager")).enablePlugins(Pack
   .settings(scalaJSUseMainModuleInitializer := false)
   .dependsOn(protocolJvm)
 
-val tmpMain = "videomeeting.tmp.Boot"
-lazy val tmp = (project in file("tmp")).enablePlugins(PackPlugin)
-  .settings(commonSettings: _*)
-  .settings(
-    mainClass in reStart := Some(meetingManagerMain),
-    javaOptions in reStart += "-Xmx2g"
-  )
-  .settings(name := "tmp")
-  .settings(
-    //pack
-    // If you need to specify main classes manually, use packSettings and packMain
-    //packSettings,
-    // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
-    packMain := Map("tmp" -> meetingManagerMain),
-    packJvmOpts := Map("tmp" -> Seq("-Xmx64m", "-Xms32m")),
-    packExtraClasspath := Map("tmp" -> Seq("."))
-  )
-  .settings(
-    libraryDependencies ++= Dependencies.backendDependencies
-  )
-  .settings {
-    (resourceGenerators in Compile) += Def.task {
-      val fastJsOut = (fastOptJS in Compile in webClient).value.data
-      val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
-      Seq(
-        fastJsOut,
-        fastJsSourceMap
-      )
-    }.taskValue
-  }
-  .settings((resourceGenerators in Compile) += Def.task {
-    Seq(
-      (packageJSDependencies in Compile in webClient).value
-      //(packageMinifiedJSDependencies in Compile in frontend).value
-    )
-  }.taskValue)
-  .settings(
-    (resourceDirectories in Compile) += (crossTarget in webClient).value,
-    watchSources ++= (watchSources in webClient).value
-  )
-  .settings(scalaJSUseMainModuleInitializer := false)
-  .dependsOn(protocolJvm)
+//val tmpMain = "videomeeting.tmp.Boot"
+//lazy val tmp = (project in file("tmp")).enablePlugins(PackPlugin)
+//  .settings(commonSettings: _*)
+//  .settings(
+//    mainClass in reStart := Some(meetingManagerMain),
+//    javaOptions in reStart += "-Xmx2g"
+//  )
+//  .settings(name := "tmp")
+//  .settings(
+//    //pack
+//    // If you need to specify main classes manually, use packSettings and packMain
+//    //packSettings,
+//    // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
+//    packMain := Map("tmp" -> meetingManagerMain),
+//    packJvmOpts := Map("tmp" -> Seq("-Xmx64m", "-Xms32m")),
+//    packExtraClasspath := Map("tmp" -> Seq("."))
+//  )
+//  .settings(
+//    libraryDependencies ++= Dependencies.backendDependencies
+//  )
+//  .settings {
+//    (resourceGenerators in Compile) += Def.task {
+//      val fastJsOut = (fastOptJS in Compile in webClient).value.data
+//      val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
+//      Seq(
+//        fastJsOut,
+//        fastJsSourceMap
+//      )
+//    }.taskValue
+//  }
+//  .settings((resourceGenerators in Compile) += Def.task {
+//    Seq(
+//      (packageJSDependencies in Compile in webClient).value
+//      //(packageMinifiedJSDependencies in Compile in frontend).value
+//    )
+//  }.taskValue)
+//  .settings(
+//    (resourceDirectories in Compile) += (crossTarget in webClient).value,
+//    watchSources ++= (watchSources in webClient).value
+//  )
+//  .settings(scalaJSUseMainModuleInitializer := false)
+//  .dependsOn(protocolJvm)
 
 val pcClientMain = "videomeeting.pcClient.Boot"
 lazy val pcClient = (project in file("pcClient")).enablePlugins(PackPlugin)

@@ -38,7 +38,7 @@ trait FileService extends ServiceUtils{
   private val log = LoggerFactory.getLogger(this.getClass)
 
   private def storeFile(source: Source[ByteString, Any]): Directive1[java.io.File] = {
-    val dest = java.io.File.createTempFile("theia", ".tmp")
+    val dest = java.io.File.createTempFile("videomeeting", ".tmp")
     val file = source.runWith(FileIO.toPath(dest.toPath)).map(_ => dest)
     onComplete[java.io.File](file).flatMap {
       case Success(f) =>

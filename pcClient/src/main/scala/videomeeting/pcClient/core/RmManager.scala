@@ -65,7 +65,7 @@ object RmManager {
 
   final case class GetHomeItems(homeScene: HomeScene, homeController: HomeController) extends RmCommand
 
-  final case class SignInSuccess(userInfo: UserInfo, roomInfo: MeetingInfo, getTokenTime: Option[Long] = None) extends RmCommand
+  final case class SignInSuccess(userInfo: Option[UserInfo], roomInfo: Option[MeetingInfo], getTokenTime: Option[Long] = None) extends RmCommand
 
   final case object GoToLive extends RmCommand
 
@@ -233,12 +233,12 @@ object RmManager {
           idle(stageCtx, liveManager, mediaPlayer, Some(msg.homeController), roomController)
 
         case msg: SignInSuccess =>
-          userInfo = Some(msg.userInfo)
-          roomInfo = Some(msg.roomInfo)
+          userInfo = msg.userInfo
+          roomInfo = msg.roomInfo
           //          token维护（缓存登录时）
           if (msg.getTokenTime.nonEmpty) {
             val getTokenTime = msg.getTokenTime.get
-            val tokenExistTime = msg.userInfo.tokenExistTime
+            val tokenExistTime = msg.userInfo.get.tokenExistTime
             if (System.currentTimeMillis() - getTokenTime > tokenExistTime * 0.8) {
               homeController.get.updateCache()
             }
@@ -467,7 +467,7 @@ object RmManager {
       msg match {
         case HostWsEstablish =>
           //与roomManager建立ws
-          assert(userInfo.nonEmpty && roomInfo.nonEmpty)
+          assert(userInfo.nonEmpty)
 
           def successFunc(): Unit = {
             //            hostScene.allowConnect()
@@ -1204,6 +1204,5 @@ object RmManager {
 
     }
   }
-
 
 }

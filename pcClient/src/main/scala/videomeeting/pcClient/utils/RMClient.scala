@@ -98,8 +98,8 @@ object RMClient extends HttpUtil {
 
   def getRoomInfo(userId: Int, token: String): Future[Either[Throwable, MeetingInfoRsp]] = {
 
-    val methodName = "getRoomInfo"
-    val url = Routes.getRoomInfo
+    val methodName = "getMeetingInfo"
+    val url = Routes.getMeetingInfo
 
     val data = GetMeetingInfoReq(userId, token).asJson.noSpaces
     postJsonRequestSend(methodName, url, Nil, data, needLogRsp = false).map {

@@ -547,8 +547,8 @@ class StartScene(stage: Stage) {
           //邀请参会人员
           if (emailArea.getText.nonEmpty) {
             if (RmManager.roomInfo.nonEmpty){
-              emailArea.setText("")
               listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString,emailArea.getText)
+              emailArea.setText("")
             }
             else
               Boot.addToPlatform(

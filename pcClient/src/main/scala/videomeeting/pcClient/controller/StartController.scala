@@ -202,6 +202,22 @@ class StartController(
       case msg: HostSetSpeaker =>
         rmManager ! RmManager.SpeakerChange(msg.userId)
 
+      case msg: ModifyRoomRsp =>
+        //若失败，信息改成之前的信息
+        if (msg.errCode == 0) {
+          Boot.addToPlatform {
+            WarningDialog.initWarningDialog("更改房间信息成功！")
+          }
+        } else {
+          log.debug(s"更改房间信息失败！原房间信息为：${startScene.roomInfoMap}")
+          Boot.addToPlatform {
+            val roomName = startScene.roomInfoMap(RmManager.roomInfo.get.meetingId).head
+            val roomDes = startScene.roomInfoMap(RmManager.roomInfo.get.meetingId)(1)
+            startScene.roomNameField.setText(roomName)
+            startScene.roomDesArea.setText(roomDes)
+          }
+        }
+
       case x =>
         log.warn(s"host recv unknown msg from rm: $x")
     }

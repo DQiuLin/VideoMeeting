@@ -177,9 +177,9 @@ class StartScene(stage: Stage) {
     * 左侧导航栏
     *
     **/
-  var roomNameField = new TextField(s"${RmManager.userInfo.get.userName}'s room")
+  var roomNameField = new TextField(s"${RmManager.roomInfo.get.meetingName}")
   roomNameField.setPrefWidth(width * 0.15)
-  var roomDesArea = new TextArea(s"${RmManager.userInfo.get.userId}")
+  var roomDesArea = new TextArea(s"${RmManager.roomInfo.get.roomDes}")
   roomDesArea.setPrefSize(width * 0.15, height * 0.1)
   var emailArea = new TextArea("")
   emailArea.setPrefSize(width * 0.15,height * 0.1)
@@ -489,10 +489,10 @@ class StartScene(stage: Stage) {
     }
 
     def createRoomInfoBox: VBox = {
-      val roomId = new Text(s"房间 ID：${RmManager.userInfo.get.userName}'s meeting")
+      val roomId = new Text(s"房间 ID：${RmManager.roomInfo.get.meetingId}")
       roomId.getStyleClass.add("hostScene-leftArea-text")
 
-      val userId = new Text(s"房主 ID：${RmManager.userInfo.get.userId}")
+      val userId = new Text(s"房主 ID：${RmManager.roomInfo.get.userId}")
       userId.getStyleClass.add("hostScene-leftArea-text")
 
       val roomNameText = new Text("房间名:")
@@ -546,7 +546,12 @@ class StartScene(stage: Stage) {
         _ =>
           //邀请参会人员
           if (emailText.getText.nonEmpty) {
-            listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString, emailText.getText)
+            if (RmManager.roomInfo.nonEmpty)
+              listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString, emailText.getText)
+            else
+              Boot.addToPlatform(
+                WarningDialog.initWarningDialog("请先修改房间信息")
+              )
           } else {
             Boot.addToPlatform(
               WarningDialog.initWarningDialog("输入不能为空")

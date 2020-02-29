@@ -95,8 +95,9 @@ trait UserService extends ServiceUtils {
   private val setupWebSocket = (path("setupWebSocket") & get) {
     parameter(
       'userId.as[Int],
+      'token.as[String],
       'meetingId.as[Int]
-    ) { (uid, meetingId) =>
+    ) { (uid, token, meetingId) =>
       val setWsFutureRsp: Future[Option[Flow[Message, Message, Any]]] = userManager ? (SetupWs(uid, meetingId, _))
       dealFutureResult(
         setWsFutureRsp.map {

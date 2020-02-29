@@ -8,11 +8,12 @@ import javafx.scene.effect.Glow
 import javafx.scene.image.ImageView
 import javafx.scene.input.MouseEvent
 import javafx.scene.text.Text
-import videomeeting.pcClient.common.Pictures
+import videomeeting.pcClient.common.{Constants, Pictures}
 import videomeeting.protocol.ptcl.CommonInfo
 import videomeeting.protocol.ptcl.CommonInfo.{UserDes, UserInfo}
 import videomeeting.pcClient.scene.StartScene.StartSceneListener
 import org.slf4j.LoggerFactory
+import videomeeting.pcClient.scene.StartScene
 
 
 /**
@@ -182,6 +183,9 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
   val watchingTable = new TableView[WatchingListInfo]()
   watchingTable.getStyleClass.add("table-view")
 
+  private val width = Constants.AppWindow.width * 0.9
+  private val height = Constants.AppWindow.height * 0.75
+
   val headerCol = new TableColumn[WatchingListInfo, ImageView]("头像")
   headerCol.setCellValueFactory(new PropertyValueFactory[WatchingListInfo, ImageView]("header"))
   //  headerCol.setPrefWidth(width * 0.1)
@@ -190,27 +194,27 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
 
   val userInfoCol = new TableColumn[WatchingListInfo, String]("用户信息")
   userInfoCol.setCellValueFactory(new PropertyValueFactory[WatchingListInfo, String]("userInfo"))
-  //  userInfoCol.setPrefWidth(width * 0.15)
-  userInfoCol.setPrefWidth(infoColWidth)
+    userInfoCol.setPrefWidth(width * 0.06)
+//  userInfoCol.setPrefWidth(infoColWidth)
 
   val toBeHostCol = new TableColumn[WatchingList.WatchingListInfo, Button]("成为主持人")
-  // toBeHostCol.setPrefWidth(width * 0.08)
-  toBeHostCol.setPrefWidth(infoColWidth)
+   toBeHostCol.setPrefWidth(width * 0.07)
+//  toBeHostCol.setPrefWidth(infoColWidth)
   toBeHostCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("beHost"))
 
   val exitCol = new TableColumn[WatchingList.WatchingListInfo, Button]("踢出")
-  //  exitCol.setPrefWidth(width * 0.04)
-  exitCol.setPrefWidth(infoColWidth)
+    exitCol.setPrefWidth(width * 0.04)
+//  exitCol.setPrefWidth(infoColWidth)
   exitCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("exit"))
 
   val soundCol = new TableColumn[WatchingList.WatchingListInfo, Button]("声音")
-  // soundCol.setPrefWidth(width * 0.04)
-  soundCol.setPrefWidth(infoColWidth)
+   soundCol.setPrefWidth(width * 0.04)
+//  soundCol.setPrefWidth(infoColWidth)
   soundCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("sound"))
 
   val imageCol = new TableColumn[WatchingList.WatchingListInfo, Button]("图像")
-  //  imageCol.setPrefWidth(width * 0.04)
-  imageCol.setPrefWidth(infoColWidth)
+    imageCol.setPrefWidth(width * 0.04)
+//  imageCol.setPrefWidth(infoColWidth)
   imageCol.setCellValueFactory(new PropertyValueFactory[WatchingList.WatchingListInfo, Button]("image"))
 
   watchingTable.setItems(watchingList)

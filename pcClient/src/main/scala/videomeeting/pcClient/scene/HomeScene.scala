@@ -131,6 +131,8 @@ class HomeScene {
 
     if (RmManager.userInfo.nonEmpty) { //如果已经登录
       val logoutIcon = new ImageView("img2/1logout.png")
+      logoutIcon.setFitHeight(30)
+      logoutIcon.setFitWidth(30)
       val logoutButton = new Button("注销", logoutIcon)
       logoutButton.setOnAction(_ => listener.logout())
       addButtonEffect(logoutButton)

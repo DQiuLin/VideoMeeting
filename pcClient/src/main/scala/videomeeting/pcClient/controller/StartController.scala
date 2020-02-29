@@ -31,8 +31,8 @@ class StartController(
 
   def showScene(): Unit = {
     Boot.addToPlatform(
-      if (RmManager.userInfo.nonEmpty && RmManager.roomInfo.nonEmpty) {
-        context.switchScene(startScene.getScene, title = s"${RmManager.userInfo.get.userName}的直播间-${RmManager.roomInfo.get.meetingName}")
+      if (RmManager.userInfo.nonEmpty ) {
+        context.switchScene(startScene.getScene, title = s"${RmManager.userInfo.get.userName}的直播间")
       } else {
         WarningDialog.initWarningDialog(s"无房间信息！")
       }

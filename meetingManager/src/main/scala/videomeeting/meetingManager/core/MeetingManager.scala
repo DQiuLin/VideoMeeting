@@ -161,14 +161,14 @@ object MeetingManager {
               case Some(actor) =>
                 val roomInfoFuture:Future[MeetingInfo] = actor ? (GetMeetingInfo(_))
                 roomInfoFuture.map{r =>
-                  r.rtmp match {
-                    case Some(v) =>
+//                  r.rtmp match {
+//                    case Some(v) =>
                       log.debug(s"${ctx.self.path} search room,roomId=${roomId},rtmp=${r.rtmp}")
                       replyTo ! SearchMeetingRsp(Some(r))//正常返回
-                    case None =>
-                      log.debug(s"${ctx.self.path} search room failed,roomId=${roomId},rtmp=None")
-                      replyTo ! SearchRoomError(msg = s"${ctx.self.path} room rtmp is None")
-                  }
+//                    case None =>
+//                      log.debug(s"${ctx.self.path} search room failed,roomId=${roomId},rtmp=None")
+//                      replyTo ! SearchRoomError(msg = s"${ctx.self.path} room rtmp is None")
+//                  }
                 }
               case None =>
                 log.debug(s"${ctx.self.path} test room dead")

@@ -489,7 +489,7 @@ object RmManager {
           startBehavior(stageCtx, homeController, hostScene, hostController, liveManager, mediaPlayer, Some(msg.sender), hostStatus, joinAudience, rtmpLive, rtpLive)
 
         case WsEstablishSuccess =>
-          sender.foreach(_ ! MeetingCreated(roomInfo.get.meetingId))
+          sender.foreach(_ ! CreateMeeting(roomInfo.get.meetingId))
           Behaviors.same
 
         case HeartBeat =>
@@ -709,6 +709,10 @@ object RmManager {
             ctx.self ! ChangeOption(None, None, None)
             //            Boot.addToPlatform(audienceController.changeBtnStauts(true, true))
           }
+          Behaviors.same
+
+        case msg: ModifyRoom =>
+          sender.foreach(_ ! ModifyRoomInfo(msg.name, msg.des))
           Behaviors.same
 
         case x =>
@@ -1097,10 +1101,6 @@ object RmManager {
           assert(userInfo.nonEmpty)
           val userId = userInfo.get.userId
           sender.foreach(_ ! ApplyReq(userId, msg.meetingId, ClientType.PC))
-          Behaviors.same
-
-        case msg: ModifyRoom =>
-          sender.foreach(_ ! ModifyRoomInfo(msg.name, msg.des))
           Behaviors.same
 
         case x =>

@@ -173,14 +173,18 @@ object UserActor {
             Behaviors.same
           }
           else {
+            log.info(s"$reqOpt")
             reqOpt match {
               case Some(req) =>
                 UserInfoDao.searchById(userId).map {
                   case Some(v) =>
                     req match {
-                      case MeetingCreated(`meetingId`) =>
-                        log.info("userActor get MeetingCreated")
+                      case CreateMeeting(`meetingId`) =>
                         meetingManager ! ActorProtocol.MeetingCreate(meetingId)
+                        ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+
+                      case ModifyRoomInfo(name, des) =>
+                        meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                       case StartLiveReq(`userId`, token, clientType) =>
@@ -281,6 +285,7 @@ object UserActor {
             Behaviors.same
           }
           else {
+            log.info(s"$reqOpt")
             reqOpt match {
               case Some(req) =>
                 if (temporary) {
@@ -290,9 +295,12 @@ object UserActor {
                   UserInfoDao.searchById(userId).map {
                     case Some(v) =>
                       req match {
-                        case MeetingCreated(`meetingId`) =>
-                          log.info("userActor get MeetingCreated")
+                        case CreateMeeting(`meetingId`) =>
                           meetingManager ! ActorProtocol.MeetingCreate(meetingId)
+                          ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+
+                        case ModifyRoomInfo(name, des) =>
+                          meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                         case StartLiveReq(`userId`, token, clientType) =>

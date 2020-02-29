@@ -103,7 +103,7 @@ object AuthProtocol {
 
 
   /*会议控制*/
-  case class MeetingCreated(meetingId: Int) extends WsMsgHost
+  case class CreateMeeting(meetingId: Int) extends WsMsgHost
 
   case class AudienceJoin(userId: Int, userName: String, clientType: Int) extends WsMsgRm2Host //申请加入会议者信息
 

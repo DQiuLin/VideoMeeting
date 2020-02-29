@@ -50,6 +50,7 @@ class FindController (
           Boot.addToPlatform {
             removeLoading()
             findScene.roomList = rst.meetingList.get
+            log.info(findScene.roomList.toString())
 //            findScene.updateRoomList(roomList = findScene.roomList)
           }
         } else {

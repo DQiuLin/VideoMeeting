@@ -110,7 +110,7 @@ object MeetingActor {
               case Right(rsp) =>
                 if (userTableOpt.nonEmpty) {
                   log.info(s"start meeting succeed")
-                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", "", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
+                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
                   DistributorClient.startPull(meetingId, rsp.liveInfo.liveId).map {
                     case Right(r) =>
                       log.info(s"distributor startPull succeed, get live address: ${r.liveAdd}")
@@ -146,7 +146,7 @@ object MeetingActor {
           }
           Behaviors.same
 
-        case ModifyRoomDes(id, name, des) =>
+        case ModifyRoomDes(userId, meetingId, name, des) =>
           if (meetingInfoOpt.nonEmpty) {
             val meetingInfo = meetingInfoOpt.get
             val roomInfo = if (name.nonEmpty && des.nonEmpty) {
@@ -159,8 +159,29 @@ object MeetingActor {
               meetingInfo
             }
             init(meetingId, subscribers, Some(roomInfo))
-          } else
-            Behaviors.same
+          } else {
+            for {
+              data <- RtpClient.getLiveInfoFunc()
+              userTableOpt <- UserInfoDao.searchById(userId)
+            } yield {
+              data match {
+                case Right(rsp) =>
+                  if (userTableOpt.nonEmpty) {
+                    log.info(s"start meeting succeed")
+                    val meetingInfo = MeetingInfo(meetingId, if (name.nonEmpty) name.get else s"${userTableOpt.get.username}的会议", if(des.nonEmpty) des.get else s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
+                    ctx.self ! SwitchBehavior("init", init(meetingId, subscribers, Some(meetingInfo)))
+                  } else {
+                    log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
+                    dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+                    ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+                  }
+                case Left(error) =>
+                  log.debug(s"${ctx.self.path} 开始会议被拒绝，请求rtp server解析失败，error:$error")
+                  ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+              }
+            }
+            switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
+          }
 
         case TestRoom(meetingInfo) =>
           //仅用户测试使用空房间
@@ -198,7 +219,7 @@ object MeetingActor {
           replyTo ! meetingInfo
           Behaviors.same
 
-        case ModifyRoomDes(id, name, des) =>
+        case ModifyRoomDes(uid, mid, name, des) =>
           val roomInfo = if (name.nonEmpty && des.nonEmpty) {
             meetingInfo.copy(meetingName = name.get, roomDes = des.get)
           } else if (name.nonEmpty) {

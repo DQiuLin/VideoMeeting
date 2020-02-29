@@ -711,6 +711,10 @@ object RmManager {
           }
           Behaviors.same
 
+        case msg: ModifyRoom =>
+          sender.foreach(_ ! ModifyRoomInfo(msg.name, msg.des))
+          Behaviors.same
+
         case x =>
           log.warn(s"unknown msg in host: $x")
           Behaviors.unhandled
@@ -1097,10 +1101,6 @@ object RmManager {
           assert(userInfo.nonEmpty)
           val userId = userInfo.get.userId
           sender.foreach(_ ! ApplyReq(userId, msg.meetingId, ClientType.PC))
-          Behaviors.same
-
-        case msg: ModifyRoom =>
-          sender.foreach(_ ! ModifyRoomInfo(msg.name, msg.des))
           Behaviors.same
 
         case x =>

@@ -31,6 +31,6 @@ object ActorProtocol {
 
   case class MeetingCreate(meetingId: Int) extends RoomCommand
 
-  case class ModifyRoomDes(meetingId: Int, name: Option[String], des: Option[String]) extends RoomCommand
+  case class ModifyRoomDes(userId: Int, meetingId: Int, name: Option[String], des: Option[String]) extends RoomCommand
 
 }

@@ -76,6 +76,7 @@ object EmailActor {
     p.put("mail.smtp.port", AppSettings.emailPort)
     p.put("mail.transport.protocol", "smtp")
     p.put("mail.smtp.auth", "true")
+    p.put("mail.stmp.ssl.enable", "true")
     p
   }
 

@@ -37,7 +37,7 @@ trait UserService extends ServiceUtils {
 
   private val tokenExistTime = AppSettings.tokenExistTime * 1000L // seconds
 
-  private val id = Await.result(MeetingDao.getMeetingIdNow(), 1000 millis) + 1
+  private var id = Await.result(MeetingDao.getMeetingIdNow(), 1000 millis) + 1
 
   private val signUp = (path("signUp") & post) {
 
@@ -77,6 +77,7 @@ trait UserService extends ServiceUtils {
                 val userInfo = UserInfo(rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, "", 0L)
                 val session = UserSession(rst.id.toString, rst.username, System.currentTimeMillis().toString).toSessionMap
                 val meetingInfo = MeetingInfo(id, s"${rst.username}的会议", s"${rst.username}的会议", rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, Some(0))
+                id += 1
                 addSession(session) {
                   log.info(s"${rst.id} login success")
                   complete(SignInRsp(Some(userInfo), Some(meetingInfo)))

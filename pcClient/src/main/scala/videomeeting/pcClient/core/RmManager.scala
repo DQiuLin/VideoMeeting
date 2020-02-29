@@ -109,6 +109,8 @@ object RmManager {
 
   final case object CloseAudio extends RmCommand
 
+  case object WsEstablishSuccess extends RmCommand
+
 
   /*主播*/
 
@@ -468,7 +470,7 @@ object RmManager {
           assert(userInfo.nonEmpty)
 
           def successFunc(): Unit = {
-            sender.foreach(_ ! MeetingCreated(roomInfo.get.meetingId))
+//            sender.foreach(_ ! MeetingCreated(roomInfo.get.meetingId))
           }
 
           def failureFunc(): Unit = {
@@ -483,8 +485,12 @@ object RmManager {
           Behaviors.same
 
         case msg: GetSender =>
+          ctx.self ! WsEstablishSuccess
           startBehavior(stageCtx, homeController, hostScene, hostController, liveManager, mediaPlayer, Some(msg.sender), hostStatus, joinAudience, rtmpLive, rtpLive)
 
+        case WsEstablishSuccess =>
+          sender.foreach(_ ! MeetingCreated(roomInfo.get.meetingId))
+          Behaviors.same
 
         case HeartBeat =>
           sender.foreach(_ ! PingPackage)

@@ -187,7 +187,7 @@ object UserActor {
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                       case Invite(email, meetingNum) =>
-                        log.info("send email to email actor")
+                        log.debug("send email to email actor")
                         emailActor ! EmailActor.SendInviteEmail(email, meetingNum)
                         clientActor ! Wrap(InviteRsp.asInstanceOf[WsMsgRm].fillMiddleBuffer(sendBuffer).result())
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
@@ -290,6 +290,7 @@ object UserActor {
                     case Some(v) =>
                       req match {
                         case MeetingCreated(`meetingId`) =>
+                          log.info("userActor get MeetingCreated")
                           meetingManager ! ActorProtocol.MeetingCreate(meetingId)
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 

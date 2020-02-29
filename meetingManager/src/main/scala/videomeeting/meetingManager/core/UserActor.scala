@@ -178,6 +178,10 @@ object UserActor {
                 UserInfoDao.searchById(userId).map {
                   case Some(v) =>
                     req match {
+                      case MeetingCreated(`meetingId`) =>
+                        meetingManager ! ActorProtocol.MeetingCreate(meetingId)
+                        ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+
                       case StartLiveReq(`userId`, token, clientType) =>
                         meetingManager ! ActorProtocol.StartLiveAgain(meetingId)
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))

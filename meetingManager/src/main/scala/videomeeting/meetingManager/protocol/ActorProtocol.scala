@@ -28,4 +28,7 @@ object ActorProtocol {
 
 
   case class BanOnAnchor(roomId: Int) extends RoomCommand
+
+  case class MeetingCreate(meetingId: Int) extends RoomCommand
+
 }

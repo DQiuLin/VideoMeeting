@@ -95,6 +95,9 @@ object MeetingActor {
                   ): Behavior[Command] = {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
+        case ActorProtocol.MeetingCreate(`meetingId`) =>
+          Behaviors.same
+
         case ActorProtocol.StartMeeting4Host(userId, `meetingId`, actor) =>
           log.debug(s"${ctx.self.path} 用户id=$userId 开启了新的会议id=$meetingId")
           subscribers.put((userId, false), actor)

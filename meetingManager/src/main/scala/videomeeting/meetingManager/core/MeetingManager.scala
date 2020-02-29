@@ -119,6 +119,10 @@ object MeetingManager {
           getMeetingActor(roomId,ctx) ! r
           Behaviors.same
 
+        case r@ActorProtocol.MeetingCreate(meetingId) =>
+          getMeetingActor(meetingId, ctx) ! r
+          Behaviors.same
+
         case r@GetRtmpLiveInfo(roomId, replyTo)=>
           getMeetingActorOpt(roomId,ctx) match{
             case Some(actor) =>actor ! r

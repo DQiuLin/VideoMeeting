@@ -468,10 +468,7 @@ object RmManager {
           assert(userInfo.nonEmpty)
 
           def successFunc(): Unit = {
-            //            hostScene.allowConnect()
-            //            Boot.addToPlatform {
-            //              hostController.showScene()
-            //            }
+            sender.foreach(_ ! MeetingCreated(roomInfo.get.meetingId))
           }
 
           def failureFunc(): Unit = {

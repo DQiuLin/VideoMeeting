@@ -167,9 +167,7 @@ object UserActor {
           Behaviors.same
 
         case WebSocketMsg(reqOpt) =>
-          log.info("aaa")
           if (reqOpt.contains(PingPackage)) {
-            log.info("sss")
             if (timer.isTimerActive("HeartBeatKey_" + userId)) timer.cancel("HeartBeatKey_" + userId)
             ctx.self ! SendHeartBeat
             Behaviors.same
@@ -276,22 +274,24 @@ object UserActor {
           Behaviors.stopped
 
         case WebSocketMsg(reqOpt) =>
-          log.info("aaaa")
           if (reqOpt.contains(PingPackage)) {
-            log.info("ssss")
             if (timer.isTimerActive("HeartBeatKey_" + userId)) timer.cancel("HeartBeatKey_" + userId)
             ctx.self ! SendHeartBeat
             Behaviors.same
           }
           else {
+            log.info("1111")
             reqOpt match {
               case Some(req) =>
                 if (temporary) {
+                  log.info("2222")
                   //                log.debug(s"${ctx.self.path} the user is temporary, no privilege,userId=$userId in room=$roomId")
                   Behaviors.same
                 } else {
+                  log.info("3333")
                   UserInfoDao.searchById(userId).map {
                     case Some(v) =>
+                      log.info(s"$req")
                       req match {
                         case MeetingCreated(`meetingId`) =>
                           meetingManager ! ActorProtocol.MeetingCreate(meetingId)
@@ -311,6 +311,7 @@ object UserActor {
                           ctx.self ! SwitchBehavior("attendance", attendance(userId, temporary, clientActor, meetingId))
                       }
                     case None =>
+                      log.info("4444")
                       log.debug(s"${ctx.self.path} 该用户不存在，无法直播")
                       clientActor ! Wrap(AuthProtocol.NoUser.asInstanceOf[WsMsgRm].fillMiddleBuffer(sendBuffer).result())
                       ctx.self ! CompleteMsgClient
@@ -320,6 +321,7 @@ object UserActor {
                 }
 
               case None =>
+                log.info("5555")
                 log.debug(s"${ctx.self.path} there is no web socket msg in anchor state")
                 Behaviors.same
             }

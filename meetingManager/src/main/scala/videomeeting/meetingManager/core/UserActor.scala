@@ -228,7 +228,7 @@ object UserActor {
           init(userId, false, None)
 
         case unknown =>
-          log.debug(s"${ctx.self.path} recv an unknown msg:${msg} in anchor state...")
+          log.info(s"${ctx.self.path} recv an unknown msg:${msg} in anchor state...")
           stashBuffer.stash(unknown)
           Behavior.same
       }

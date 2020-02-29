@@ -70,10 +70,6 @@ class HomeController(
       //弹出注册窗口
       val signUpInfo = loginController.registerDialog()
       if (signUpInfo.nonEmpty) {
-        showLoading()
-        Boot.addToPlatform {
-          WarningDialog.initWarningDialog("邮件已发送到您的邮箱，请查收邮件完成注册！")
-        }
         RMClient.signUp(signUpInfo.get._1.toString, signUpInfo.get._2.toString).map {
           case Right(signUpRsp) =>
             if (signUpRsp.errCode == 0) {

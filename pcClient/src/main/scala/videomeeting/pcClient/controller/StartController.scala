@@ -181,6 +181,11 @@ class StartController(
           //          startScene.barrage.updateBarrage(msg)
         }
 
+      case InviteRsp =>
+        Boot.addToPlatform {
+          WarningDialog.initWarningDialog("邀请邮件已发送")
+        }
+
       case msg: UpdateAudienceInfo =>
         //        log.info(s"update audienceList.")
         Boot.addToPlatform {

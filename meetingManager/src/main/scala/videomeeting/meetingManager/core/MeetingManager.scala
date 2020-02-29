@@ -124,8 +124,8 @@ object MeetingManager {
           getMeetingActor(meetingId, ctx) ! r
           Behaviors.same
 
-        case r@ActorProtocol.ModifyRoomDes(id, name, des) =>
-          getMeetingActor(id, ctx) ! r
+        case r@ActorProtocol.ModifyRoomDes(uid, mid, name, des) =>
+          getMeetingActor(mid, ctx) ! r
           Behaviors.same
 
         case r@GetRtmpLiveInfo(roomId, replyTo)=>

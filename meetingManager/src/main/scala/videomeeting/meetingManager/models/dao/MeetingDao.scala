@@ -96,6 +96,6 @@ object MeetingDao {
   }
 
   def getMeetingIdNow() = {
-    db.run(tMeetingInfo.result.map(r => r.size))
+    db.run(tMeetingInfo.length.result)
   }
 }

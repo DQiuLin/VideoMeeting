@@ -42,11 +42,11 @@ class HomeController(
 
   homeScene.setListener(new HomeSceneListener {
     override def liveCheck(): Unit = {
-            if (RmManager.userInfo.nonEmpty ) {
-              rmManager ! RmManager.GoToLive
-            } else {
-              gotoLoginDialog(isToLive = true)
-            }
+      if (RmManager.userInfo.nonEmpty) {
+        rmManager ! RmManager.GoToLive
+      } else {
+        gotoLoginDialog(isToLive = true)
+      }
     }
 
     override def gotoRoomPage(): Unit = {

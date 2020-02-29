@@ -130,8 +130,6 @@ object RmManager {
 
   final case class AudienceAcceptance(userId: Int, accept: Boolean) extends RmCommand
 
-  final case class JionAcceptance(userId: Int, accept: Boolean) extends RmCommand
-
   final case class JoinAcceptance(userId: Int, accept: Boolean) extends RmCommand
 
   final case class JoinBegin(audienceInfo: AttendenceInfo) extends RmCommand //开始和某观众连线

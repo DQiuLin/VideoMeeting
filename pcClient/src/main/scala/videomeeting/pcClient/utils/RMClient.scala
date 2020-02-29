@@ -213,8 +213,8 @@ object RMClient extends HttpUtil {
 
   def searchRoom(userId: Option[Int] = None, roomId: Int): Future[Either[Throwable, SearchMeetingRsp]] = {
 
-    val methodName = "searchRoom"
-    val url = Routes.searchRoom
+    val methodName = "searchMeeting"
+    val url = Routes.searchMeeting
 
     val data = SearchMeetingReq(userId, roomId).asJson.noSpaces
 
@@ -222,7 +222,7 @@ object RMClient extends HttpUtil {
       case Right(jsonStr) =>
         decode[SearchMeetingRsp](jsonStr)
       case Left(error) =>
-        log.debug(s"searchRoom error: $error")
+        log.info(s"searchRoom error: $error")
         Left(error)
     }
   }

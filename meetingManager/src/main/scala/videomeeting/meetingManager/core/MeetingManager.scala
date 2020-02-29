@@ -120,6 +120,7 @@ object MeetingManager {
           Behaviors.same
 
         case r@ActorProtocol.MeetingCreate(meetingId) =>
+          log.info("meetingManager get MeetingCreate")
           getMeetingActor(meetingId, ctx) ! r
           Behaviors.same
 

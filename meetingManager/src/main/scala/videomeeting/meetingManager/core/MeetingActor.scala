@@ -96,6 +96,7 @@ object MeetingActor {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case ActorProtocol.MeetingCreate(`meetingId`) =>
+          log.info("meetingActor get MeetingCreate")
           Behaviors.same
 
         case ActorProtocol.StartMeeting4Host(userId, `meetingId`, actor) =>

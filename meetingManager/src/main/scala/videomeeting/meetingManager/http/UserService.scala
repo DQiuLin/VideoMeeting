@@ -112,7 +112,7 @@ trait UserService extends ServiceUtils {
     }
   }
 
-  private val getMeetingList = (path("getMeetingList") & get) {
+  private val getMeetingList = (path("getRoomList") & get) {
 
     val roomListFutureRsp: Future[MeetingListRsp] = meetingManager ? (GetMeetingList(_))
     dealFutureResult(

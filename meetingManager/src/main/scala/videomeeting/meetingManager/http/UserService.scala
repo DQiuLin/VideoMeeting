@@ -120,7 +120,7 @@ trait UserService extends ServiceUtils {
     )
   }
 
-  private val searchMeeting = (path("searchMeeting") & post) {
+  private val searchMeeting = (path("searchRoom") & post) {
     entity(as[Either[Error, SearchMeetingReq]]) {
       case Right(rsp) =>
         if (rsp.roomId < 0) {

@@ -249,7 +249,7 @@ object RmManager {
           val startScene = new StartScene(stageCtx.getStage)
           val startController = new StartController(stageCtx, startScene, ctx.self)
 
-          //def callBack(): Unit = Boot.addToPlatform(startScene.changeToggleAction())
+          //          def callBack(): Unit = Boot.addToPlatform(startScene.changeToggleAction())
 
           liveManager ! LiveManager.DevicesOn(startScene.gc)
           ctx.self ! HostWsEstablish

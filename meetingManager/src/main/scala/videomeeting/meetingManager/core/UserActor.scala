@@ -299,7 +299,7 @@ object UserActor {
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                         case ModifyRoomInfo(name, des) =>
-                          meetingManager ! ActorProtocol.ModifyRoomDes(name, des)
+                          meetingManager ! ActorProtocol.ModifyRoomDes(meetingId, name, des)
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                         case StartLiveReq(`userId`, token, clientType) =>

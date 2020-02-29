@@ -194,7 +194,7 @@ class WatchingList(headerColWidth: Double, infoColWidth: Double, tableHeight: Do
 
   val userInfoCol = new TableColumn[WatchingListInfo, String]("用户信息")
   userInfoCol.setCellValueFactory(new PropertyValueFactory[WatchingListInfo, String]("userInfo"))
-    userInfoCol.setPrefWidth(width * 0.06)
+    userInfoCol.setPrefWidth(width * 0.07)
 //  userInfoCol.setPrefWidth(infoColWidth)
 
   val toBeHostCol = new TableColumn[WatchingList.WatchingListInfo, Button]("成为主持人")

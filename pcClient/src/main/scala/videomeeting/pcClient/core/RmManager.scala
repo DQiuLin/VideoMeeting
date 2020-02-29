@@ -354,10 +354,10 @@ object RmManager {
         case msg: GoToWatch =>
           val audienceScene = new AudienceScene(msg.roomInfo)
           val audienceController = new AudienceController(stageCtx, audienceScene, ctx.self)
-          if (msg.roomInfo.rtmp.nonEmpty) {
+//          if (msg.roomInfo.rtmp.nonEmpty) {
             audienceScene.liveId = msg.roomInfo.rtmp
             val info = WatchInfo(msg.roomInfo.meetingId, audienceScene.gc)
-            liveManager ! LiveManager.PullStream(msg.roomInfo.rtmp.get, watchInfo = Some(info), audienceScene = Some(audienceScene))
+//            liveManager ! LiveManager.PullStream(msg.roomInfo.rtmp.get, watchInfo = Some(info), audienceScene = Some(audienceScene))
 
             ctx.self ! AudienceWsEstablish
 
@@ -367,15 +367,15 @@ object RmManager {
             }
 
             switchBehavior(ctx, "audienceBehavior", audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, audienceLiveInfo = None, audienceStatus = AudienceStatus.LIVE, anchorLiveId = msg.roomInfo.rtmp))
-          }
-          else {
-            log.info(s"roomInfo error: ${msg.roomInfo}!")
-            Boot.addToPlatform {
-              roomController.foreach(_.removeLoading())
-              WarningDialog.initWarningDialog("请求服务器失败，请稍后再试。")
-            }
-            Behaviors.same
-          }
+//          }
+//          else {
+//            log.info(s"roomInfo error: ${msg.roomInfo}!")
+//            Boot.addToPlatform {
+//              roomController.foreach(_.removeLoading())
+//              WarningDialog.initWarningDialog("请求服务器失败，请稍后再试。")
+//            }
+//            Behaviors.same
+//          }
 
         //        case msg: GoToRecord =>
         //          val audienceScene = new AudienceScene(msg.recordInfo.toAlbum, isRecord = true, msg.url)
@@ -743,6 +743,7 @@ object RmManager {
       msg match {
         case AudienceWsEstablish =>
           //与roomManager建立ws
+          log.info(s"$userInfo")
           val userFuture = if (userInfo.nonEmpty) { //观众已登录
             Future((userInfo.get.userId, userInfo.get.token))
           } else if (guestInfo.nonEmpty) { //已经申请过临时账号

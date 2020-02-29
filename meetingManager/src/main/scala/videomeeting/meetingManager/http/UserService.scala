@@ -74,7 +74,7 @@ trait UserService extends ServiceUtils {
                 complete(WrongPwError)
               }
               else {
-                val userInfo = UserInfo(rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, "", 0L)
+                val userInfo = UserInfo(rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, rst.token, 0L)
                 val session = UserSession(rst.id.toString, rst.username, System.currentTimeMillis().toString).toSessionMap
                 val meetingInfo = MeetingInfo(id, s"${rst.username}的会议", s"${rst.username}的会议", rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, Some(0))
                 id += 1
@@ -120,7 +120,7 @@ trait UserService extends ServiceUtils {
     )
   }
 
-  private val searchMeeting = (path("searchRoom") & post) {
+  private val searchMeeting = (path("searchMeeting") & post) {
     entity(as[Either[Error, SearchMeetingReq]]) {
       case Right(rsp) =>
         if (rsp.roomId < 0) {

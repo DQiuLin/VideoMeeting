@@ -107,6 +107,35 @@ class StartController(
       rmManager ! RmManager.CloseUser(userId, None, Some(false))
     }
 
+    //audience
+    override def joinReq(meetingId: Int): Unit = {
+      if (RmManager.userInfo.nonEmpty) {
+        WarningDialog.initWarningDialog("加入会议申请已发送")
+        rmManager ! RmManager.JoinRoomReq(meetingId)
+      } else {
+        WarningDialog.initWarningDialog("请先登录哦~")
+      }
+
+    }
+
+    override def quitJoin(meetingId: Int, userId: Int): Unit = {
+      if (RmManager.userInfo.nonEmpty) {
+        rmManager ! RmManager.ExitJoin(meetingId, userId)
+      } else {
+        WarningDialog.initWarningDialog("请先登录哦~")
+      }
+    }
+
+    override def changeOption(needImage: Boolean, needSound: Boolean): Unit = {
+      rmManager ! RmManager.ChangeOption4Audience(needImage, needSound)
+    }
+
+
+    override def applySpeak(meetingId: Int): Unit = {
+      rmManager ! RmManager.ApplySpeak(meetingId)
+    }
+
+
   }
 
   )

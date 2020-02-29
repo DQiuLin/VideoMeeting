@@ -148,8 +148,8 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
   gc.drawImage(backImg, 0, 0, gc.getCanvas.getWidth, gc.getCanvas.getHeight)
   val connectionBg = new Image("img/connectionBg.jpg")
 
-
-
+  /*host or audience*/
+  var isHost = false
 
 //  def resetBack(): Unit = {
 //    gc.clearRect(0,0,gc.getCanvas.getWidth, gc.getCanvas.getHeight)

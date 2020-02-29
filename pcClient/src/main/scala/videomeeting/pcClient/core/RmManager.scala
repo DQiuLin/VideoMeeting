@@ -489,7 +489,7 @@ object RmManager {
           startBehavior(stageCtx, homeController, hostScene, hostController, liveManager, mediaPlayer, Some(msg.sender), hostStatus, joinAudience, rtmpLive, rtpLive)
 
         case WsEstablishSuccess =>
-          sender.foreach(_ ! MeetingCreated(roomInfo.get.meetingId))
+          sender.foreach(_ ! CreateMeeting(roomInfo.get.meetingId))
           Behaviors.same
 
         case HeartBeat =>

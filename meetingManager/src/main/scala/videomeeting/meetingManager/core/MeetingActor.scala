@@ -489,6 +489,23 @@ object MeetingActor {
         }
         Behaviors.same
 
+      case ModifyRoomInfo(roomName, roomDes) =>
+        val roomInfo = if (roomName.nonEmpty && roomDes.nonEmpty) {
+          meetingInfo.copy(meetingName = roomName.get, roomDes = roomDes.get)
+        } else if (roomName.nonEmpty) {
+          meetingInfo.copy(meetingName = roomName.get)
+          meetingInfo.copy(meetingName = roomName.get)
+        } else if (roomDes.nonEmpty) {
+          meetingInfo.copy(roomDes = roomDes.get)
+        } else {
+          meetingInfo
+        }
+        val info = meetingInfo
+        log.debug(s"${ctx.self.path} modify the room info$info")
+        dispatch(UpdateRoomInfo2Client(meetingInfo.meetingName, meetingInfo.roomDes))
+        dispatchTo(List((meetingInfo.userId, false)), ModifyRoomRsp())
+        idle(info, liveInfoMap, subscribers, subscribers.size - 1, startTime)
+
       case x =>
         Behaviors.same
     }

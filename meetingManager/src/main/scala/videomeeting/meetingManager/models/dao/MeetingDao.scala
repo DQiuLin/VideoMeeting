@@ -94,4 +94,8 @@ object MeetingDao {
       tMeetingInfo.filter(mt => mt.id === m.mid)).flatMap(mt =>
         tUserInfo.filter(u => u.id === mt.creator).map(r => (mt, r.username))).result.headOption)
   }
+
+  def getMeetingIdNow() = {
+    db.run(tMeetingInfo.result.map(r => r.size))
+  }
 }

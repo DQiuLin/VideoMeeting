@@ -16,7 +16,7 @@ import videomeeting.protocol.ptcl.{CommonRsp, Response}
 import videomeeting.meetingManager.core.RegisterActor.RegisterReq
 import videomeeting.meetingManager.core.MeetingManager
 import videomeeting.meetingManager.models.dao.{MeetingDao, UserInfoDao}
-import videomeeting.protocol.ptcl.CommonInfo.{MeetInfo, PeopleInfo, User, UserInfo}
+import videomeeting.protocol.ptcl.CommonInfo.{MeetInfo, MeetingInfo, PeopleInfo, User, UserInfo}
 import videomeeting.meetingManager.common.{AppSettings, Common}
 import videomeeting.meetingManager.core.MeetingManager.{GetMeetingList, UserInfoChange}
 import videomeeting.meetingManager.http.SessionBase.UserSession
@@ -26,7 +26,8 @@ import videomeeting.meetingManager.core.MeetingManager
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.utils.{HestiaClient, SecureUtil}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.{FiniteDuration, _}
 
 trait UserService extends ServiceUtils {
 
@@ -35,6 +36,8 @@ trait UserService extends ServiceUtils {
   import io.circe.generic.auto._
 
   private val tokenExistTime = AppSettings.tokenExistTime * 1000L // seconds
+
+  private val id = Await.result(MeetingDao.getMeetingIdNow(), 1000 millis) + 1
 
   private val signUp = (path("signUp") & post) {
 
@@ -73,9 +76,10 @@ trait UserService extends ServiceUtils {
               else {
                 val userInfo = UserInfo(rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, "", 0L)
                 val session = UserSession(rst.id.toString, rst.username, System.currentTimeMillis().toString).toSessionMap
+                val meetingInfo = MeetingInfo(id, s"${rst.username}的会议", s"${rst.username}的会议", rst.id, rst.username, if (rst.headImg == "") Common.DefaultImg.headImg else rst.headImg, Some(0))
                 addSession(session) {
                   log.info(s"${rst.id} login success")
-                  complete(SignInRsp(Some(userInfo)))
+                  complete(SignInRsp(Some(userInfo), Some(meetingInfo)))
                 }
               }
             case None =>

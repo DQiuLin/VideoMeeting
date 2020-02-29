@@ -484,7 +484,7 @@ object RmManager {
           }
 
           val url = Routes.linkRoomManager(userInfo.get.userId, userInfo.get.token, roomInfo.map(_.meetingId).get)
-          //buildWebSocket(ctx, url, Right(hostController), successFunc(), failureFunc())
+          buildWebSocket(ctx, url, Right(hostController), successFunc(), failureFunc())
           Behaviors.same
 
         case msg: GetSender =>
@@ -1096,6 +1096,10 @@ object RmManager {
           assert(userInfo.nonEmpty)
           val userId = userInfo.get.userId
           sender.foreach(_ ! ApplyReq(userId, msg.meetingId, ClientType.PC))
+          Behaviors.same
+
+        case msg: ModifyRoom =>
+          sender.foreach(_ ! ModifyRoomInfo(msg.name, msg.des))
           Behaviors.same
 
         case x =>

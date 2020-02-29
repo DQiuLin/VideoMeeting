@@ -50,7 +50,7 @@ class FindController (
           Boot.addToPlatform {
             removeLoading()
             findScene.roomList = rst.meetingList.get
-            println(s"roomList${findScene.roomList}")
+            log.info(findScene.roomList.toString())
 //            findScene.updateRoomList(roomList = findScene.roomList)
           }
         } else {
@@ -69,10 +69,9 @@ class FindController (
   }
 
   findScene.setListener(new FindSceneListener {
-    override def enter(meetingId: Long, timestamp: Long = 0L): Unit = {
+    override def enter(meetingId: Int, timestamp: Long = 0L): Unit = {
       Boot.addToPlatform {
         refreshList
-        println(s"roomList2: ${findScene.roomList}")
         if (findScene.roomList.exists(_.meetingId == meetingId)) {
           rmManager ! GetRoomDetail(findScene.roomList.find(_.meetingId == meetingId).get.meetingId)
         } else {
@@ -86,7 +85,6 @@ class FindController (
       refreshList
     }
 
-
     override def gotoHomeScene(): Unit = {
       rmManager ! RmManager.BackToHome
     }
@@ -94,7 +92,7 @@ class FindController (
 
   def showScene(): Unit = {
     Boot.addToPlatform {
-//      updateRoomList()
+      updateRoomList()
       context.switchScene(findScene.getScene, title = "会议室online")
     }
   }

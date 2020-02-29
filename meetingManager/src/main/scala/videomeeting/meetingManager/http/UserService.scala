@@ -112,7 +112,7 @@ trait UserService extends ServiceUtils {
     }
   }
 
-  private val getMeetingList = (path("getMeetingList") & get) {
+  private val getMeetingList = (path("getRoomList") & get) {
 
     val roomListFutureRsp: Future[MeetingListRsp] = meetingManager ? (GetMeetingList(_))
     dealFutureResult(
@@ -120,7 +120,7 @@ trait UserService extends ServiceUtils {
     )
   }
 
-  private val searchMeeting = (path("searchMeeting") & post) {
+  private val searchMeeting = (path("searchRoom") & post) {
     entity(as[Either[Error, SearchMeetingReq]]) {
       case Right(rsp) =>
         if (rsp.roomId < 0) {

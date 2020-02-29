@@ -222,7 +222,7 @@ object RMClient extends HttpUtil {
       case Right(jsonStr) =>
         decode[SearchMeetingRsp](jsonStr)
       case Left(error) =>
-        log.debug(s"searchRoom error: $error")
+        log.info(s"searchRoom error: $error")
         Left(error)
     }
   }

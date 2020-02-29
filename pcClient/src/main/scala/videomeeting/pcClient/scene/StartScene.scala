@@ -182,7 +182,7 @@ class StartScene(stage: Stage) {
   var roomDesArea = new TextArea(s"${RmManager.userInfo.get.userId}")
   roomDesArea.setPrefSize(width * 0.15, height * 0.1)
   var emailArea = new TextArea("")
-  emailArea.setPrefWidth(width * 0.15)
+  emailArea.setPrefSize(width * 0.15,height * 0.1)
 
   val roomInfoIcon = new ImageView("img/roomInfo.png")
   roomInfoIcon.setFitWidth(20)
@@ -383,7 +383,7 @@ class StartScene(stage: Stage) {
     val left3Area = addLeftChild3Area()
     val left4Area = addLeftChild4Area()
 
-    content.getChildren.add(left1Area)
+    content.getChildren.add(left3Area)
     content.setPrefSize(width * 0.32, height)
 
     tb1.setOnAction(_ => {

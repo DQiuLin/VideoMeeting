@@ -61,6 +61,7 @@ object EmailActor {
           mainPart.addBodyPart(html)
           message.setContent(mainPart)
           Transport.send(message)
+          log.info(s"Send email succeed.")
           Behaviors.same
 
         case x =>
@@ -76,7 +77,7 @@ object EmailActor {
     p.put("mail.smtp.port", AppSettings.emailPort)
     p.put("mail.transport.protocol", "smtp")
     p.put("mail.smtp.auth", "true")
-    p.put("mail.stmp.ssl.enable", "true")
+//    p.put("mail.stmp.ssl.enable", "true")
 //    p.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory")
     p
   }

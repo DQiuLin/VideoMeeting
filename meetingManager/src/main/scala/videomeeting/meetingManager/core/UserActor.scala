@@ -179,6 +179,7 @@ object UserActor {
                   case Some(v) =>
                     req match {
                       case MeetingCreated(`meetingId`) =>
+                        log.info("userActor get MeetingCreated")
                         meetingManager ! ActorProtocol.MeetingCreate(meetingId)
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 

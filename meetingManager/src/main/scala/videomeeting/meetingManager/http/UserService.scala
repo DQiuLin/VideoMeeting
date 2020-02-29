@@ -96,14 +96,14 @@ trait UserService extends ServiceUtils {
     parameter(
       'userId.as[Int],
       'token.as[String],
-      'meetingId.as[Int]
-    ) { (uid, token, meetingId) =>
-      val setWsFutureRsp: Future[Option[Flow[Message, Message, Any]]] = userManager ? (SetupWs(uid, meetingId, _))
+      'roomId.as[Int]
+    ) { (uid, token, roomId) =>
+      val setWsFutureRsp: Future[Option[Flow[Message, Message, Any]]] = userManager ? (SetupWs(uid, roomId, _))
       dealFutureResult(
         setWsFutureRsp.map {
           case Some(rsp) => handleWebSocketMessages(rsp)
           case None =>
-            log.debug(s"建立websocket失败，userId=$uid,meetingId=$meetingId")
+            log.debug(s"建立websocket失败，userId=$uid,meetingId=$roomId")
             complete("setup error")
         }
       )

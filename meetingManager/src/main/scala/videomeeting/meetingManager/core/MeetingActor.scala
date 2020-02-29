@@ -163,16 +163,15 @@ object MeetingActor {
             for {
               userTableOpt <- UserInfoDao.searchById(userId)
             } yield {
-              case Right(rsp) =>
-                if (userTableOpt.nonEmpty) {
-                  log.info(s"start meeting succeed")
-                  val meetingInfo = MeetingInfo(meetingId, if (name.nonEmpty) name.get else s"${userTableOpt.get.username}的会议", if(des.nonEmpty) des.get else s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
-                  ctx.self ! SwitchBehavior("init", init(meetingId, subscribers, Some(meetingInfo)))
-                } else {
-                  log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
-                  dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
-                  ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
-                }
+              if (userTableOpt.nonEmpty) {
+                log.info(s"start meeting succeed")
+                val meetingInfo = MeetingInfo(meetingId, if (name.nonEmpty) name.get else s"${userTableOpt.get.username}的会议", if(des.nonEmpty) des.get else s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
+                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers, Some(meetingInfo)))
+              } else {
+                log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
+                dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+              }
             }
             switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
           }

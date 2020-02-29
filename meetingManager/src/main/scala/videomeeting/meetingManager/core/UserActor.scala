@@ -167,7 +167,9 @@ object UserActor {
           Behaviors.same
 
         case WebSocketMsg(reqOpt) =>
+          log.info("aaa")
           if (reqOpt.contains(PingPackage)) {
+            log.info("sss")
             if (timer.isTimerActive("HeartBeatKey_" + userId)) timer.cancel("HeartBeatKey_" + userId)
             ctx.self ! SendHeartBeat
             Behaviors.same
@@ -179,7 +181,6 @@ object UserActor {
                   case Some(v) =>
                     req match {
                       case MeetingCreated(`meetingId`) =>
-                        log.info("userActor get MeetingCreated")
                         meetingManager ! ActorProtocol.MeetingCreate(meetingId)
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
@@ -228,7 +229,7 @@ object UserActor {
           init(userId, false, None)
 
         case unknown =>
-          log.info(s"${ctx.self.path} recv an unknown msg:${msg} in anchor state...")
+          log.debug(s"${ctx.self.path} recv an unknown msg:${msg} in anchor state...")
           stashBuffer.stash(unknown)
           Behavior.same
       }
@@ -275,7 +276,9 @@ object UserActor {
           Behaviors.stopped
 
         case WebSocketMsg(reqOpt) =>
+          log.info("aaaa")
           if (reqOpt.contains(PingPackage)) {
+            log.info("ssss")
             if (timer.isTimerActive("HeartBeatKey_" + userId)) timer.cancel("HeartBeatKey_" + userId)
             ctx.self ! SendHeartBeat
             Behaviors.same
@@ -291,7 +294,6 @@ object UserActor {
                     case Some(v) =>
                       req match {
                         case MeetingCreated(`meetingId`) =>
-                          log.info("userActor get MeetingCreated")
                           meetingManager ! ActorProtocol.MeetingCreate(meetingId)
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
@@ -329,7 +331,7 @@ object UserActor {
           init(userId, temporary, None)
 
         case unknown =>
-          log.info(s"${ctx.self.path} recv an unknown msg:${msg} in audience state...")
+          log.debug(s"${ctx.self.path} recv an unknown msg:${msg} in audience state...")
           stashBuffer.stash(unknown)
           Behavior.same
       }
@@ -350,7 +352,6 @@ object UserActor {
           Behaviors.stopped
 
         case x =>
-          log.info(s"${ctx.self.path.name} recv unknown msg $x")
           stashBuffer.stash(x)
           Behavior.same
 

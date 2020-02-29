@@ -19,7 +19,7 @@ object Routes {
   val signInByMail: String = userUrl + "/signInByMail"
   val signUp: String = userUrl + "/signUp"
   val signIn: String = userUrl + "/signIn"
-  val getRoomList: String = userUrl + "/getMeetingList"
+  val getRoomList: String = userUrl + "/getRoomList"
   val searchRoom: String = userUrl + "/searchRoom"
   val temporaryUser: String = userUrl + "/temporaryUser"
   val getMeetingInfo: String = userUrl + "/getMeetingInfo"

@@ -187,7 +187,7 @@ object UserActor {
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                       case Invite(email, meetingNum) =>
-                        log.debug("send email to email actor")
+                        log.info("send email to email actor")
                         emailActor ! EmailActor.SendInviteEmail(email, meetingNum)
                         clientActor ! Wrap(InviteRsp.asInstanceOf[WsMsgRm].fillMiddleBuffer(sendBuffer).result())
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))

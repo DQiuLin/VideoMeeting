@@ -50,18 +50,12 @@ class LoginController(
     val tb1 = new ToggleButton("用户名登录", tb1Icon)
     tb1.getStyleClass.add("hostScene-leftArea-toggleButton")
     tb1.setPrefWidth(170)
-    val tb2 = new ToggleButton("邮箱登录", tb2Icon)
-    tb2.setPrefWidth(170)
-    tb2.getStyleClass.add("hostScene-leftArea-toggleButton")
     tb1.setSelected(true)
 
     val toggleGroup = new ToggleGroup
     tb1.setToggleGroup(toggleGroup) //?
-    tb2.setToggleGroup(toggleGroup)
     val tbBox = new HBox()
     tbBox.setAlignment(Pos.CENTER)
-    tbBox.getChildren.addAll(tb1, tb2)
-
     //userNameGrid
     val userNameIcon = new ImageView("img/userName.png")
     userNameIcon.setFitHeight(30)
@@ -124,18 +118,6 @@ class LoginController(
     //    bottomBox.setStyle("-fx-background-color:#d4dbe3;-fx-background-radius: 10")
     bottomBox.setPadding(new Insets(10, 100, 50, 100))
 
-    tb1.setOnAction(_ => {
-      if (!tb2.isSelected) tb1.setSelected(true)
-      bottomBox.getChildren.clear() //先清空，然后加上用户名登陆的
-      bottomBox.getChildren.addAll(tbBox, userNameGrid)
-    }
-    )
-    tb2.setOnAction(_ => {
-      if (!tb1.isSelected) tb2.setSelected(true)
-      bottomBox.getChildren.clear()
-      bottomBox.getChildren.addAll(tbBox, emailGrid)
-    }
-    )
 
     val box = new VBox()
     box.getChildren.addAll(upBox, bottomBox)
@@ -155,14 +137,10 @@ class LoginController(
         if (tb1.isSelected && userNameField.getText().nonEmpty && passWordField.getText().nonEmpty) {
           (userNameField.getText(), passWordField.getText(), "userName")
         } else {
-          if (tb2.isSelected && emailField.getText().nonEmpty && emailPassWordField.getText().nonEmpty) {
-            (emailField.getText(), emailPassWordField.getText(), "email")
-          } else {
             Boot.addToPlatform {
               WarningDialog.initWarningDialog("请填写完整信息！")
             }
             null
-          }
         }
       } else {
         null

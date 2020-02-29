@@ -77,7 +77,7 @@ object Dependencies4Processor {
 
   // Platform classifier for native library dependencies
   //val platform = org.bytedeco.javacpp.Loader.getPlatform
-  private val platforms = IndexedSeq("windows-x86_64", "macosx-x86_64")
+  private val platforms = IndexedSeq("windows-x86_64", "linux-x86_64", "macosx-x86_64")
 
   // Libraries with native dependencies
   private val bytedecoPresetLibs = Seq(

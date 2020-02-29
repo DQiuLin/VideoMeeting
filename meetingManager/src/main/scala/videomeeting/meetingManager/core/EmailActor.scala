@@ -61,6 +61,7 @@ object EmailActor {
           mainPart.addBodyPart(html)
           message.setContent(mainPart)
           Transport.send(message)
+          log.info(s"Send email succeed.")
           Behaviors.same
 
         case x =>

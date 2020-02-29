@@ -15,7 +15,7 @@ import videomeeting.meetingManager.common.Common.{Like, Role}
 import videomeeting.meetingManager.core.MeetingManager.GetRtmpLiveInfo
 import videomeeting.meetingManager.models.dao.UserInfoDao
 import videomeeting.meetingManager.protocol.ActorProtocol
-import videomeeting.meetingManager.protocol.ActorProtocol.BanOnAnchor
+import videomeeting.meetingManager.protocol.ActorProtocol.{BanOnAnchor, ModifyRoomDes}
 import videomeeting.meetingManager.utils.{DistributorClient, ProcessorClient, RtpClient}
 
 import scala.collection.mutable
@@ -146,6 +146,22 @@ object MeetingActor {
           }
           Behaviors.same
 
+        case ModifyRoomDes(id, name, des) =>
+          if (meetingInfoOpt.nonEmpty) {
+            val meetingInfo = meetingInfoOpt.get
+            val roomInfo = if (name.nonEmpty && des.nonEmpty) {
+              meetingInfo.copy(meetingName = name.get, roomDes = des.get)
+            } else if (name.nonEmpty) {
+              meetingInfo.copy(meetingName = name.get)
+            } else if (des.nonEmpty) {
+              meetingInfo.copy(roomDes = des.get)
+            } else {
+              meetingInfo
+            }
+            init(meetingId, subscribers, Some(roomInfo))
+          } else
+            Behaviors.same
+
         case TestRoom(meetingInfo) =>
           //仅用户测试使用空房间
           idle(meetingInfo, mutable.HashMap[Int, mutable.HashMap[Int, LiveInfo]](), subscribers, 0, System.currentTimeMillis())
@@ -181,6 +197,18 @@ object MeetingActor {
         case GetMeetingInfo(replyTo) =>
           replyTo ! meetingInfo
           Behaviors.same
+
+        case ModifyRoomDes(id, name, des) =>
+          val roomInfo = if (name.nonEmpty && des.nonEmpty) {
+            meetingInfo.copy(meetingName = name.get, roomDes = des.get)
+          } else if (name.nonEmpty) {
+            meetingInfo.copy(meetingName = name.get)
+          } else if (des.nonEmpty) {
+            meetingInfo.copy(roomDes = des.get)
+          } else {
+            meetingInfo
+          }
+          idle(roomInfo, liveInfoMap, subscribe, viewNum, startTime)
 
         case UpdateRTMP(rtmp) =>
           //timer.cancel(DelayUpdateRtmpKey + wholeRoomInfo.roomInfo.roomId.toString)
@@ -497,7 +525,6 @@ object MeetingActor {
         val roomInfo = if (roomName.nonEmpty && roomDes.nonEmpty) {
           meetingInfo.copy(meetingName = roomName.get, roomDes = roomDes.get)
         } else if (roomName.nonEmpty) {
-          meetingInfo.copy(meetingName = roomName.get)
           meetingInfo.copy(meetingName = roomName.get)
         } else if (roomDes.nonEmpty) {
           meetingInfo.copy(roomDes = roomDes.get)

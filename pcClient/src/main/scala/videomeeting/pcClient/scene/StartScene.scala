@@ -181,8 +181,8 @@ class StartScene(stage: Stage) {
   roomNameField.setPrefWidth(width * 0.15)
   var roomDesArea = new TextArea(s"${RmManager.roomInfo.get.roomDes}")
   roomDesArea.setPrefSize(width * 0.15, height * 0.1)
-  var emailArea = new TextArea("")
-  emailArea.setPrefSize(width * 0.15,height * 0.1)
+  var emailArea = new TextField("")
+  emailArea.setPrefWidth(width * 0.15)
 
   val roomInfoIcon = new ImageView("img/roomInfo.png")
   roomInfoIcon.setFitWidth(20)
@@ -199,14 +199,14 @@ class StartScene(stage: Stage) {
   applyIcon.setFitWidth(20)
   applyIcon.setFitHeight(20)
 
-  val tb1 = new ToggleButton("当前参会成员", userIcon)
+  val tb1 = new ToggleButton("参会成员", userIcon)
   tb1.getStyleClass.add("hostScene-leftArea-toggleButton")
-  val tb2 = new ToggleButton("申请发言人", applyIcon)
+  val tb2 = new ToggleButton("申请发言", applyIcon)
   tb2.getStyleClass.add("hostScene-leftArea-toggleButton")
-  val tb3 = new ToggleButton("房间 ", roomInfoIcon)
+  val tb3 = new ToggleButton("房间", roomInfoIcon)
   tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
-  val tb4 = new ToggleButton("房间 ",  applyIcon)
-  tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
+  val tb4 = new ToggleButton("加入",  applyIcon)
+  tb4.getStyleClass.add("hostScene-leftArea-toggleButton")
 
   val liveToggleButton = new ToggleButton("开始会议")
   liveToggleButton.getStyleClass.add("hostScene-rightArea-liveBtn")
@@ -545,9 +545,11 @@ class StartScene(stage: Stage) {
       emailBtn.setOnAction {
         _ =>
           //邀请参会人员
-          if (emailText.getText.nonEmpty) {
-            if (RmManager.roomInfo.nonEmpty)
-              listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString, emailText.getText)
+          if (emailArea.getText.nonEmpty) {
+            if (RmManager.roomInfo.nonEmpty){
+              emailArea.setText("")
+              listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString,emailArea.getText)
+            }
             else
               Boot.addToPlatform(
                 WarningDialog.initWarningDialog("请先修改房间信息")

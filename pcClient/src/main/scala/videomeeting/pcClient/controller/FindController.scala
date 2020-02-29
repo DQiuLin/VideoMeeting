@@ -39,7 +39,7 @@ class FindController (
   def refreshList = {
     Boot.addToPlatform {
       showLoading()
-//      updateRoomList()
+      updateRoomList()
     }
   }
 
@@ -70,7 +70,7 @@ class FindController (
   findScene.setListener(new FindSceneListener {
     override def enter(meetingId: Long, timestamp: Long = 0L): Unit = {
       Boot.addToPlatform {
-        showLoading()
+        refreshList
         if (findScene.roomList.exists(_.meetingId == meetingId)) {
           rmManager ! GetRoomDetail(findScene.roomList.find(_.meetingId == meetingId).get.meetingId)
         } else {

@@ -350,6 +350,7 @@ object UserActor {
           Behaviors.stopped
 
         case x =>
+          log.info(s"${ctx.self.path.name} recv unknown msg $x")
           stashBuffer.stash(x)
           Behavior.same
 

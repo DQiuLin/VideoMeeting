@@ -489,6 +489,7 @@ object RmManager {
           startBehavior(stageCtx, homeController, hostScene, hostController, liveManager, mediaPlayer, Some(msg.sender), hostStatus, joinAudience, rtmpLive, rtpLive)
 
         case WsEstablishSuccess =>
+          log.info(s"in wses: $sender")
           sender.foreach(_ ! MeetingCreated(roomInfo.get.meetingId))
           Behaviors.same
 
@@ -579,6 +580,7 @@ object RmManager {
           Behaviors.same
 
         case InviteAudience(meetingId, email) =>
+          log.info(s"in invite: $sender")
           sender.foreach(_ ! Invite(email, meetingId))
           Behaviors.same
 

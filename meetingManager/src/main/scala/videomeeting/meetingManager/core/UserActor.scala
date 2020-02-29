@@ -135,7 +135,7 @@ object UserActor {
             if (userId == TestConfig.TEST_USER_ID) {
               log.debug(s"${ctx.self.path} 测试房间的房主actor，不处理其他类型的消息msg=$unknown")
             } else {
-              log.info(s"${ctx.self.path} recv an unknown msg:${msg} in init state...")
+              log.debug(s"${ctx.self.path} recv an unknown msg:${msg} in init state...")
               stashBuffer.stash(unknown)
             }
 
@@ -329,7 +329,7 @@ object UserActor {
           init(userId, temporary, None)
 
         case unknown =>
-          log.debug(s"${ctx.self.path} recv an unknown msg:${msg} in audience state...")
+          log.info(s"${ctx.self.path} recv an unknown msg:${msg} in audience state...")
           stashBuffer.stash(unknown)
           Behavior.same
       }

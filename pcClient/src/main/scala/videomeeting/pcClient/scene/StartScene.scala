@@ -85,7 +85,19 @@ object StartScene {
   }
 
   trait StartSceneListener {
+    /*audience*/
+    def joinReq(roomId: Int)
 
+    def quitJoin(roomId: Int, userId:Int)
+
+
+    def changeOption(needImage: Boolean = true, needSound: Boolean = true)
+
+
+    def applySpeak(meetingId: Int)
+
+
+    /*host*/
     def startLive()
 
     def stopLive()
@@ -267,6 +279,10 @@ class StartScene(stage: Stage) {
   val watchingState: Text = watchingList.watchingState
   val watchingTable: TableView[WatchingList.WatchingListInfo] = watchingList.watchingTable
 
+  /*host or audience*/
+  var isHost = true
+  var hasReqJoin = false
+
   /*layout*/
   var leftArea: VBox = addLeftArea()
   var rightArea: VBox = addRightArea()
@@ -275,6 +291,8 @@ class StartScene(stage: Stage) {
   borderPane.setLeft(leftArea)
   borderPane.setRight(rightArea)
   group.getChildren.add(borderPane)
+
+
 
   /**
     * 更新连线请求
@@ -367,55 +385,143 @@ class StartScene(stage: Stage) {
   }
 
   def addLeftArea(): VBox = {
-    tb3.setSelected(true)
+    val leftAreaBox = new VBox()
+    println(s"check host value ${isHost}")
+    if(isHost){
+      println("is host ====================")
+      tb3.setSelected(true)
 
-    val group = new ToggleGroup
-    tb1.setToggleGroup(group)
-    tb2.setToggleGroup(group)
-    tb3.setToggleGroup(group)
-    tb4.setToggleGroup(group)
+      val group = new ToggleGroup
+      tb1.setToggleGroup(group)
+      tb2.setToggleGroup(group)
+      tb3.setToggleGroup(group)
+      tb4.setToggleGroup(group)
 
-    val tbBox = new HBox()
-    tbBox.getChildren.addAll(tb3, tb1, tb2, tb4)
 
-    val left1Area = addLeftChild1Area()
-    val left2Area = addLeftChild2Area()
-    val left3Area = addLeftChild3Area()
-    val left4Area = addLeftChild4Area()
+      val tbBox = new HBox()
+      tbBox.getChildren.addAll(tb3, tb1, tb2, tb4)
 
-    content.getChildren.add(left3Area)
-    content.setPrefSize(width * 0.32, height)
+      val left1Area = addLeftChild1Area()
+      val left2Area = addLeftChild2Area()
+      val left3Area = addLeftChild3Area()
+      val left4Area = addLeftChild4Area()
 
-    tb1.setOnAction(_ => {
-      tb1.setGraphic(userIcon)
-      content.getChildren.clear()
-      content.getChildren.add(left1Area)
-    }
-    )
-    tb2.setOnAction(_ => {
-      tb2.setGraphic(applyIcon)
-      content.getChildren.clear()
-      content.getChildren.add(left2Area)
-    }
-    )
-
-    tb3.setOnAction(_ => {
-      tb3.setGraphic(roomInfoIcon)
-      content.getChildren.clear()
       content.getChildren.add(left3Area)
+      content.setPrefSize(width * 0.32, height)
+
+      tb1.setOnAction(_ => {
+        tb1.setGraphic(userIcon)
+        content.getChildren.clear()
+        content.getChildren.add(left1Area)
+      }
+      )
+      tb2.setOnAction(_ => {
+        tb2.setGraphic(applyIcon)
+        content.getChildren.clear()
+        content.getChildren.add(left2Area)
+      }
+      )
+
+      tb3.setOnAction(_ => {
+        tb3.setGraphic(roomInfoIcon)
+        content.getChildren.clear()
+        content.getChildren.add(left3Area)
+      }
+      )
+
+      tb4.setOnAction(_ => {
+        tb4.setGraphic(applyIcon)
+        content.getChildren.clear()
+        content.getChildren.add(left4Area)
+      })
+
+      leftAreaBox.getChildren.addAll(tbBox, content)
+
+    }else{
+      content.setPrefSize(width * 0.32, height)
+      println("is audience ====================")
+      def createRoomInfoBox: VBox = {
+        //roomName
+        val roomNameIcon = Common.getImageView("img/roomName.png", 30, 30)
+        val roomNameText = new Text(RmManager.roomInfo.get.meetingName)
+        roomNameText.setWrappingWidth(width * 0.2)
+        roomNameText.getStyleClass.add("audienceScene-leftArea-roomNameText")
+
+        val roomName = new HBox()
+        roomName.getChildren.addAll(roomNameIcon, roomNameText)
+        roomName.setPadding(new Insets(20, 0, 0, 0))
+        roomName.setAlignment(Pos.CENTER_LEFT)
+        roomName.setSpacing(8)
+
+        val infoBox = new VBox(roomName)
+        infoBox.setSpacing(20)
+        infoBox.setPadding(new Insets(0, 0, 40, 0))
+
+        infoBox
+      }
+
+      def createButtonBox: HBox = {
+        val linkBtn = new Button("申请发言", new ImageView("img/link.png"))
+        linkBtn.getStyleClass.add("audienceScene-leftArea-linkBtn")
+        linkBtn.setOnAction{ _ =>
+          listener.applySpeak(RmManager.roomInfo.get.meetingId)
+        }
+        Common.addButtonEffect(linkBtn)
+
+        val exitBtn = new Button("中断发言", new ImageView("img/shutdown.png"))
+        exitBtn.getStyleClass.add("audienceScene-leftArea-linkBtn")
+        exitBtn.setOnAction( _ => {
+          //TODO 中断发言
+          //        listener.quitJoin(room.meetingId)
+        })
+        Common.addButtonEffect(exitBtn)
+
+        val buttonBox = new HBox(linkBtn, exitBtn)
+        buttonBox.setSpacing(15)
+        buttonBox.setAlignment(Pos.CENTER)
+
+        buttonBox
+
+      }
+
+      val liveToggleButton = new ToggleButton("加入会议")
+      liveToggleButton.getStyleClass.add("hostScene-rightArea-liveBtn")
+      liveToggleButton.setOnAction(_ => {
+        if(liveToggleButton.isSelected){
+          liveToggleButton.setText("退出会议")
+          //加入会议
+          if(!hasReqJoin) {
+            listener.joinReq(RmManager.roomInfo.get.meetingId)
+            hasReqJoin = true
+          }
+          else WarningDialog.initWarningDialog("已经发送过申请啦~")
+        }else{
+          liveToggleButton.setText("加入会议")
+          //退出会议
+          listener.quitJoin(RmManager.roomInfo.get.meetingId, RmManager.roomInfo.get.userId)
+        }
+      }
+      )
+
+      val change = new Button("测试")
+      change.getStyleClass.add("hostScene-middleArea-tableBtn")
+      change.setOnAction {
+        _ =>
+          println(s"check host 222 ${isHost}")
+          if(isHost){
+            isHost=false
+            changeAllElement()
+          }
+          else{
+            isHost=true
+            changeAllElement()
+          }
+      }
+
+      content.getChildren.addAll(createRoomInfoBox, createButtonBox, liveToggleButton,change)
+      leftAreaBox.getChildren.addAll(content)
     }
-    )
-
-    tb4.setOnAction(_ => {
-      tb4.setGraphic(applyIcon)
-      content.getChildren.clear()
-      content.getChildren.add(left4Area)
-    })
-
-    val leftArea = new VBox()
-    leftArea.getChildren.addAll(tbBox, content)
-
-    leftArea
+    leftAreaBox
   }
 
   def addLeftChild1Area(): VBox = {
@@ -567,8 +673,24 @@ class StartScene(stage: Stage) {
       findBox.getChildren.addAll(emailArea, emailBtn)
       findBox.setSpacing(5)
 
+      //test change
+      val change = new Button("测试")
+      change.getStyleClass.add("hostScene-middleArea-tableBtn")
+      change.setOnAction {
+        _ =>
+          println(s"check host 222 ${isHost}")
+          if(isHost){
+            isHost=false
+            changeAllElement()
+          }
+          else{
+            isHost=true
+            changeAllElement()
+          }
+      }
+
       val roomInfoBox = new VBox()
-      roomInfoBox.getChildren.addAll(roomId, userId, roomNameText, roomName, roomDesText, roomDes, liveToggleButton, emailText, findBox)
+      roomInfoBox.getChildren.addAll(roomId, userId, roomNameText, roomName, roomDesText, roomDes, liveToggleButton, emailText, findBox,change)
       roomInfoBox.setPadding(new Insets(5, 30, 0, 30))
       roomInfoBox.setSpacing(15)
       roomInfoBox
@@ -633,20 +755,17 @@ class StartScene(stage: Stage) {
   }
 
 
-  def addAllElement(): Unit = {
+  def changeAllElement(): Unit = {
+    println(s"check host 333 ${isHost}")
     group.getChildren.clear()
-    fullScreenImage.getChildren.clear()
-    rightArea = addRightArea()
+    borderPane.getChildren.clear()
+    leftArea.getChildren.clear()
+    content.getChildren.clear()
+    leftArea=addLeftArea()
+    borderPane.setLeft(leftArea)
     borderPane.setRight(rightArea)
     group.getChildren.add(borderPane)
-  }
 
-  def removeAllElement(): Unit = {
-    group.getChildren.clear()
-    fullScreenImage.getChildren.addAll(liveImage, statisticsCanvas, barrageCanvas)
-    fullScreenImage.setLayoutX(0)
-    fullScreenImage.setLayoutY(0)
-    group.getChildren.add(fullScreenImage)
   }
 
 //  def drawPackageLoss(info: mutable.Map[String, PackageLossInfo], bandInfo: Map[String, BandWidthInfo]): Unit = {

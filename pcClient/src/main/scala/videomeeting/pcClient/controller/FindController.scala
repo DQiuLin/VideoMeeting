@@ -39,7 +39,7 @@ class FindController (
   def refreshList = {
     Boot.addToPlatform {
       showLoading()
-//      updateRoomList()
+      updateRoomList()
     }
   }
 

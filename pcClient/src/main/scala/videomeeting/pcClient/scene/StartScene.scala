@@ -376,7 +376,7 @@ class StartScene(stage: Stage) {
     tb4.setToggleGroup(group)
 
     val tbBox = new HBox()
-    tbBox.getChildren.addAll(tb3, tb1, tb2)
+    tbBox.getChildren.addAll(tb3, tb1, tb2, tb4)
 
     val left1Area = addLeftChild1Area()
     val left2Area = addLeftChild2Area()

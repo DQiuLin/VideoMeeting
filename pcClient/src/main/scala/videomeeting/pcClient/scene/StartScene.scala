@@ -546,8 +546,10 @@ class StartScene(stage: Stage) {
         _ =>
           //邀请参会人员
           if (emailArea.getText.nonEmpty) {
-            if (RmManager.roomInfo.nonEmpty)
-              listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString, emailArea.getText)
+            if (RmManager.roomInfo.nonEmpty){
+              emailArea.setText("")
+              listener.inviteAudience(RmManager.roomInfo.get.meetingId.toString,emailArea.getText)
+            }
             else
               Boot.addToPlatform(
                 WarningDialog.initWarningDialog("请先修改房间信息")

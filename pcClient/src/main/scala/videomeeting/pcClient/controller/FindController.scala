@@ -20,6 +20,9 @@ import videomeeting.pcClient.component.WarningDialog
 import videomeeting.pcClient.core.RmManager.GetRoomDetail
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.Await
+import scala.concurrent.duration.{FiniteDuration, _}
+
 /**
   * Author: Administrator
   * Date: 2020/2/6/006
@@ -44,7 +47,9 @@ class FindController (
   }
 
   def updateRoomList(): Unit = {
-    RMClient.getRoomList.map {
+    val rspFuture = RMClient.getRoomList
+    val rsp = Await.result(rspFuture, 1.second)
+    rsp match {
       case Right(rst) =>
         if (rst.errCode == 0) {
           Boot.addToPlatform {

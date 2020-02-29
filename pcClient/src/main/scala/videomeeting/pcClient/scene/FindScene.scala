@@ -63,7 +63,7 @@ object FindScene {
 
   trait FindSceneListener {
 
-    def enter(roomId: Long, timestamp: Long = 0L)
+    def enter(roomId: Int, timestamp: Long = 0L)
 
     //    def create()
 
@@ -134,7 +134,7 @@ class FindScene {
   val roomIdField = new TextField("")
   val goBtn = new Button("前往")
   //这里要加一个验证，是否为纯粹的数字
-  goBtn.setOnAction(_ => listener.enter(roomIdField.getText.toLong))
+  goBtn.setOnAction(_ => listener.enter(roomIdField.getText.toInt))
 
   val findRoomGrid = new GridPane //格子布局
   findRoomGrid.setHgap(20)

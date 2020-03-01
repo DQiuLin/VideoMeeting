@@ -23,7 +23,7 @@ object DistributorClient {
   import io.circe.parser.decode
 
   private val log = LoggerFactory.getLogger(this.getClass)
-  val distributorBaseUrl = s"https://$distributorDomain/theia/distributor"
+  val distributorBaseUrl = s"http://$distributorDomain/theia/distributor"
 
   def seekRecord(roomId:Long, startTime:Long):Future[Either[String,RecordInfoRsp]] = {
     val url = distributorBaseUrl + "/seekRecord"

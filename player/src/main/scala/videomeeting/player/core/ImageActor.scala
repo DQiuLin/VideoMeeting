@@ -226,10 +226,15 @@ object ImageActor {
       val w = img.getWidth
       val h = img.getHeight
       if (id.contains("-")) { //连线状态
+//        if (w / sW > h / sH) {
+//          gc.drawImage(img, sW / 2, (sH - h * sW / w) / 2 + sH / 4, sW / 2, (h * sW / w) / 2)
+//        } else {
+//          gc.drawImage(img, (sW - w * sH / h) / 2 + sW / 2, sH / 4, (w * sH / h) / 2, sH / 2)
+//        }
         if (w / sW > h / sH) {
-          gc.drawImage(img, sW / 2, (sH - h * sW / w) / 2 + sH / 4, sW / 2, (h * sW / w) / 2)
+          gc.drawImage(img, 0, (sH - h * sW / w) / 2, sW, h * sW / w)
         } else {
-          gc.drawImage(img, (sW - w * sH / h) / 2 + sW / 2, sH / 4, (w * sH / h) / 2, sH / 2)
+          gc.drawImage(img, (sW - w * sH / h) / 2, 0, w * sH / h, sH)
         }
 
       } else { //普通观看

@@ -92,6 +92,7 @@ object RecorderActor {
       Behaviors.withTimers[Command] {
         implicit timer =>
           log.info(s"recorderActor start----")
+          audioChannels = client.size + 1
           avutil.av_log_set_level(-8)
           val recorder4ts = new FFmpegFrameRecorder(output, 640, 480, audioChannels)
           recorder4ts.setFrameRate(frameRate)

@@ -426,6 +426,7 @@ object MeetingActor {
         log.debug(s"${ctx.self.path} the meeting actor receive JoinReq")
         UserInfoDao.searchById(userId4Audience).map { r =>
             if (r.nonEmpty) {
+              log.info(s"dispathTo hostId-${meetingInfo.userId}, audience join, audienceId-${userId4Audience.toString}")
               dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
             } else {
               log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$meetingId")

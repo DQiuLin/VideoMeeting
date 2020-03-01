@@ -516,7 +516,7 @@ object MeetingActor {
             }
           }
         } else {
-          dispatchTo(List((meetingInfo.userId, false)), AudienceJoinRsp(None))
+          dispatchTo(List((meetingInfo.userId, false)), AudienceJoinRsp(None, ""))
           dispatchTo(List((userId4Audience, false)), JoinRefused)
         }
 

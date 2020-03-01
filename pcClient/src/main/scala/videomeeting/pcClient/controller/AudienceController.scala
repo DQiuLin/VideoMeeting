@@ -116,7 +116,7 @@ class AudienceController(
 
         case msg: JoinRsp =>
           if (msg.errCode == 0) {
-            rmManager ! RmManager.StartJoin(msg.hostLiveId.get, msg.joinInfo.get)
+            rmManager ! RmManager.StartJoin(msg.hostLiveId.get, msg.joinInfo.get, msg.mixId)
             audienceScene.hasReqJoin = false
           } else if (msg.errCode == 300001) {
             WarningDialog.initWarningDialog("房主未开通连线功能!")

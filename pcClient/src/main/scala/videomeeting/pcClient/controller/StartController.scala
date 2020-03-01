@@ -216,13 +216,6 @@ class StartController(
           WarningDialog.initWarningDialog("邀请邮件已发送")
         }
 
-      case msg: UpdateAudienceInfo =>
-        //        log.info(s"update audienceList.")
-        Boot.addToPlatform {
-          //          startScene.watchingList.updateWatchingList(msg.AudienceList)
-        }
-
-
       case HostStopPushStream2Client =>
         Boot.addToPlatform {
           WarningDialog.initWarningDialog("直播成功停止，已通知所有观众。")

@@ -158,12 +158,6 @@ class AudienceController(
             rmManager ! RmManager.StopJoinAndWatch
           }
 
-        case msg: UpdateAudienceInfo =>
-          //          log.info(s"update audienceList.")
-          Boot.addToPlatform {
-            //            audienceScene.watchingList.updateWatchingList(msg.AudienceList)
-          }
-
         case msg: LikeRoomRsp =>
         //          log.debug(s"audience receive likeRoomRsp: ${msg}")
         case HostStopPushStream2Client =>

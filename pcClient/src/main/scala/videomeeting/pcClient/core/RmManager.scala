@@ -915,6 +915,7 @@ object RmManager {
                 case AudienceStatus.LIVE =>
                   if (isStart) {
                     liveManager ! LiveManager.StopPull
+                    log.info("stop pull 111 ==========")
                   }
                   else {
                     val info = WatchInfo(audienceScene.getRoomInfo.meetingId, audienceScene.gc)
@@ -924,6 +925,7 @@ object RmManager {
                 case AudienceStatus.CONNECT =>
                   audienceLiveInfo.foreach { i =>
                     liveManager ! LiveManager.StopPull
+                    log.info("stop pull 2222 ==========")
 
                   }
                 case AudienceStatus.RECORD =>
@@ -1056,6 +1058,7 @@ object RmManager {
 
             /*断开连线，停止推拉*/
             liveManager ! LiveManager.StopPull
+            log.info("stop pull 4444==========")
             liveManager ! LiveManager.StopPush
             liveManager ! LiveManager.DeviceOff
 

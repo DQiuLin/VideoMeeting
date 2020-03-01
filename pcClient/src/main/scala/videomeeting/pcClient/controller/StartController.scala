@@ -149,7 +149,7 @@ class StartController(
         rmManager ! HeartBeat
 
       case msg: StartLiveRsp =>
-        //        log.debug(s"get StartLiveRsp: $msg")
+        log.info(s"===========get StartLiveRsp: $msg")
         if (msg.errCode == 0) {
           rmManager ! RmManager.StartLive(msg.liveInfo.get.liveId, msg.liveInfo.get.liveCode)
         } else {

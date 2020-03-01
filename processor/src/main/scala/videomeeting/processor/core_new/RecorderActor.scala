@@ -343,8 +343,8 @@ object RecorderActor {
           log.info(s"clientInfo: $clientInfo")
           log.info(s"clientFrame: ${clientFrame.keys}")
           //根据不同的参会人数设置不同的排列方式
-          if (clientInfo.size == clientFrame.values.toList.size) {
-            clientInfo.size match {
+//          if (clientInfo.size == clientFrame.values.toList.size) {
+          clientFrame.keys.size match {
               case 1 =>
                 graph.drawImage(clientFrame.values.toList.head, 0, 0, canvasSize._1, canvasSize._2, null)
 //                graph.drawString("主持人", 24, 25)
@@ -372,9 +372,9 @@ object RecorderActor {
 //                graph.drawString("参会人3", 470, 25)
 
             }
-          } else {
-            log.info(s"${ctx.self} is waiting to drawing")
-          }
+//          } else {
+//            log.info(s"${ctx.self} is waiting to drawing")
+//          }
 
           val frame = convert.convert(canvas)
           recorder4ts.record(frame.clone())

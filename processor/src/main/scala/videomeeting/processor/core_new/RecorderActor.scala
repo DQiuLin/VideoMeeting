@@ -337,7 +337,7 @@ object RecorderActor {
 //
 //          val frame = convert.convert(canvas)
 //          recorder4ts.record(frame.clone())
-          Behaviors.same
+          draw(canvas, graph, lastTime, hostFrame, clientFrame, clientInfo, recorder4ts, convert4Host, convert, num, bgImg, roomId, canvasSize)
 
         case StartDrawing =>
           //根据不同的参会人数设置不同的排列方式

@@ -92,6 +92,7 @@ object RecorderActor {
       Behaviors.withTimers[Command] {
         implicit timer =>
           log.info(s"recorderActor start----")
+          audioChannels = client.size + 1
           avutil.av_log_set_level(-8)
           val recorder4ts = new FFmpegFrameRecorder(output, 640, 480, audioChannels)
           recorder4ts.setFrameRate(frameRate)
@@ -164,7 +165,7 @@ object RecorderActor {
             val drawer = ctx.spawn(draw(canvas, canvas.getGraphics, Ts4LastImage(), hostImage, clientImage, client, recorder4ts,
               new Java2DFrameConverter(), new Java2DFrameConverter, layout, "defaultImg.jpg", roomId, (640, 480)), s"drawer_$roomId")
             ctx.self ! NewFrame(liveId, frame)
-            work(roomId,client,0,null,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
+            work(roomId,client,0,None,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
 
 
         case CloseRecorder =>
@@ -207,7 +208,7 @@ object RecorderActor {
       msg match {
         case NewFrame(liveId, frame) =>
           var newNum = num
-          var newMap = audioMap.get
+          var newMap = audioMap.getOrElse(mutable.Map[String, Int]())
           if (frame.image != null) {
              drawer ! Image4Client(frame,liveId)
           }

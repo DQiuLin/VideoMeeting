@@ -185,7 +185,7 @@ object MeetingActor {
           Behaviors.same
 
         case ActorProtocol.UpdateSubscriber(join, meetingId, userId, temporary, userActorOpt) =>
-          log.debug(s"${ctx.self.path}新用户加入会议meetingId=$meetingId,userId=$userId")
+          log.info(s"${ctx.self.path}新用户加入会议meetingId=$meetingId,userId=$userId in init")
           for {
             userTableOpt <- UserInfoDao.searchById(userId)
           } yield {

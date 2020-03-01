@@ -113,6 +113,19 @@ class AudienceController(
           //          log.debug(s"heartbeat: ${msg.ts}")
           rmManager ! HeartBeat
 
+
+        case msg: JoinRsp =>
+          if (msg.errCode == 0) {
+            rmManager ! RmManager.StartJoin(msg.hostLiveId.get, msg.joinInfo.get, msg.mixId)
+            audienceScene.hasReqJoin = false
+          } else if (msg.errCode == 300001) {
+            WarningDialog.initWarningDialog("房主未开通连线功能!")
+            audienceScene.hasReqJoin = false
+          } else if (msg.errCode == 300002) {
+            WarningDialog.initWarningDialog("房主拒绝连线申请!")
+            audienceScene.hasReqJoin = false
+          }
+
         case msg: ForceExitRsp =>
           WarningDialog.initWarningDialog(s"主持人强制用户${msg.userId}退出会议")
           if (RmManager.userInfo.nonEmpty && msg.userId == RmManager.userInfo.get.userId) {
@@ -169,18 +182,6 @@ class AudienceController(
 
         case msg: HostSetSpeaker =>
           rmManager ! RmManager.SpeakerChange(msg.userId)
-
-        case msg: JoinRsp =>
-          if (msg.errCode == 0) {
-            rmManager ! RmManager.StartJoin(msg.hostLiveId.get, msg.joinInfo.get,msg.mixId)
-            audienceScene.hasReqJoin = false
-          } else if (msg.errCode == 300001) {
-            WarningDialog.initWarningDialog("房主未开通连线功能!")
-            audienceScene.hasReqJoin = false
-          } else if (msg.errCode == 300002) {
-            WarningDialog.initWarningDialog("房主拒绝连线申请!")
-            audienceScene.hasReqJoin = false
-          }
 
         case msg: UpdateAudienceInfo =>
           Boot.addToPlatform {

@@ -441,10 +441,9 @@ object MeetingActor {
 
 
       case JoinReq(userId4Audience, `meetingId`, clientType) =>
-        log.debug(s"${ctx.self.path} the meeting actor receive JoinReq")
-        UserInfoDao.searchById(userId4Audience).map { r =>
+        log.info(s"get JoinReq")
+          UserInfoDao.searchById(userId4Audience).map { r =>
             if (r.nonEmpty) {
-              log.info(s"dispathTo hostId-${meetingInfo.userId}, audience join, audienceId-${userId4Audience.toString}")
               dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
             } else {
               log.debug(s"${ctx.self.path} 连线请求失败，用户id错误id=$userId4Audience in roomId=$meetingId")
@@ -565,11 +564,10 @@ object MeetingActor {
         } else {
           meetingInfo
         }
-        val info = meetingInfo
-        log.debug(s"${ctx.self.path} modify the room info$info")
-        dispatch(UpdateRoomInfo2Client(meetingInfo.meetingName, meetingInfo.roomDes))
-        dispatchTo(List((meetingInfo.userId, false)), ModifyRoomRsp())
-        idle(info, liveInfoMap, subscribers, subscribers.size - 1, startTime)
+        log.debug(s"${ctx.self.path} modify the room info$roomInfo")
+        dispatch(UpdateRoomInfo2Client(roomInfo.meetingName, roomInfo.roomDes))
+        dispatchTo(List((roomInfo.userId, false)), ModifyRoomRsp())
+        idle(roomInfo, liveInfoMap, subscribers, subscribers.size - 1, startTime)
 
       case x =>
         Behaviors.same

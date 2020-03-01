@@ -109,10 +109,11 @@ object MeetingManager {
           Behaviors.same
 
         case r@ActorProtocol.UpdateSubscriber(join,roomId,userId,temporary,userActor) =>
-          getMeetingActorOpt(roomId,ctx)match{
-            case Some(actor) =>actor ! r
-            case None =>log.debug(s"${ctx.self.path}更新用户信息失败，房间不存在，有可能该用户是主播等待房间开启，房间id=$roomId,用户id=$userId")
-          }
+//          getMeetingActorOpt(roomId,ctx)match{
+//            case Some(actor) =>actor ! r
+//            case None =>log.debug(s"${ctx.self.path}更新用户信息失败，房间不存在，有可能该用户是主播等待房间开启，房间id=$roomId,用户id=$userId")
+//          }
+          getMeetingActor(roomId,ctx) ! r
           Behaviors.same
 
         case r@ActorProtocol.StartMeeting4Host(userId,roomId,actor) =>

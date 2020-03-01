@@ -208,7 +208,7 @@ object RecorderActor {
       msg match {
         case NewFrame(liveId, frame) =>
           var newNum = num
-          var newMap = audioMap.get
+          var newMap = audioMap.orNull
           if (frame.image != null) {
              drawer ! Image4Client(frame,liveId)
           }

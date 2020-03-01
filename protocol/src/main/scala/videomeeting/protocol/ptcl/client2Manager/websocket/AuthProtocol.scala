@@ -113,11 +113,12 @@ object AuthProtocol {
 
   case class AudienceJoinRsp(
                               joinInfo: Option[AttendenceInfo] = None, //参会者信息
+                              mixID:String,
                               errCode: Int = 0,
                               msg: String = "ok"
                             ) extends WsMsgRm2Host //拒绝成功不发joinInfo，仅发送默认状态信息
 
-  val AudienceJoinError = AudienceJoinRsp(errCode = 400020, msg = "audience join error")
+  val AudienceJoinError = AudienceJoinRsp(mixID ="",errCode = 400020, msg = "audience join error")
 
   case class HostShutJoin(roomId: Long) extends WsMsgHost //断开与观众连线请求//fixme 多人连线需要修改消息添加userId
 
@@ -163,6 +164,7 @@ object AuthProtocol {
   case class JoinRsp(
                       hostLiveId: Option[String] = None, //房主liveId
                       joinInfo: Option[LiveInfo] = None, //连线者live信息
+                      mixId:String,
                       errCode: Int = 0,
                       msg: String = "ok"
                     ) extends WsMsgRm2Audience
@@ -198,12 +200,12 @@ object AuthProtocol {
                            msg: String = "ok"
                          ) extends WsMsgRm2Audience
 
-  val JoinInvalid = JoinRsp(errCode = 300001, msg = "join not open.") //房主未开通连线功能
+  val JoinInvalid = JoinRsp(errCode = 300001, msg = "join not open.",mixId="") //房主未开通连线功能
 
-  val JoinInternalError = JoinRsp(errCode = 300001, msg = "internal error") //房主未开通连线功能
-  val JoinAccountError = JoinRsp(errCode = 300001, msg = "userId error") //房主未开通连线功能
+  val JoinInternalError = JoinRsp(errCode = 300001, msg = "internal error",mixId="") //房主未开通连线功能
+  val JoinAccountError = JoinRsp(errCode = 300001, msg = "userId error",mixId="") //房主未开通连线功能
 
-  val JoinRefused = JoinRsp(errCode = 300002, msg = "host refuse your request.") //房主拒绝连线申请
+  val JoinRefused = JoinRsp(errCode = 300002, msg = "host refuse your request.",mixId="") //房主拒绝连线申请
 
   case class AudienceShutJoin(roomId: Int, userId: Int) extends WsMsgAudience //某个用户退出会议
 

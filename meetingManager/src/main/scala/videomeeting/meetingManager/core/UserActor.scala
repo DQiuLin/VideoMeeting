@@ -179,9 +179,9 @@ object UserActor {
                 UserInfoDao.searchById(userId).map {
                   case Some(v) =>
                     req match {
-                      case CreateMeeting(`meetingId`) =>
-                        meetingManager ! ActorProtocol.MeetingCreate(meetingId)
-                        ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+//                      case CreateMeeting(`meetingId`) =>
+//                        meetingManager ! ActorProtocol.MeetingCreate(meetingId)
+//                        ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
 //                      case ModifyRoomInfo(name, des) =>
 //                        meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)
@@ -295,9 +295,9 @@ object UserActor {
                   UserInfoDao.searchById(userId).map {
                     case Some(v) =>
                       req match {
-                        case CreateMeeting(`meetingId`) =>
-                          meetingManager ! ActorProtocol.MeetingCreate(meetingId)
-                          ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+//                        case CreateMeeting(`meetingId`) =>
+//                          meetingManager ! ActorProtocol.MeetingCreate(meetingId)
+//                          ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
 //                        case ModifyRoomInfo(name, des) =>
 //                          meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)

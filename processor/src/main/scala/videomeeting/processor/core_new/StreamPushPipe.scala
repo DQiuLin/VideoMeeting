@@ -71,17 +71,14 @@ object StreamPushPipe {
     Behaviors.receive[Command] { (ctx, msg) =>
       msg match {
         case NewLive(startTime) =>
-          log.info("get NewLive")
           liveCountMap.put(liveId, 0)
           ctx.self ! SendData
           dataBuf.clear()
           Behaviors.same
 
         case SendData =>
-          log.info("get SendData")
           val r = source.read(dataBuf)
           dataBuf.flip()
-          log.info("recv data")
           if (r > 0) {
             log.info("have data")
             val data = dataBuf.array().clone()

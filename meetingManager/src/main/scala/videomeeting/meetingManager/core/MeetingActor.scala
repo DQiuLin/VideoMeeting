@@ -564,11 +564,10 @@ object MeetingActor {
         } else {
           meetingInfo
         }
-        val info = meetingInfo
-        log.debug(s"${ctx.self.path} modify the room info$info")
-        dispatch(UpdateRoomInfo2Client(meetingInfo.meetingName, meetingInfo.roomDes))
-        dispatchTo(List((meetingInfo.userId, false)), ModifyRoomRsp())
-        idle(info, liveInfoMap, subscribers, subscribers.size - 1, startTime)
+        log.debug(s"${ctx.self.path} modify the room info$roomInfo")
+        dispatch(UpdateRoomInfo2Client(roomInfo.meetingName, roomInfo.roomDes))
+        dispatchTo(List((roomInfo.userId, false)), ModifyRoomRsp())
+        idle(roomInfo, liveInfoMap, subscribers, subscribers.size - 1, startTime)
 
       case x =>
         Behaviors.same

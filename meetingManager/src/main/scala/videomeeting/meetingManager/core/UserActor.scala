@@ -313,7 +313,7 @@ object UserActor {
                           ctx.self ! SwitchBehavior("host",host(userId,clientActor,meetingId))
 
                         case x =>
-                          meetingManager ! ActorProtocol.WebSocketMsgWithActor(userId, meetingId, req)
+                          meetingManager ! ActorProtocol.WebSocketMsgWithActor(userId, meetingId, x)
                           ctx.self ! SwitchBehavior("attendance", attendance(userId, temporary, clientActor, meetingId))
                       }
                     case None =>

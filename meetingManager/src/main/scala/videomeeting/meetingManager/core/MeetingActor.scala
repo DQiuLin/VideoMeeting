@@ -503,7 +503,7 @@ object MeetingActor {
                         val audienceInfo = AttendenceInfo(userId4Audience, userInfoOpt.get.username, liveInfo4Client.liveId)
 //                        dispatch(RcvComment(-1l, "", s"user:$userId join in room:$roomId")) //群发评论
 //                        dispatchTo(subscribers.keys.toList.filter(t => t._1 != meetingInfo.userId && t._1 != userId4Audience), Join4AllRsp(Some(liveInfo4Mix.liveId))) //除了host和连线者发送混流的liveId
-//                        dispatchTo(List((meetingInfo.userId, false)), AudienceJoinRsp(Some(audienceInfo)))
+                        dispatchTo(List((meetingInfo.userId, false)), AudienceJoinRsp(Some(audienceInfo)))
                         dispatchTo(List((userId4Audience, false)), JoinRsp(Some(liveIdHost.get.liveId), Some(liveInfo4Client)))
                       } else {
                         log.debug(s"${ctx.self.path} 没有主播的liveId,roomId=$meetingId")

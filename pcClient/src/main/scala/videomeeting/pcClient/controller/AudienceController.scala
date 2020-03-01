@@ -183,6 +183,24 @@ class AudienceController(
         case msg: HostSetSpeaker =>
           rmManager ! RmManager.SpeakerChange(msg.userId)
 
+        case msg: JoinRsp =>
+          if (msg.errCode == 0) {
+            Boot.addToPlatform {
+              WarningDialog.initWarningDialog("您已成功加入会议~")
+            }
+          } else {
+            Boot.addToPlatform {
+              WarningDialog.initWarningDialog("主持人拒绝了您的请求，即将返回")
+            }
+            updateRecCmt = false
+            rmManager ! RmManager.BackToHome
+          }
+
+        case msg: UpdateAudienceInfo =>
+          Boot.addToPlatform {
+            audienceScene.updateViewLabel(msg.AudienceList.map(u => UserDes(u.userId, u.userName, u.headImgUrl)))
+          }
+
         case x =>
           log.warn(s"audience recv unknown msg from rm: $x")
 

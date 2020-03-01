@@ -211,6 +211,8 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
     this.listener = listener
   }
 
+  val viewIcon: ImageView = Common.getImageView("img/view.png", 30, 30)
+  val viewLabel = new Label(room.attendanceNum.getOrElse(0).toString, viewIcon)
   def createIDcard: HBox = {
 
 //    val header = Pictures.getPic(room.headImgUrl)
@@ -230,8 +232,8 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
     userInfo.setAlignment(Pos.CENTER_LEFT)
 
 
-    val viewIcon = Common.getImageView("img/view.png", 30, 30)
-    val viewLabel = new Label(room.attendanceNum.getOrElse(0).toString, viewIcon)
+//    val viewIcon = Common.getImageView("img/view.png", 30, 30)
+//    val viewLabel = new Label(room.attendanceNum.getOrElse(0).toString, viewIcon)
     viewLabel.setPadding(new Insets(0,0,0,6))
 
     val IDcard = new HBox(userInfo, viewLabel)
@@ -241,6 +243,10 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
     IDcard.getStyleClass.add("hostScene-rightArea-IDcard")
 
     IDcard
+  }
+
+  def updateViewLabel(ls: List[UserDes]): Unit = {
+    viewLabel.setText(s"${ls.length}")
   }
 
   val borderPane: BorderPane = addBorderPane()
@@ -332,6 +338,7 @@ class AudienceScene(room: MeetingInfo, isRecord: Boolean = false, recordUrl: Str
         liveToggleButton.setText("加入会议")
         //退出会议
         listener.quitJoin(room.meetingId, room.userId)
+        hasReqJoin = false
       }
     }
     )

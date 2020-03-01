@@ -214,9 +214,9 @@ object RecorderActor {
           }
           if (frame.samples != null) {
             try {
-              if(audioMap.nonEmpty){
+              if(audioMap.isDefined){
                 if(audioMap.get.contains(liveId)){
-                  ffFilter.pushSamples(audioMap.get.get(liveId).get, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
+                  ffFilter.pushSamples(audioMap.get(liveId), frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
                 }else{
                   ffFilter.pushSamples(num, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
                   newMap.put(liveId,num)

@@ -93,6 +93,7 @@ object MeetingManager {
           Behaviors.same
 
         case r@ActorProtocol.StartLiveAgain(roomId) =>
+          log.info("MeetingManager get StartLiveAgain")
           getMeetingActorOpt(roomId,ctx) match{
             case Some(actor) => actor ! r
             case None => log.debug(s"${ctx.self.path}重新直播请求错误，该房间已经关闭，房间id=$roomId")

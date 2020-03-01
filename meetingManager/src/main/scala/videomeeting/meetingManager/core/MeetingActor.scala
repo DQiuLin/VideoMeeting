@@ -441,6 +441,7 @@ object MeetingActor {
 
 
       case JoinReq(userId4Audience, `meetingId`, clientType) =>
+        log.info(s"get JoinReq")
           UserInfoDao.searchById(userId4Audience).map { r =>
             if (r.nonEmpty) {
               dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))

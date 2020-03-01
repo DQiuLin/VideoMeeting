@@ -91,6 +91,7 @@ object StreamPushPipe {
             ctx.self ! SendData
             dataBuf.clear()
           } else {
+            ctx.self ! SendData
             log.info(s"${ctx.self} got nothing, $r")
           }
           Behaviors.same

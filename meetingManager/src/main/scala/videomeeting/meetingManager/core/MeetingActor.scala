@@ -146,35 +146,35 @@ object MeetingActor {
           }
           Behaviors.same
 
-        case ModifyRoomDes(userId, meetingId, name, des) =>
-          if (meetingInfoOpt.nonEmpty) {
-            val meetingInfo = meetingInfoOpt.get
-            val roomInfo = if (name.nonEmpty && des.nonEmpty) {
-              meetingInfo.copy(meetingName = name.get, roomDes = des.get)
-            } else if (name.nonEmpty) {
-              meetingInfo.copy(meetingName = name.get)
-            } else if (des.nonEmpty) {
-              meetingInfo.copy(roomDes = des.get)
-            } else {
-              meetingInfo
-            }
-            init(meetingId, subscribers, Some(roomInfo))
-          } else {
-            for {
-              userTableOpt <- UserInfoDao.searchById(userId)
-            } yield {
-              if (userTableOpt.nonEmpty) {
-                log.info(s"start meeting succeed")
-                val meetingInfo = MeetingInfo(meetingId, if (name.nonEmpty) name.get else s"${userTableOpt.get.username}的会议", if(des.nonEmpty) des.get else s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
-                ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap()), subscribers, 0, 0L))
-              } else {
-                log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
-                dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
-                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
-              }
-            }
-            switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
-          }
+//        case ModifyRoomDes(userId, meetingId, name, des) =>
+//          if (meetingInfoOpt.nonEmpty) {
+//            val meetingInfo = meetingInfoOpt.get
+//            val roomInfo = if (name.nonEmpty && des.nonEmpty) {
+//              meetingInfo.copy(meetingName = name.get, roomDes = des.get)
+//            } else if (name.nonEmpty) {
+//              meetingInfo.copy(meetingName = name.get)
+//            } else if (des.nonEmpty) {
+//              meetingInfo.copy(roomDes = des.get)
+//            } else {
+//              meetingInfo
+//            }
+//            init(meetingId, subscribers, Some(roomInfo))
+//          } else {
+//            for {
+//              userTableOpt <- UserInfoDao.searchById(userId)
+//            } yield {
+//              if (userTableOpt.nonEmpty) {
+//                log.info(s"start meeting succeed")
+//                val meetingInfo = MeetingInfo(meetingId, if (name.nonEmpty) name.get else s"${userTableOpt.get.username}的会议", if(des.nonEmpty) des.get else s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
+//                ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap()), subscribers, 0, 0L))
+//              } else {
+//                log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
+//                dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+//                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+//              }
+//            }
+//            switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
+//          }
 
         case TestRoom(meetingInfo) =>
           //仅用户测试使用空房间
@@ -183,6 +183,24 @@ object MeetingActor {
         case ActorProtocol.AddUserActor4Test(userId, roomId, userActor) =>
           subscribers.put((userId, false), userActor)
           Behaviors.same
+
+        case ActorProtocol.UpdateSubscriber(join, meetingId, userId, temporary, userActorOpt) =>
+          log.debug(s"${ctx.self.path}新用户加入会议meetingId=$meetingId,userId=$userId")
+          for {
+            userTableOpt <- UserInfoDao.searchById(userId)
+          } yield {
+            if (userTableOpt.nonEmpty) {
+              log.info(s"start meeting succeed")
+              subscribers.put((userId, temporary), userActorOpt.get)
+              val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
+              ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap()), subscribers, 0, 0L))
+            } else {
+              log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
+              dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+              ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+            }
+          }
+          switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
 
         case x =>
           log.debug(s"${ctx.self.path} recv an unknown msg:$x in init state...")

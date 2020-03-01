@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 import videomeeting.pcClient.utils.RMClient
 import videomeeting.pcClient.Boot.executor
 import videomeeting.pcClient.core.collector.CaptureActor
+import videomeeting.protocol.ptcl.CommonInfo.UserDes
 
 /**
   * User: Arrow
@@ -250,6 +251,11 @@ class StartController(
             startScene.roomNameField.setText(roomName)
             startScene.roomDesArea.setText(roomDes)
           }
+        }
+
+      case msg: UpdateAudienceInfo =>
+        Boot.addToPlatform {
+          startScene.watchingList.updateWatchingList(msg.AudienceList.map(u => UserDes(u.userId, u.userName, u.headImgUrl)))
         }
 
       case x =>

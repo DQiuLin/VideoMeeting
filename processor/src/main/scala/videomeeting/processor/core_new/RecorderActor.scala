@@ -29,7 +29,7 @@ import scala.concurrent.duration._
   */
 object RecorderActor {
 
-  var audioChannels = 4 //todo 待议
+  var audioChannels = 0 //todo 待议
   val sampleFormat = 1 //todo 待议
   var frameRate = 30
 
@@ -92,6 +92,7 @@ object RecorderActor {
       Behaviors.withTimers[Command] {
         implicit timer =>
           log.info(s"recorderActor start----")
+          audioChannels=client.size+1
           avutil.av_log_set_level(-8)
           val recorder4ts = new FFmpegFrameRecorder(output, 640, 480, audioChannels)
           recorder4ts.setFrameRate(frameRate)
@@ -164,7 +165,7 @@ object RecorderActor {
             val drawer = ctx.spawn(draw(canvas, canvas.getGraphics, Ts4LastImage(), hostImage, clientImage, client, recorder4ts,
               new Java2DFrameConverter(), new Java2DFrameConverter, layout, "defaultImg.jpg", roomId, (640, 480)), s"drawer_$roomId")
             ctx.self ! NewFrame(liveId, frame)
-            work(roomId,client,0,null,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
+            work(roomId,client,0,None,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
 
 
         case CloseRecorder =>
@@ -207,13 +208,12 @@ object RecorderActor {
       msg match {
         case NewFrame(liveId, frame) =>
           var newNum = num
-          var newMap = audioMap.get
+          val newMap = audioMap.getOrElse(mutable.Map[String, Int]())
           if (frame.image != null) {
              drawer ! Image4Client(frame,liveId)
           }
           if (frame.samples != null) {
             try {
-              val a = audioMap.get
               if(!audioMap.isEmpty){
                 if(audioMap.contains(liveId)){
                   ffFilter.pushSamples(audioMap.get.get(liveId).get, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
@@ -310,25 +310,26 @@ object RecorderActor {
 //                graph.drawString("主持人", 24, 25)
               case 1 =>
                 graph.drawImage(hostFrame, 0, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
-                graph.drawString("主持人", 24, 25)
+//                graph.drawString("主持人", 24, 25)
                 graph.drawImage(clientFrame.values.toList.head, canvasSize._1 / 2, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
-                graph.drawString("参会人1", 344, 25)
+//                graph.drawString("参会人1", 344, 25)
+                log.info(s"two people =============================${canvasSize._1}    ${canvasSize._2}")
               case 2 =>
                 graph.drawImage(hostFrame, 0,canvasSize._2 / 4, canvasSize._1 / 3, canvasSize._2 / 2, null)
-                graph.drawString("主持人", 310, 0)
+//                graph.drawString("主持人", 310, 0)
                 graph.drawImage(clientFrame.values.head, canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
-                graph.drawString("参会人1", 150, 250)
+//                graph.drawString("参会人1", 150, 250)
                 graph.drawImage(clientFrame.values.toList(1),canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
-                graph.drawString("参会人2", 470, 250)
+//                graph.drawString("参会人2", 470, 250)
               case 3 =>
                 graph.drawImage(hostFrame, 0, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
-                graph.drawString("主持人", 150, 0)
+//                graph.drawString("主持人", 150, 0)
                 graph.drawImage(clientFrame.values.head, canvasSize._1 / 2,0, canvasSize._1 / 2, canvasSize._2 / 2, null)
-                graph.drawString("参会人1", 470, 0)
+//                graph.drawString("参会人1", 470, 0)
                 graph.drawImage(clientFrame.values.toList(1), 0, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
-                graph.drawString("参会人2", 150, 250)
+//                graph.drawString("参会人2", 150, 250)
                 graph.drawImage(clientFrame.values.toList(2), canvasSize._1 / 2, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
-                graph.drawString("参会人3", 470, 25)
+//                graph.drawString("参会人3", 470, 25)
 
             }
           } else {

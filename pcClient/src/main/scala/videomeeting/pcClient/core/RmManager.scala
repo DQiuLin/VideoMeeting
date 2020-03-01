@@ -554,6 +554,7 @@ object RmManager {
             //hostScene.allowConnect()
           }
           liveManager ! LiveManager.PushStream(msg.liveId, msg.liveCode)
+          log.info(s"==============push to ${msg.liveId}")
           Behaviors.same
 
         case StopLive =>
@@ -618,6 +619,9 @@ object RmManager {
           Behaviors.same
 
         case msg: JoinBegin =>
+
+
+          log.info(s"==============pull from ${msg.mixId}")
           /*背景改变*/
           hostScene.resetBack()
 
@@ -627,6 +631,7 @@ object RmManager {
           /*拉取观众的rtp流并播放*/
           val joinInfo = JoinInfo(roomInfo.get.meetingId, msg.audienceInfo.userId, hostScene.gc)
           liveManager ! LiveManager.PullStream(msg.mixId, joinInfo = Some(joinInfo), hostScene = Some(hostScene))
+
 
           startBehavior(stageCtx, homeController, hostScene, hostController, liveManager, mediaPlayer, sender, hostStatus = HostStatus.CONNECT, Some(msg.audienceInfo))
 
@@ -993,6 +998,8 @@ object RmManager {
 
           liveManager ! LiveManager.DevicesOn(audienceScene.gc, isJoin = true)
           liveManager ! LiveManager.PushStream(msg.liveId.liveId, msg.liveId.liveCode)
+          log.info(s"==============push to ${msg.liveId.liveId}")
+          log.info(s"==============pull from ${msg.mixID}")
           //          audienceBehavior(stageCtx, homeController, roomController, audienceScene, audienceController, liveManager, mediaPlayer, sender, isStop, Some((msg.audienceLiveInfo, msg.hostLiveId)), audienceStatus = AudienceStatus.CONNECT, anchorLiveId)
 
 

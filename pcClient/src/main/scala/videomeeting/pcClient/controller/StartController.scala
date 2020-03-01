@@ -258,6 +258,12 @@ class StartController(
           startScene.watchingList.updateWatchingList(msg.AudienceList.map(u => UserDes(u.userId, u.userName, u.headImgUrl)))
         }
 
+      case msg:AudienceJoinRsp=>
+        Boot.addToPlatform {
+          startScene.updateAudienceList(msg.joinInfo.get.userId, msg.joinInfo.get.userName)
+        }
+        rmManager ! RmManager.JoinBegin(msg.joinInfo.get,msg.mixID)
+
       case x =>
         log.warn(s"host recv unknown msg from rm: $x")
     }

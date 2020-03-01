@@ -165,7 +165,7 @@ object RecorderActor {
             val drawer = ctx.spawn(draw(canvas, canvas.getGraphics, Ts4LastImage(), hostImage, clientImage, client, recorder4ts,
               new Java2DFrameConverter(), new Java2DFrameConverter, layout, "defaultImg.jpg", roomId, (640, 480)), s"drawer_$roomId")
             ctx.self ! NewFrame(liveId, frame)
-            work(roomId,client,0,null,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
+            work(roomId,client,0,None,recorder4ts,ffFilter, drawer,ts4Host,ts4Client,out,tsDiffer,canvasSize)
 
 
         case CloseRecorder =>

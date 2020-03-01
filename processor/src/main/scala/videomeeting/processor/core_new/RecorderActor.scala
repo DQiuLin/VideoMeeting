@@ -341,6 +341,8 @@ object RecorderActor {
 
         case StartDrawing =>
           //根据不同的参会人数设置不同的排列方式
+          log.info(s"clientInfo: $clientInfo")
+          log.info(s"clientFrame: ${clientFrame.keys}")
           if (clientInfo.size == clientFrame.values.toList.size) {
             clientInfo.size match {
               case 0 =>

@@ -301,42 +301,42 @@ object RecorderActor {
             }
           }
 //          ctx.self ! StartDrawing
-//          if (clientInfo.size == clientFrame.values.toList.size) {
-//            clientInfo.size match {
-//              case 0 =>
-//                graph.drawImage(clientFrame.values.toList.head, 0, 0, canvasSize._1, canvasSize._2, null)
-//              //                graph.drawString("主持人", 24, 25)
-//              case 1 =>
-//                log.info(s"======== Listsize ${clientFrame.values.toList.size}")
-//                graph.drawImage(clientFrame.values.toList.head, 0, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
-//                //                graph.drawString("主持人", 24, 25)
-//                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
-//                //                graph.drawString("参会人1", 344, 25)
-//                log.info(s"two people =============================${canvasSize._1}    ${canvasSize._2}")
-//              case 2 =>
-//                graph.drawImage(clientFrame.values.head, 0,canvasSize._2 / 4, canvasSize._1 / 3, canvasSize._2 / 2, null)
-//                //                graph.drawString("主持人", 310, 0)
-//                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
-//                //                graph.drawString("参会人1", 150, 250)
-//                graph.drawImage(clientFrame.values.toList(2),canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
-//              //                graph.drawString("参会人2", 470, 250)
-//              case 3 =>
-//                graph.drawImage(clientFrame.values.head, 0, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
-//                //                graph.drawString("主持人", 150, 0)
-//                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2,0, canvasSize._1 / 2, canvasSize._2 / 2, null)
-//                //                graph.drawString("参会人1", 470, 0)
-//                graph.drawImage(clientFrame.values.toList(2), 0, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
-//                //                graph.drawString("参会人2", 150, 250)
-//                graph.drawImage(clientFrame.values.toList(3), canvasSize._1 / 2, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
-//              //                graph.drawString("参会人3", 470, 25)
-//
-//            }
-//          } else {
-//            log.info(s"${ctx.self} is waiting to drawing")
-//          }
-//
-//          val frame = convert.convert(canvas)
-//          recorder4ts.record(frame.clone())
+          if (clientInfo.size == clientFrame.values.toList.size) {
+            clientInfo.size match {
+              case 0 =>
+                graph.drawImage(clientFrame.values.toList.head, 0, 0, canvasSize._1, canvasSize._2, null)
+              //                graph.drawString("主持人", 24, 25)
+              case 1 =>
+                log.info(s"======== Listsize ${clientFrame.values.toList.size}")
+                graph.drawImage(clientFrame.values.toList.head, 0, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                //                graph.drawString("主持人", 24, 25)
+                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                //                graph.drawString("参会人1", 344, 25)
+                log.info(s"two people =============================${canvasSize._1}    ${canvasSize._2}")
+              case 2 =>
+                graph.drawImage(clientFrame.values.head, 0,canvasSize._2 / 4, canvasSize._1 / 3, canvasSize._2 / 2, null)
+                //                graph.drawString("主持人", 310, 0)
+                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
+                //                graph.drawString("参会人1", 150, 250)
+                graph.drawImage(clientFrame.values.toList(2),canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
+              //                graph.drawString("参会人2", 470, 250)
+              case 3 =>
+                graph.drawImage(clientFrame.values.head, 0, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                //                graph.drawString("主持人", 150, 0)
+                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2,0, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                //                graph.drawString("参会人1", 470, 0)
+                graph.drawImage(clientFrame.values.toList(2), 0, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                //                graph.drawString("参会人2", 150, 250)
+                graph.drawImage(clientFrame.values.toList(3), canvasSize._1 / 2, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+              //                graph.drawString("参会人3", 470, 25)
+
+            }
+          } else {
+            log.info(s"${ctx.self} is waiting to drawing")
+          }
+
+          val frame = convert.convert(canvas)
+          recorder4ts.record(frame.clone())
           draw(canvas, graph, lastTime, hostFrame, clientFrame, clientInfo, recorder4ts, convert4Host, convert, num, bgImg, roomId, canvasSize)
 
         case StartDrawing =>

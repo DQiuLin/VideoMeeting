@@ -423,7 +423,8 @@ object MeetingActor {
 
 
       case JoinReq(userId4Audience, `meetingId`, clientType) =>
-          UserInfoDao.searchById(userId4Audience).map { r =>
+        log.debug(s"${ctx.self.path} the meeting actor receive JoinReq")
+        UserInfoDao.searchById(userId4Audience).map { r =>
             if (r.nonEmpty) {
               dispatchTo(List((meetingInfo.userId, false)), AudienceJoin(userId4Audience, r.get.username, clientType))
             } else {

@@ -184,6 +184,11 @@ object MeetingActor {
           subscribers.put((userId, false), userActor)
           Behaviors.same
 
+        case ActorProtocol.UpdateSubscriber(join, meetingId, userId, temporary, userActorOpt) =>
+          log.debug(s"${ctx.self.path}新用户加入会议meetingId=$meetingId,userId=$userId")
+          subscribers.put((userId, temporary), userActorOpt.get)
+          init(meetingId, subscribers, meetingInfoOpt)
+
         case x =>
           log.debug(s"${ctx.self.path} recv an unknown msg:$x in init state...")
           Behaviors.same

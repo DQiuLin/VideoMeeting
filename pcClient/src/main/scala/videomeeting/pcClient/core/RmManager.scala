@@ -1100,6 +1100,7 @@ object RmManager {
           Behaviors.stopped
 
         case msg: SpeakerChange =>
+          log.info("===========  speakerchange")
           if (userInfo.nonEmpty && userInfo.get.userId != msg.userId) {
             ctx.self ! ChangeOption4Audience(needImage = false, needSound = false)
             Boot.addToPlatform(audienceController.changeBtnStauts(false, false))

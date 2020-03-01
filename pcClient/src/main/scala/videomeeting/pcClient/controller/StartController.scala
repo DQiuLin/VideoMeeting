@@ -252,9 +252,9 @@ class StartController(
         }
 
       case msg:AudienceJoinRsp=>
-        Boot.addToPlatform {
-          startScene.updateAudienceList(msg.joinInfo.get.userId, msg.joinInfo.get.userName)
-        }
+//        Boot.addToPlatform {
+//          startScene.updateAudienceList(msg.joinInfo.get.userId, msg.joinInfo.get.userName)
+//        }
         rmManager ! RmManager.JoinBegin(msg.joinInfo.get,msg.mixID)
 
       case x =>

@@ -166,7 +166,7 @@ object MeetingActor {
               if (userTableOpt.nonEmpty) {
                 log.info(s"start meeting succeed")
                 val meetingInfo = MeetingInfo(meetingId, if (name.nonEmpty) name.get else s"${userTableOpt.get.username}的会议", if(des.nonEmpty) des.get else s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
-                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers, Some(meetingInfo)))
+                ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap()), subscribers, 0, 0L))
               } else {
                 log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
                 dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
@@ -246,7 +246,7 @@ object MeetingActor {
           Behaviors.same
 
         case ActorProtocol.UpdateSubscriber(join, meetingId, userId, temporary, userActorOpt) =>
-          var viewNum = 0
+          var view = viewNum
           //虽然房间存在，但其实主播已经关闭房间，这时的startTime=-1
           //向所有人发送主播已经关闭房间的消息
           log.info(s"-----roomActor get UpdateSubscriber id: $meetingId")
@@ -255,7 +255,7 @@ object MeetingActor {
           }
           else {
             if (join == Subscriber.attendance) {
-              viewNum += 1
+              view += 1
               log.debug(s"${ctx.self.path}新用户加入会议meetingId=$meetingId,userId=$userId")
               subscribe.put((userId, temporary), userActorOpt.get)
             } else if (join == Common.Subscriber.left) {
@@ -290,7 +290,7 @@ object MeetingActor {
 
           }
           meetingInfo.attendanceNum = Some(subscribe.size - 1)
-          idle(meetingInfo, liveInfoMap, subscribe, viewNum, startTime)
+          idle(meetingInfo, liveInfoMap, subscribe, view, startTime)
 
         case ActorProtocol.HostCloseRoom(roomId) =>
           log.debug(s"${ctx.self.path} host close the room")

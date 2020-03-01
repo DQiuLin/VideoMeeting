@@ -183,9 +183,9 @@ object UserActor {
                         meetingManager ! ActorProtocol.MeetingCreate(meetingId)
                         ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
-                      case ModifyRoomInfo(name, des) =>
-                        meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)
-                        ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+//                      case ModifyRoomInfo(name, des) =>
+//                        meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)
+//                        ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                       case StartLiveReq(`userId`, token, clientType) =>
                         meetingManager ! ActorProtocol.StartLiveAgain(meetingId)
@@ -299,9 +299,9 @@ object UserActor {
                           meetingManager ! ActorProtocol.MeetingCreate(meetingId)
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
-                        case ModifyRoomInfo(name, des) =>
-                          meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)
-                          ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
+//                        case ModifyRoomInfo(name, des) =>
+//                          meetingManager ! ActorProtocol.ModifyRoomDes(userId, meetingId, name, des)
+//                          ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                         case StartLiveReq(`userId`, token, clientType) =>
                           meetingManager ! ActorProtocol.StartMeeting4Host(userId, meetingId, ctx.self)

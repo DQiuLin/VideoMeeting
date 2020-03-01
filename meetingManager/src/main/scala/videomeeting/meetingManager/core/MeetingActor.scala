@@ -99,43 +99,43 @@ object MeetingActor {
           log.info("meetingActor get MeetingCreate")
           Behaviors.same
 
-        case ActorProtocol.StartMeeting4Host(userId, `meetingId`, actor) =>
-          log.debug(s"${ctx.self.path} 用户id=$userId 开启了新的会议id=$meetingId")
-          subscribers.put((userId, false), actor)
-          for {
-            data <- RtpClient.getLiveInfoFunc()
-            userTableOpt <- UserInfoDao.searchById(userId)
-          } yield {
-            data match {
-              case Right(rsp) =>
-                if (userTableOpt.nonEmpty) {
-                  log.info(s"start meeting succeed")
-                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
-                  DistributorClient.startPull(meetingId, rsp.liveInfo.liveId).map {
-                    case Right(r) =>
-                      log.info(s"distributor startPull succeed, get live address: ${r.liveAdd}")
-                      dispatchTo(subscribers)(List((userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
-                      meetingInfo.mpd = Some(r.liveAdd)
-                      val startTime = r.startTime
-                      ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, startTime))
-
-                    case Left(e) =>
-                      log.error(s"distributor startPull error: $e")
-                      dispatchTo(subscribers)(List((userId, false)), StartLiveRefused4LiveInfoError)
-                      ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
-                  }
-                } else {
-                  log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
-                  dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
-                  ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
-                }
-              case Left(error) =>
-                log.debug(s"${ctx.self.path} 开始会议被拒绝，请求rtp server解析失败，error:$error")
-                dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
-                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
-            }
-          }
-          switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
+//        case ActorProtocol.StartMeeting4Host(userId, `meetingId`, actor) =>
+//          log.debug(s"${ctx.self.path} 用户id=$userId 开启了新的会议id=$meetingId")
+//          subscribers.put((userId, false), actor)
+//          for {
+//            data <- RtpClient.getLiveInfoFunc()
+//            userTableOpt <- UserInfoDao.searchById(userId)
+//          } yield {
+//            data match {
+//              case Right(rsp) =>
+//                if (userTableOpt.nonEmpty) {
+//                  log.info(s"start meeting succeed")
+//                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
+//                  DistributorClient.startPull(meetingId, rsp.liveInfo.liveId).map {
+//                    case Right(r) =>
+//                      log.info(s"distributor startPull succeed, get live address: ${r.liveAdd}")
+//                      dispatchTo(subscribers)(List((userId, false)), StartLiveRsp(Some(rsp.liveInfo)))
+//                      meetingInfo.mpd = Some(r.liveAdd)
+//                      val startTime = r.startTime
+//                      ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, startTime))
+//
+//                    case Left(e) =>
+//                      log.error(s"distributor startPull error: $e")
+//                      dispatchTo(subscribers)(List((userId, false)), StartLiveRefused4LiveInfoError)
+//                      ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+//                  }
+//                } else {
+//                  log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
+//                  dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+//                  ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+//                }
+//              case Left(error) =>
+//                log.debug(s"${ctx.self.path} 开始会议被拒绝，请求rtp server解析失败，error:$error")
+//                dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+//                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+//            }
+//          }
+//          switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
 
         case GetMeetingInfo(replyTo) =>
           if (meetingInfoOpt.nonEmpty) {
@@ -145,36 +145,6 @@ object MeetingActor {
             replyTo ! MeetingInfo(-1, "", "", -1, "", "")
           }
           Behaviors.same
-
-//        case ModifyRoomDes(userId, meetingId, name, des) =>
-//          if (meetingInfoOpt.nonEmpty) {
-//            val meetingInfo = meetingInfoOpt.get
-//            val roomInfo = if (name.nonEmpty && des.nonEmpty) {
-//              meetingInfo.copy(meetingName = name.get, roomDes = des.get)
-//            } else if (name.nonEmpty) {
-//              meetingInfo.copy(meetingName = name.get)
-//            } else if (des.nonEmpty) {
-//              meetingInfo.copy(roomDes = des.get)
-//            } else {
-//              meetingInfo
-//            }
-//            init(meetingId, subscribers, Some(roomInfo))
-//          } else {
-//            for {
-//              userTableOpt <- UserInfoDao.searchById(userId)
-//            } yield {
-//              if (userTableOpt.nonEmpty) {
-//                log.info(s"start meeting succeed")
-//                val meetingInfo = MeetingInfo(meetingId, if (name.nonEmpty) name.get else s"${userTableOpt.get.username}的会议", if(des.nonEmpty) des.get else s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
-//                ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap()), subscribers, 0, 0L))
-//              } else {
-//                log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
-//                dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
-//                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
-//              }
-//            }
-//            switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))
-//          }
 
         case TestRoom(meetingInfo) =>
           //仅用户测试使用空房间
@@ -187,17 +157,26 @@ object MeetingActor {
         case ActorProtocol.UpdateSubscriber(join, meetingId, userId, temporary, userActorOpt) =>
           log.info(s"${ctx.self.path}新用户加入会议meetingId=$meetingId,userId=$userId in init")
           for {
+            data <- RtpClient.getLiveInfoFunc()
             userTableOpt <- UserInfoDao.searchById(userId)
           } yield {
-            if (userTableOpt.nonEmpty) {
-              log.info(s"start meeting succeed")
-              subscribers.put((userId, temporary), userActorOpt.get)
-              val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
-              ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap()), subscribers, 0, 0L))
-            } else {
-              log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
-              dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
-              ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+            data match {
+              case Right(rsp) =>
+                if (userTableOpt.nonEmpty) {
+                  log.info(s"start meeting succeed")
+                  subscribers.put((userId, temporary), userActorOpt.get)
+                  val meetingInfo = MeetingInfo(meetingId, s"${userTableOpt.get.username}的会议", s"${userTableOpt.get.username}的会议", userTableOpt.get.id, userTableOpt.get.username, userTableOpt.get.headImg, Some(0))
+                  ctx.self ! SwitchBehavior("idle", idle(meetingInfo, mutable.HashMap(Role.host -> mutable.HashMap(userId -> rsp.liveInfo)), subscribers, 0, 0L))
+                } else {
+                  log.debug(s"${ctx.self.path} 开始会议被拒绝，数据库中没有该用户的数据，userId=$userId")
+                  dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+                  ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
+                }
+
+              case Left(error) =>
+                log.debug(s"${ctx.self.path} 开始会议被拒绝，请求rtp server解析失败，error:$error")
+                dispatchTo(subscribers)(List((userId, false)), StartLiveRefused)
+                ctx.self ! SwitchBehavior("init", init(meetingId, subscribers))
             }
           }
           switchBehavior(ctx, "busy", busy(), InitTime, TimeOut("busy"))

@@ -297,15 +297,17 @@ object RecorderActor {
               val clientConvert = new Java2DFrameConverter()
               val clientImg = clientConvert.convert(t.frame)
               clientFrame.put(client, clientImg)
+              log.info(s"=========putImage ${client}")
             }
           }
 //          ctx.self ! StartDrawing
           if (clientInfo.size == clientFrame.values.toList.size) {
             clientInfo.size match {
               case 0 =>
-                graph.drawImage(hostFrame, 0, 0, canvasSize._1, canvasSize._2, null)
+                graph.drawImage(clientFrame.values.toList.head, 0, 0, canvasSize._1, canvasSize._2, null)
               //                graph.drawString("主持人", 24, 25)
               case 1 =>
+                log.info(s"======== Listsize ${clientFrame.values.toList.size}")
                 graph.drawImage(clientFrame.values.toList.head, 0, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
                 //                graph.drawString("主持人", 24, 25)
                 graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)

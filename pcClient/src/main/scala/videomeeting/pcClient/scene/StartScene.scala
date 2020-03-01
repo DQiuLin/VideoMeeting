@@ -206,10 +206,17 @@ class StartScene(stage: Stage) {
   val applyIcon = new ImageView("img2/2apply.png")
   applyIcon.setFitWidth(20)
   applyIcon.setFitHeight(20)
-  //这个要找一张那种来电的图片来
   val applyIcon1 = new ImageView("img2/2apply1.png")
-  applyIcon.setFitWidth(20)
-  applyIcon.setFitHeight(20)
+  applyIcon1.setFitWidth(20)
+  applyIcon1.setFitHeight(20)
+
+  val joinIcon = new ImageView("img2/2apply.png")
+  joinIcon.setFitWidth(20)
+  joinIcon.setFitHeight(20)
+  val joinIcon1 = new ImageView("img2/2apply1.png")
+  joinIcon1.setFitWidth(20)
+  joinIcon1.setFitHeight(20)
+
 
   val tb1 = new ToggleButton("参会成员", userIcon)
   tb1.getStyleClass.add("hostScene-leftArea-toggleButton")
@@ -217,7 +224,7 @@ class StartScene(stage: Stage) {
   tb2.getStyleClass.add("hostScene-leftArea-toggleButton")
   val tb3 = new ToggleButton("房间", roomInfoIcon)
   tb3.getStyleClass.add("hostScene-leftArea-toggleButton")
-  val tb4 = new ToggleButton("加入",  applyIcon)
+  val tb4 = new ToggleButton("加入",  joinIcon)
   tb4.getStyleClass.add("hostScene-leftArea-toggleButton")
 
   val liveToggleButton = new ToggleButton("开始会议")
@@ -340,7 +347,7 @@ class StartScene(stage: Stage) {
 
   def updateJoinList(audienceId: Int, audienceName: String): Unit = {
     if (!tb4.isSelected) {
-      tb4.setGraphic(applyIcon1)
+      tb4.setGraphic(joinIcon1)
     }
     val agreeBtn = new Button("", new ImageView("img/agreeBtn.png"))
     val refuseBtn = new Button("", new ImageView("img/refuseBtn.png"))

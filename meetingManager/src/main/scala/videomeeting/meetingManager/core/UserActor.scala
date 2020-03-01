@@ -304,7 +304,8 @@ object UserActor {
 //                          ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                         case StartLiveReq(`userId`, token, clientType) =>
-                          meetingManager ! ActorProtocol.StartMeeting4Host(userId, meetingId, ctx.self)
+//                          meetingManager ! ActorProtocol.StartMeeting4Host(userId, meetingId, ctx.self)
+                          meetingManager ! ActorProtocol.StartLiveAgain(userId)
                           ctx.self ! SwitchBehavior("host", host(userId, clientActor, meetingId))
 
                         case Invite(email,meetingNum)=>

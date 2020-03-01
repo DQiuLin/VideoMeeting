@@ -341,27 +341,25 @@ object RecorderActor {
 
         case StartDrawing =>
           //根据不同的参会人数设置不同的排列方式
-          log.info(s"clientInfo: $clientInfo")
-          log.info(s"clientFrame: ${clientFrame.keys}")
           if (clientInfo.size == clientFrame.values.toList.size) {
             clientInfo.size match {
-              case 0 =>
+              case 1 =>
                 graph.drawImage(clientFrame.values.toList.head, 0, 0, canvasSize._1, canvasSize._2, null)
 //                graph.drawString("主持人", 24, 25)
-              case 1 =>
+              case 2 =>
                 graph.drawImage(clientFrame.values.toList.head, 0, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
 //                graph.drawString("主持人", 24, 25)
                 graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2, canvasSize._2 / 4, canvasSize._1 / 2, canvasSize._2 / 2, null)
 //                graph.drawString("参会人1", 344, 25)
                 log.info(s"two people =============================${canvasSize._1}    ${canvasSize._2}")
-              case 2 =>
+              case 3 =>
                 graph.drawImage(clientFrame.values.head, 0,canvasSize._2 / 4, canvasSize._1 / 3, canvasSize._2 / 2, null)
 //                graph.drawString("主持人", 310, 0)
                 graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
 //                graph.drawString("参会人1", 150, 250)
                 graph.drawImage(clientFrame.values.toList(2),canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
 //                graph.drawString("参会人2", 470, 250)
-              case 3 =>
+              case 4 =>
                 graph.drawImage(clientFrame.values.head, 0, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
 //                graph.drawString("主持人", 150, 0)
                 graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2,0, canvasSize._1 / 2, canvasSize._2 / 2, null)

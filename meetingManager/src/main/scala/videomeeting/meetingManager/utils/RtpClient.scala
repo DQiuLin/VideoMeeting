@@ -17,7 +17,7 @@ object RtpClient extends HttpUtil{
   import io.circe.parser.decode
 
   private val log = LoggerFactory.getLogger(this.getClass)
-  val processorBaseUrl = s"http://${AppSettings.rtpIp}:${AppSettings.rtpPort}/videomeeting/rtpServer/api"
+  val processorBaseUrl = s"http://${AppSettings.rtpIp}:${AppSettings.rtpPort}/theia/rtpServer/api"
 
   def getLiveInfoFunc():Future[Either[String,GetLiveInfoRsp]] = {
     log.debug("get live info")

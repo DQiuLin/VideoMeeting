@@ -33,7 +33,7 @@ trait HttpService extends  ResourceService
 
   lazy val routes: Route =
     ignoreTrailingSlash {
-      pathPrefix("videomeeting") {
+      pathPrefix("theia") {
         pathPrefix("rtpServer") {
           pathEndOrSingleSlash {
             getFromResource("html/index.html")

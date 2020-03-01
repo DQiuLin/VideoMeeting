@@ -214,8 +214,8 @@ object RecorderActor {
           }
           if (frame.samples != null) {
             try {
-              if(!audioMap.isEmpty){
-                if(audioMap.contains(liveId)){
+              if(audioMap.nonEmpty){
+                if(audioMap.get.contains(liveId)){
                   ffFilter.pushSamples(audioMap.get.get(liveId).get, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
                 }else{
                   ffFilter.pushSamples(num, frame.audioChannels, frame.sampleRate, ffFilter.getSampleFormat, frame.samples: _*)
@@ -315,20 +315,20 @@ object RecorderActor {
 //                graph.drawString("参会人1", 344, 25)
                 log.info(s"two people =============================${canvasSize._1}    ${canvasSize._2}")
               case 2 =>
-                graph.drawImage(hostFrame, 0,canvasSize._2 / 4, canvasSize._1 / 3, canvasSize._2 / 2, null)
+                graph.drawImage(clientFrame.values.head, 0,canvasSize._2 / 4, canvasSize._1 / 3, canvasSize._2 / 2, null)
 //                graph.drawString("主持人", 310, 0)
-                graph.drawImage(clientFrame.values.head, canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
+                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
 //                graph.drawString("参会人1", 150, 250)
-                graph.drawImage(clientFrame.values.toList(1),canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
+                graph.drawImage(clientFrame.values.toList(2),canvasSize._1 / 3, canvasSize._2 / 2, canvasSize._1 / 3, canvasSize._2 / 2, null)
 //                graph.drawString("参会人2", 470, 250)
               case 3 =>
-                graph.drawImage(hostFrame, 0, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawImage(clientFrame.values.head, 0, 0, canvasSize._1 / 2, canvasSize._2 / 2, null)
 //                graph.drawString("主持人", 150, 0)
-                graph.drawImage(clientFrame.values.head, canvasSize._1 / 2,0, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawImage(clientFrame.values.toList(1), canvasSize._1 / 2,0, canvasSize._1 / 2, canvasSize._2 / 2, null)
 //                graph.drawString("参会人1", 470, 0)
-                graph.drawImage(clientFrame.values.toList(1), 0, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawImage(clientFrame.values.toList(2), 0, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
 //                graph.drawString("参会人2", 150, 250)
-                graph.drawImage(clientFrame.values.toList(2), canvasSize._1 / 2, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
+                graph.drawImage(clientFrame.values.toList(3), canvasSize._1 / 2, canvasSize._2 / 2, canvasSize._1 / 2, canvasSize._2 / 2, null)
 //                graph.drawString("参会人3", 470, 25)
 
             }

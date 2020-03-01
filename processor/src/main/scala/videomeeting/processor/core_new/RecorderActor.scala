@@ -232,6 +232,7 @@ object RecorderActor {
                 log.debug(s"$liveId record sample error system: $ex")
             }
           }
+          log.info(s"output stream${out}")
           work(roomId, client, newNum,Some(newMap), recorder4ts, ffFilter, drawer, ts4Host, ts4Client, out, tsDiffer, canvasSize)
 
 //        case msg: UpdateRoomInfo =>
